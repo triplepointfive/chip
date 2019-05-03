@@ -1,0 +1,9 @@
+FROM node:10
+
+LABEL author=triplepointfive@gmail.com
+
+WORKDIR /apps/pure
+
+USER node
+
+CMD npm install -g parcel-bundler

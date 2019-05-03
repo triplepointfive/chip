@@ -14,4 +14,6 @@ WORKDIR /apps/pure
 USER pureuser
 
 COPY package.json .
+COPY yarn.lock .
+
 CMD yarn install
