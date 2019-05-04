@@ -2,10 +2,9 @@ module Test.Main where
 
 import Prelude
 
-import Effect (Effect)
-import Euler (answer)
+import Effect
 import Test.Assert (assert)
 
 main :: Effect Unit
 main = do
-  assert (answer == 233167)
+  assert (123 == 233167)

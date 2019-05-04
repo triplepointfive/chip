@@ -4,7 +4,11 @@ import Prelude
 import Effect (Effect)
 -- import Effect.Console (log)
 
+import Data.Map (Map, lookup)
 import Data.Maybe (Maybe(..))
+import Data.Tuple (Tuple)
+import Control.Semigroupoid ((<<<))
+import Data.String.CodeUnits (toCharArray)
 import Halogen as H
 import Halogen.Aff as HA
 import Halogen.HTML as HH
@@ -39,16 +43,50 @@ type Player = { pos :: Point, direction :: Direction }
 
 type Level = { player :: Player }
 
+
+lvl1 :: Array String
+lvl1 =
+  [ "                                "
+  , "                                "
+  , "                                "
+  , "                                "
+  , "                                "
+  , "                                "
+  , "                                "
+  , "                                "
+  , "          ##### #####           "
+  , "          #   ###   #           "
+  , "          #   # #   #           "
+  , "        ##### # # #####         "
+  , "        #             #         "
+  , "        #   #     #   #         "
+  , "        #####     #####         "
+  , "        #   #     #   #         "
+  , "        #             #         "
+  , "        ###### # ######         "
+  , "            #  #  #             "
+  , "            #  #  #             "
+  , "            #  #  #             "
+  , "            #######             "
+  , "                                "
+  , "                                "
+  , "                                "
+  , "                                "
+  , "                                "
+  , "                                "
+  , "                                "
+  , "                                "
+  , "                                "
+  , "                                "
+  ]
+
+buildLevel :: Array String -> Array (Array Tile)
+buildLevel = map ( map (\c -> if c == ' ' then Floor else Wall) <<< toCharArray)
+
 initLevel = { player: { pos: { x: 0, y: 0 }, direction: Up }}
 
 levelTiles :: Level -> Array (Array Tile)
-levelTiles _ =
-  [ [Wall, Wall, Wall, Wall, Wall]
-  , [Wall, Floor, Floor, Floor, Wall]
-  , [Wall, Floor, Floor, Floor, Wall]
-  , [Wall, Floor, Floor, Floor, Wall]
-  , [Wall, Wall, Wall, Wall, Wall]
-  ]
+levelTiles _ = buildLevel lvl1
 
 tilesRowElem :: forall p i. Array Tile -> HH.HTML p i
 tilesRowElem tiles =
