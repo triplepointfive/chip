@@ -4,30 +4,32 @@ $sprite-x: 8;
 $sprite-y: 12;
 $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
 
-.icon {
-  width: $cell-size;
-  height: $cell-size;
-  position: relative;
-  display: inline-block;
+.level-row {
+  .tile {
+    width: $cell-size;
+    height: $cell-size;
+    position: relative;
+    display: inline-block;
 
-  &::after {
-    background: url(../images/tiles.png);
-    background-size: $sprite-x * $sprite-ratio $sprite-y * $sprite-ratio;
-    content: ' ';
-    position: absolute;
-    width: 100%;
-    height: 100%;
-  }
-
-  &.-floor {
     &::after {
-      background-position: 0 $sprite-ratio * -1;
+      background: url(../images/tiles.png);
+      background-size: $sprite-x * $sprite-ratio $sprite-y * $sprite-ratio;
+      content: ' ';
+      position: absolute;
+      width: 100%;
+      height: 100%;
     }
-  }
 
-  &.-wall {
-    &::after {
-      background-position: $sprite-ratio * -2 $sprite-ratio * -1;
+    &.-floor {
+      &::after {
+        background-position: 0 $sprite-ratio * -1;
+      }
+    }
+
+    &.-wall {
+      &::after {
+        background-position: $sprite-ratio * -2 $sprite-ratio * -1;
+      }
     }
   }
 }

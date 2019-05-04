@@ -22,6 +22,40 @@ type Input = Unit
 
 data Message = Toggled Boolean
 
+data Tile = Floor | Wall
+
+tileClasses :: Tile -> Array String
+tileClasses Floor = ["tile", "-floor"]
+tileClasses Wall = ["tile", "-wall"]
+
+tileToElem :: forall p i. Tile -> HH.HTML p i
+tileToElem tile = HH.span [ HP.classes $ map H.ClassName (tileClasses tile) ] []
+
+type Point = { x :: Int, y :: Int }
+
+data Direction = Up | Down | Left | Right
+
+type Player = { pos :: Point, direction :: Direction }
+
+type Level = { player :: Player }
+
+initLevel = { player: { pos: { x: 0, y: 0 }, direction: Up }}
+
+levelTiles :: Level -> Array (Array Tile)
+levelTiles _ =
+  [ [Wall, Wall, Wall, Wall, Wall]
+  , [Wall, Floor, Floor, Floor, Wall]
+  , [Wall, Floor, Floor, Floor, Wall]
+  , [Wall, Floor, Floor, Floor, Wall]
+  , [Wall, Wall, Wall, Wall, Wall]
+  ]
+
+tilesRowElem :: forall p i. Array Tile -> HH.HTML p i
+tilesRowElem tiles =
+  HH.div
+    [ HP.class_ (H.ClassName "level-row") ]
+    (map tileToElem tiles)
+
 myButton :: forall m. H.Component HH.HTML Query Input Message m
 myButton =
   H.component
@@ -40,15 +74,8 @@ myButton =
     let
       label = if state then "On" else "Off"
     in
-      HH.div
-        [ HP.class_ (H.ClassName "field") ]
-        [
-          HH.span [ HP.class_ (H.ClassName "icon") ] [],
-          HH.span [ HP.class_ (H.ClassName "icon") ] [],
-          HH.span [ HP.classes [H.ClassName "icon", H.ClassName "-floor"] ] [],
-          HH.span [ HP.class_ (H.ClassName "icon") ] [],
-          HH.span [ HP.classes [H.ClassName "icon", H.ClassName "-wall"] ] []
-        ]
+      HH.div []
+        (map tilesRowElem (levelTiles initLevel))
       -- HH.button
       --   [ HP.title label
       --   , HE.onClick (HE.input_ Toggle)
