@@ -18,7 +18,7 @@ type Level = { player :: Player, tiles :: Map Point Tile }
 
 data Color = Red | Cyan | Yellow | Green
 
-data Tile = Wall | Key Color
+data Tile = Wall | Key Color | Door Color
 
 movePlayer :: Direction -> Level -> Level
 movePlayer direction level = movePlayerTo (adjustPoint level.player.pos direction) level
@@ -27,9 +27,10 @@ movePlayerTo :: Point -> Level -> Level
 movePlayerTo { x, y } level
   | x < 0 || y < 0 || x >= mapSize || y >= mapSize = level
   | otherwise = case lookup { x, y } level.tiles of
-      Just Wall    -> level
-      Just (Key _) -> pickUpKey (level { player { pos = { x, y } } })
-      Nothing      -> level { player { pos = { x, y } } }
+      Just Wall     -> level
+      Just (Key _)  -> pickUpKey (level { player { pos = { x, y } } })
+      Just (Door _) -> level
+      Nothing       -> level { player { pos = { x, y } } }
 
 pickUpKey :: Level -> Level
 pickUpKey lvl = lvl
@@ -57,6 +58,10 @@ addCell p 'r' = insertTile p (Key Red)
 addCell p 'c' = insertTile p (Key Cyan)
 addCell p 'y' = insertTile p (Key Yellow)
 addCell p 'g' = insertTile p (Key Green)
+addCell p 'R' = insertTile p (Door Red)
+addCell p 'C' = insertTile p (Door Cyan)
+addCell p 'Y' = insertTile p (Door Yellow)
+addCell p 'G' = insertTile p (Door Green)
 addCell p '@' = _ { player { pos = p } }
 addCell _   _ = identity
 

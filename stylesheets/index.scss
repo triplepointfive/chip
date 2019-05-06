@@ -66,6 +66,29 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
       }
     }
 
+    &.-door {
+      &.-red {
+        &::after {
+          background-position: 0 $sprite-ratio * -4;
+        }
+      }
+      &.-cyan {
+        &::after {
+          background-position: $sprite-ratio * -1 $sprite-ratio * -4;
+        }
+      }
+      &.-yellow {
+        &::after {
+          background-position: $sprite-ratio * -2 $sprite-ratio * -4;
+        }
+      }
+      &.-green {
+        &::after {
+          background-position: $sprite-ratio * -3 $sprite-ratio * -4;
+        }
+      }
+    }
+
     &.-floor {
       &::after {
         background-position: 0 $sprite-ratio * -1;
