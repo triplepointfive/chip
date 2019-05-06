@@ -16,7 +16,9 @@ type Player = { pos :: Point, direction :: Direction }
 
 type Level = { player :: Player, tiles :: Map Point Tile }
 
-data Tile = Wall
+data Color = Red | Cyan | Yellow | Green
+
+data Tile = Wall | Key Color
 
 movePlayer :: Direction -> Level -> Level
 movePlayer direction level = movePlayerTo (adjustPoint level.player.pos direction) level
@@ -25,8 +27,12 @@ movePlayerTo :: Point -> Level -> Level
 movePlayerTo { x, y } level
   | x < 0 || y < 0 || x >= mapSize || y >= mapSize = level
   | otherwise = case lookup { x, y } level.tiles of
-      Just Wall -> level
-      Nothing   -> level { player { pos = { x, y } } }
+      Just Wall    -> level
+      Just (Key _) -> pickUpKey (level { player { pos = { x, y } } })
+      Nothing      -> level { player { pos = { x, y } } }
+
+pickUpKey :: Level -> Level
+pickUpKey lvl = lvl
 
 adjustPoint :: Point -> Direction -> Point
 adjustPoint { x, y } Up    = { x, y: y - 1 }
@@ -45,6 +51,14 @@ buildLevel =
   <<< addIndex <<< map (addIndex <<< toCharArray)
 
 addCell :: Point -> Char -> Level -> Level
-addCell p '#' l = l { tiles = insert p Wall l.tiles}
-addCell p '@' l = l { player { pos = p } }
-addCell _   _ l = l
+addCell p ' ' = identity
+addCell p '#' = insertTile p Wall
+addCell p 'r' = insertTile p (Key Red)
+addCell p 'c' = insertTile p (Key Cyan)
+addCell p 'y' = insertTile p (Key Yellow)
+addCell p 'g' = insertTile p (Key Green)
+addCell p '@' = _ { player { pos = p } }
+addCell _   _ = identity
+
+insertTile :: Point -> Tile -> Level -> Level
+insertTile p tile l = l { tiles = insert p tile l.tiles}

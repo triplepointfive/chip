@@ -32,6 +32,10 @@ rangeSlice r { x, y } =
 tileClasses :: DisplayTile -> Array String
 tileClasses Floor = ["tile", "-floor"]
 tileClasses (Tile Wall) = ["tile", "-wall"]
+tileClasses (Tile (Key Red)) = ["tile", "-key", "-red"]
+tileClasses (Tile (Key Cyan)) = ["tile", "-key", "-cyan"]
+tileClasses (Tile (Key Yellow)) = ["tile", "-key", "-yellow"]
+tileClasses (Tile (Key Green)) = ["tile", "-key", "-green"]
 tileClasses (Boy Down) = ["tile", "-boy", "-down"]
 tileClasses (Boy Left) = ["tile", "-boy", "-left"]
 tileClasses (Boy Up) = ["tile", "-boy", "-up"]

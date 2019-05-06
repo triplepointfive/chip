@@ -14,7 +14,7 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
     &::after {
       background: url(../images/tiles.png);
       background-size: $sprite-x * $sprite-ratio $sprite-y * $sprite-ratio;
-      content: ' ';
+      content: " ";
       position: absolute;
       width: 100%;
       height: 100%;
@@ -39,6 +39,29 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
       &.-right {
         &::after {
           background-position: 0 $sprite-ratio * -3;
+        }
+      }
+    }
+
+    &.-key {
+      &.-red {
+        &::after {
+          background-position: 0 $sprite-ratio * -5;
+        }
+      }
+      &.-cyan {
+        &::after {
+          background-position: $sprite-ratio * -1 $sprite-ratio * -5;
+        }
+      }
+      &.-yellow {
+        &::after {
+          background-position: $sprite-ratio * -2 $sprite-ratio * -5;
+        }
+      }
+      &.-green {
+        &::after {
+          background-position: $sprite-ratio * -3 $sprite-ratio * -5;
         }
       }
     }
