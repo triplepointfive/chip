@@ -3,7 +3,7 @@ module Level where
 import Utils
 
 import Data.Array (foldl, replicate, range, zip)
-import Data.Map (Map, empty, insert)
+import Data.Map (Map, lookup, empty, insert)
 import Data.Maybe (Maybe(..))
 import Data.String.CodeUnits (toCharArray)
 import Data.Tuple (Tuple(..))
@@ -24,7 +24,9 @@ movePlayer direction level = movePlayerTo (adjustPoint level.player.pos directio
 movePlayerTo :: Point -> Level -> Level
 movePlayerTo { x, y } level
   | x < 0 || y < 0 || x >= mapSize || y >= mapSize = level
-  | otherwise                            = level { player { pos = { x, y } } }
+  | otherwise = case lookup { x, y } level.tiles of
+      Just Wall -> level
+      Nothing   -> level { player { pos = { x, y } } }
 
 adjustPoint :: Point -> Direction -> Point
 adjustPoint { x, y } Up    = { x, y: y - 1 }
