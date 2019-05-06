@@ -75,7 +75,12 @@ initLevel =
 buildLevel :: Array String -> Level
 buildLevel =
   foldl
-    (\level (Tuple y row) -> foldl (\level (Tuple x c) -> addCell { x: x, y: y } c level) level row)
+    (\level (Tuple y row) ->
+      foldl
+        (\level (Tuple x c) -> addCell { x: x, y: y } c level)
+        level
+        row
+    )
     initLevel
   <<< addIndex <<< map (addIndex <<< toCharArray)
 
