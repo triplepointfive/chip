@@ -1,8 +1,10 @@
 module Level where
 
-import Data.Array (mapWithIndex, foldl, replicate, range, zip)
-import Data.Map (Map, lookup, empty, insert)
-import Data.Maybe (Maybe(..), fromMaybe)
+import Utils
+
+import Data.Array (foldl, replicate, range, zip)
+import Data.Map (Map, empty, insert)
+import Data.Maybe (Maybe(..))
 import Data.String.CodeUnits (toCharArray)
 import Data.Tuple (Tuple(..))
 import Prelude
@@ -10,34 +12,11 @@ import Prelude
 mapSize :: Int
 mapSize = 32
 
-type Point = { x :: Int, y :: Int }
-
-data Direction = Up | Down | Left | Right
-
 type Player = { pos :: Point, direction :: Direction }
 
 type Level = { player :: Player, tiles :: Map Point Tile }
 
-data Tile = Floor | Wall | Boy Direction
-
-levelTiles :: Int -> Level -> Array (Array Tile)
-levelTiles radius level =
-  map
-    (\(Tuple y row) -> map (\x -> buildTile { x: x, y: y } level) row)
-    (rangeSlice radius level.player.pos)
-
-rangeSlice :: Int -> Point ->  Array (Tuple Int (Array Int))
-rangeSlice r { x, y } =
-  map (flip Tuple xRange) (range (from y) (d + from y))
-  where
-    xRange = range (from x) (d + from x)
-    d = 2 * r - 1
-    from c = min (max 0 (c - r)) (mapSize - d)
-
-buildTile :: Point -> Level -> Tile
-buildTile p { player: { pos }, tiles }
-  | p == pos  = Boy Down
-  | otherwise = fromMaybe Floor (lookup p tiles)
+data Tile = Wall
 
 movePlayer :: Direction -> Level -> Level
 movePlayer direction level = movePlayerTo (adjustPoint level.player.pos direction) level
@@ -67,8 +46,3 @@ addCell :: Point -> Char -> Level -> Level
 addCell p '#' l = l { tiles = insert p Wall l.tiles}
 addCell p '@' l = l { player { pos = p } }
 addCell _   _ l = l
-
--- | Map a set to the same set but indexed so fst is the index and snd is
--- | element of the set.
-addIndex :: forall a. Array a -> Array (Tuple Int a)
-addIndex a = mapWithIndex Tuple a

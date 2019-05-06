@@ -1,7 +1,9 @@
 module Main where
 
+import Display
 import Level
-import Keyboard as K
+import Keyboard (onKeyUp)
+import Utils
 
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
@@ -32,23 +34,6 @@ type Input = Unit
 
 type Message = Void
 
-tileClasses :: Tile -> Array String
-tileClasses Floor = ["tile", "-floor"]
-tileClasses Wall = ["tile", "-wall"]
-tileClasses (Boy Down) = ["tile", "-boy", "-down"]
-tileClasses (Boy Left) = ["tile", "-boy", "-left"]
-tileClasses (Boy Up) = ["tile", "-boy", "-up"]
-tileClasses (Boy Right) = ["tile", "-boy", "-right"]
-
-tileToElem :: forall p i. Tile -> HH.HTML p i
-tileToElem tile = HH.span [ HP.classes $ map H.ClassName (tileClasses tile) ] []
-
-tilesRowElem :: forall p i. Array Tile -> HH.HTML p i
-tilesRowElem tiles =
-  HH.div
-    [ HP.class_ (H.ClassName "level-row") ]
-    (map tileToElem tiles)
-
 mainComponent :: forall m. H.Component HH.HTML Query Input Message Aff
 mainComponent =
   H.lifecycleComponent
@@ -77,7 +62,7 @@ mainComponent =
   eval :: Query ~> H.ComponentDSL State Query Message Aff
   eval (Init next) = do
     document <- H.liftEffect $ DOM.document =<< DOM.window
-    H.subscribe $ ES.eventSource' (K.onKeyUp document) (Just <<< H.request <<< HandleKey)
+    H.subscribe $ ES.eventSource' (onKeyUp document) (Just <<< H.request <<< HandleKey)
     pure next
   eval (Move direction next) = do
     state <- H.get
