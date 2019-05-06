@@ -13,15 +13,17 @@ import Data.String.CodeUnits (toCharArray)
 import Halogen as H
 import Halogen.Aff as HA
 import Halogen.HTML as HH
--- import Halogen.HTML.Events as HE
+import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.VDom.Driver (runUI)
 
-type State = Boolean
+mapSize :: Int
+mapSize = 32
+
+type State = Level
 
 data Query a
-  = Toggle a
-  | IsOn (Boolean -> a)
+  = Move Direction a
 
 type Input = Unit
 
@@ -48,8 +50,8 @@ type Player = { pos :: Point, direction :: Direction }
 
 type Level = { player :: Player, tiles :: Map Point Tile }
 
-buildLevel' :: Array String -> Level
-buildLevel' =
+buildLevel :: Array String -> Level
+buildLevel =
   foldl
     (\level (Tuple y row) -> foldl (\level (Tuple x c) -> addCell { x: x, y: y } c level) level row)
     initLevel
@@ -69,7 +71,7 @@ initLevel :: Level
 initLevel = { player: { pos: { x: 0, y: 0 }, direction: Down }, tiles: empty }
 
 levelTiles :: Level -> Array (Array Tile)
-levelTiles lvl = mapWithIndex (\y r -> map (\x -> buildTile { x: x, y: y } lvl) r) (replicate 32 (range 0 31))
+levelTiles lvl = mapWithIndex (\y r -> map (\x -> buildTile { x: x, y: y } lvl) r) (replicate mapSize (range 0 (mapSize - 1))
 
 buildTile :: Point -> Level -> Tile
 buildTile p { player: { pos }, tiles }
@@ -82,8 +84,19 @@ tilesRowElem tiles =
     [ HP.class_ (H.ClassName "level-row") ]
     (map tileToElem tiles)
 
-lvl1_ :: Level
-lvl1_ = buildLevel' lvl1
+movePlayer :: Direction -> Level -> Level
+movePlayer direction level = movePlayerTo (adjustPoint level.player.pos direction) level
+
+movePlayerTo :: Point -> Level -> Level
+movePlayerTo { x, y } level
+  | x < 0 || y < 0 || x >= mapSize || y >= mapSize = level
+  | otherwise                            = level { player { pos = { x, y } } }
+
+adjustPoint :: Point -> Direction -> Point
+adjustPoint { x, y } Up    = { x, y: y - 1 }
+adjustPoint { x, y } Left  = { x: x - 1, y }
+adjustPoint { x, y } Down  = { x, y: y + 1 }
+adjustPoint { x, y } Right = { x: x + 1, y }
 
 myButton :: forall m. H.Component HH.HTML Query Input Message m
 myButton =
@@ -96,32 +109,25 @@ myButton =
   where
 
   initialState :: State
-  initialState = false
+  initialState = buildLevel lvl1
 
   render :: State -> H.ComponentHTML Query
   render state =
-    let
-      label = if state then "On" else "Off"
-    in
-      HH.div []
-        (map tilesRowElem (levelTiles lvl1_))
-      -- HH.button
-      --   [ HP.title label
-      --   , HE.onClick (HE.input_ Toggle)
-      --   ]
-      --   [ HH.text label ]
+    HH.div []
+      [ HH.div [] (map tilesRowElem (levelTiles state))
+      , HH.button [ HP.title "u" , HE.onClick (HE.input_ (Move Down)) ] [ HH.text "D" ]
+      , HH.button [ HP.title "u" , HE.onClick (HE.input_ (Move Left)) ] [ HH.text "L" ]
+      , HH.button [ HP.title "u" , HE.onClick (HE.input_ (Move Up)) ] [ HH.text "U" ]
+      , HH.button [ HP.title "u" , HE.onClick (HE.input_ (Move Right)) ] [ HH.text "R" ]
+      ]
 
   eval :: Query ~> H.ComponentDSL State Query Message m
-  eval = case _ of
-    Toggle next -> do
-      state <- H.get
-      let nextState = not state
-      H.put nextState
-      H.raise $ Toggled nextState
-      pure next
-    IsOn reply -> do
-      state <- H.get
-      pure (reply state)
+  eval (Move direction next) = do
+    state <- H.get
+    let nextState = movePlayer direction state
+    H.put nextState
+    -- H.raise $ Toggled nextState
+    pure next
 
 -- main :: Effect Unit
 -- main = do
@@ -131,8 +137,6 @@ main :: Effect Unit
 main = HA.runHalogenAff do
   body <- HA.awaitBody
   runUI myButton unit body
-
-
 
 lvl1 :: Array String
 lvl1 =
