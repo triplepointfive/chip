@@ -67,7 +67,7 @@ mainComponent =
   render :: State -> H.ComponentHTML Query
   render state =
     HH.div []
-      [ HH.div [] (map tilesRowElem (levelTiles state))
+      [ HH.div [] (map tilesRowElem (levelTiles 4 state))
       , HH.button [ HP.title "u" , HE.onClick (HE.input_ (Move Down)) ] [ HH.text "D" ]
       , HH.button [ HP.title "u" , HE.onClick (HE.input_ (Move Left)) ] [ HH.text "L" ]
       , HH.button [ HP.title "u" , HE.onClick (HE.input_ (Move Up)) ] [ HH.text "U" ]
@@ -85,18 +85,17 @@ mainComponent =
     H.put nextState
     -- H.raise $ Toggled nextState
     pure next
-  eval (HandleKey ev reply)
-    | KE.key ev == "ArrowDown"  = moveEvent ev reply Down
-    | KE.key ev == "ArrowLeft"  = moveEvent ev reply Left
-    | KE.key ev == "ArrowUp"    = moveEvent ev reply Up
-    | KE.key ev == "ArrowRight" = moveEvent ev reply Right
-    | otherwise =
+  eval (HandleKey ev reply) = case KE.key ev of
+      "ArrowDown"  -> modifyState (movePlayer Down)
+      "ArrowLeft"  -> modifyState (movePlayer Left)
+      "ArrowUp"    -> modifyState (movePlayer Up)
+      "ArrowRight" -> modifyState (movePlayer Right)
+      otherwise    -> pure (reply H.Listening)
+    where
+      modifyState f = do
+        H.liftEffect $ E.preventDefault (KE.toEvent ev)
+        H.modify_ f
         pure (reply H.Listening)
-
-moveEvent ev reply direction = do
-  H.liftEffect $ E.preventDefault (KE.toEvent ev)
-  H.modify_ (movePlayer direction)
-  pure (reply H.Listening)
 
 main :: Effect Unit
 main = HA.runHalogenAff do
