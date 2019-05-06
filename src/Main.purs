@@ -2,20 +2,26 @@ module Main where
 
 import Prelude
 import Effect (Effect)
--- import Effect.Console (log)
+import Effect.Aff (Aff)
 
 import Data.Map (Map, lookup, empty, insert)
 import Data.Array (mapWithIndex, foldl, replicate, range)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple (Tuple(..))
--- import Control.Semigroupoid ((<<<))
 import Data.String.CodeUnits (toCharArray)
 import Halogen as H
 import Halogen.Aff as HA
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Halogen.Query.EventSource as ES
 import Halogen.VDom.Driver (runUI)
+import Keyboard as K
+import Web.Event.Event as E
+import Web.HTML (window) as DOM
+import Web.HTML.Window (document) as DOM
+import Web.UIEvent.KeyboardEvent (KeyboardEvent)
+import Web.UIEvent.KeyboardEvent as KE
 
 mapSize :: Int
 mapSize = 32
@@ -23,7 +29,9 @@ mapSize = 32
 type State = Level
 
 data Query a
-  = Move Direction a
+  = Init a
+  | Move Direction a
+  | HandleKey KeyboardEvent (H.SubscribeStatus -> a)
 
 type Input = Unit
 
@@ -71,7 +79,7 @@ initLevel :: Level
 initLevel = { player: { pos: { x: 0, y: 0 }, direction: Down }, tiles: empty }
 
 levelTiles :: Level -> Array (Array Tile)
-levelTiles lvl = mapWithIndex (\y r -> map (\x -> buildTile { x: x, y: y } lvl) r) (replicate mapSize (range 0 (mapSize - 1))
+levelTiles lvl = mapWithIndex (\y r -> map (\x -> buildTile { x: x, y: y } lvl) r) (replicate mapSize (range 0 (mapSize - 1)))
 
 buildTile :: Point -> Level -> Tile
 buildTile p { player: { pos }, tiles }
@@ -98,12 +106,14 @@ adjustPoint { x, y } Left  = { x: x - 1, y }
 adjustPoint { x, y } Down  = { x, y: y + 1 }
 adjustPoint { x, y } Right = { x: x + 1, y }
 
-myButton :: forall m. H.Component HH.HTML Query Input Message m
+myButton :: forall m. H.Component HH.HTML Query Input Message Aff
 myButton =
-  H.component
+  H.lifecycleComponent
     { initialState: const initialState
     , render
     , eval
+    , initializer: Just (H.action Init)
+    , finalizer: Nothing
     , receiver: const Nothing
     }
   where
@@ -121,17 +131,29 @@ myButton =
       , HH.button [ HP.title "u" , HE.onClick (HE.input_ (Move Right)) ] [ HH.text "R" ]
       ]
 
-  eval :: Query ~> H.ComponentDSL State Query Message m
+  eval :: Query ~> H.ComponentDSL State Query Message Aff
+  eval (Init next) = do
+    document <- H.liftEffect $ DOM.document =<< DOM.window
+    H.subscribe $ ES.eventSource' (K.onKeyUp document) (Just <<< H.request <<< HandleKey)
+    pure next
   eval (Move direction next) = do
     state <- H.get
     let nextState = movePlayer direction state
     H.put nextState
     -- H.raise $ Toggled nextState
     pure next
+  eval (HandleKey ev reply)
+    | KE.key ev == "ArrowDown"  = moveEvent ev reply Down
+    | KE.key ev == "ArrowLeft"  = moveEvent ev reply Left
+    | KE.key ev == "ArrowUp"    = moveEvent ev reply Up
+    | KE.key ev == "ArrowRight" = moveEvent ev reply Right
+    | otherwise =
+        pure (reply H.Listening)
 
--- main :: Effect Unit
--- main = do
---   log $ "Hello sailor!" <> show answer
+moveEvent ev reply direction = do
+  H.liftEffect $ E.preventDefault (KE.toEvent ev)
+  H.modify_ (movePlayer direction)
+  pure (reply H.Listening)
 
 main :: Effect Unit
 main = HA.runHalogenAff do
