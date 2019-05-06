@@ -3,7 +3,7 @@ module Level where
 import Utils
 
 import Data.Array (foldl, replicate, range, zip)
-import Data.Map (Map, lookup, empty, insert)
+import Data.Map (Map, lookup, empty, insert, delete)
 import Data.Maybe (Maybe(..))
 import Data.String.CodeUnits (toCharArray)
 import Data.Tuple (Tuple(..))
@@ -12,9 +12,13 @@ import Prelude
 mapSize :: Int
 mapSize = 32
 
+type Inventory = { red :: Int, cyan :: Int, yellow :: Int, green :: Boolean }
+
+type Tiles = Map Point Tile
+
 type Player = { pos :: Point, direction :: Direction }
 
-type Level = { player :: Player, tiles :: Map Point Tile }
+type Level = { player :: Player, tiles :: Tiles, inventory :: Inventory }
 
 data Color = Red | Cyan | Yellow | Green
 
@@ -28,12 +32,25 @@ movePlayerTo { x, y } level
   | x < 0 || y < 0 || x >= mapSize || y >= mapSize = level
   | otherwise = case lookup { x, y } level.tiles of
       Just Wall     -> level
-      Just (Key _)  -> pickUpKey (level { player { pos = { x, y } } })
+      Just (Key c)  -> pickUpKey c (level { player { pos = { x, y } } })
       Just (Door _) -> level
       Nothing       -> level { player { pos = { x, y } } }
 
-pickUpKey :: Level -> Level
-pickUpKey lvl = lvl
+pickUpKey :: Color -> Level -> Level
+pickUpKey color level =
+  level
+    { tiles = removeTile level.player.pos level.tiles
+    , inventory = addKey color level.inventory
+    }
+
+addKey :: Color -> Inventory -> Inventory
+addKey Red    inv = inv { red = inv.red + 1 }
+addKey Cyan   inv = inv { cyan = inv.cyan + 1 }
+addKey Yellow inv = inv { yellow = inv.yellow + 1 }
+addKey Green  inv = inv { green = true }
+
+removeTile :: Point -> Tiles -> Tiles
+removeTile pos = delete pos
 
 adjustPoint :: Point -> Direction -> Point
 adjustPoint { x, y } Up    = { x, y: y - 1 }
@@ -41,8 +58,19 @@ adjustPoint { x, y } Left  = { x: x - 1, y }
 adjustPoint { x, y } Down  = { x, y: y + 1 }
 adjustPoint { x, y } Right = { x: x + 1, y }
 
+initInventory :: Inventory
+initInventory =
+  { red: 0
+  , cyan: 0
+  , yellow: 0
+  , green: false }
+
 initLevel :: Level
-initLevel = { player: { pos: { x: 0, y: 0 }, direction: Down }, tiles: empty }
+initLevel =
+  { player: { pos: { x: 0, y: 0 }, direction: Down }
+  , tiles: empty
+  , inventory: initInventory
+  }
 
 buildLevel :: Array String -> Level
 buildLevel =
