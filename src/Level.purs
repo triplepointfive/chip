@@ -72,8 +72,8 @@ initLevel =
   , inventory: initInventory
   }
 
-buildLevel :: Array String -> Level
-buildLevel =
+build :: Array String -> Level
+build =
   foldl
     (\level (Tuple y row) ->
       foldl

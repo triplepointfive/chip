@@ -1,4 +1,4 @@
-module Component.Inventory where
+module Component.Inventory (component, Query(..), State(..)) where
 
 import Level (Inventory)
 
@@ -16,8 +16,8 @@ data Query a = HandleInput State a
 
 type Input = Inventory
 
-inventoryComponent :: forall m. H.Component HH.HTML Query Input Void m
-inventoryComponent =
+component :: forall m. H.Component HH.HTML Query Input Void m
+component =
   H.component
     { initialState: identity
     , render
