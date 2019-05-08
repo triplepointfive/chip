@@ -1,6 +1,6 @@
 module Main where
 
-import Component.Game (gameComponent)
+import Component.Game as Game
 
 import Effect (Effect)
 import Prelude
@@ -11,4 +11,4 @@ import Halogen.VDom.Driver (runUI)
 main :: Effect Unit
 main = HA.runHalogenAff do
   body <- HA.awaitBody
-  runUI gameComponent unit body
+  runUI Game.component unit body

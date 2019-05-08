@@ -25,23 +25,41 @@ data Color = Red | Cyan | Yellow | Green
 data Tile = Wall | Key Color | Door Color
 
 movePlayer :: Direction -> Level -> Level
-movePlayer direction level = movePlayerTo (adjustPoint level.player.pos direction) level
+movePlayer direction level =
+  movePlayerTo (adjustPoint level.player.pos direction) level
 
 movePlayerTo :: Point -> Level -> Level
 movePlayerTo { x, y } level
   | x < 0 || y < 0 || x >= mapSize || y >= mapSize = level
   | otherwise = case lookup { x, y } level.tiles of
-      Just Wall     -> level
-      Just (Key c)  -> pickUpKey c (level { player { pos = { x, y } } })
-      Just (Door _) -> level
-      Nothing       -> level { player { pos = { x, y } } }
+      Just Wall         -> level
+      Just (Key color)  -> pickUpKey color (level { player { pos = { x, y } } })
+      Just (Door color) -> openDoor { x, y } color level
+      Nothing           -> level { player { pos = { x, y } } }
+
+openDoor :: Point -> Color -> Level -> Level
+openDoor pos color level
+  | hasKey color level.inventory = removeCurrentTile (withdrawKey color (level { player { pos = pos } }))
+  | otherwise                    = level
+
+withdrawKey :: Color -> Level -> Level
+withdrawKey Red l    = l { inventory { red = l.inventory.red - 1 } }
+withdrawKey Cyan l   = l { inventory { cyan = l.inventory.cyan - 1 } }
+withdrawKey Yellow l = l { inventory { yellow = l.inventory.yellow - 1 } }
+withdrawKey Green l  = l
+
+hasKey :: Color -> Inventory -> Boolean
+hasKey Red { red }       = red > 0
+hasKey Cyan { cyan }     = cyan > 0
+hasKey Yellow { yellow } = yellow > 0
+hasKey Green { green }   = green
+
+removeCurrentTile :: Level -> Level
+removeCurrentTile l = l { tiles = removeTile l.player.pos l.tiles }
 
 pickUpKey :: Color -> Level -> Level
-pickUpKey color level =
-  level
-    { tiles = removeTile level.player.pos level.tiles
-    , inventory = addKey color level.inventory
-    }
+pickUpKey color level = removeCurrentTile $
+  level { inventory = addKey color level.inventory }
 
 addKey :: Color -> Inventory -> Inventory
 addKey Red    inv = inv { red = inv.red + 1 }

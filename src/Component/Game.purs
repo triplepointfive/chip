@@ -1,4 +1,4 @@
-module Component.Game (gameComponent, Query(..)) where
+module Component.Game (component, Query(..)) where
 
 import Component.Inventory as Inventory
 import Component.Keyboard as Keyboard
@@ -28,8 +28,8 @@ type State = Level.Level
 type ChildSlot = Unit \/ Unit \/ Void
 type ChildQuery = Inventory.Query <\/> Keyboard.Query <\/> Const Void
 
-gameComponent :: H.Component HH.HTML Query Unit Void Aff
-gameComponent =
+component :: H.Component HH.HTML Query Unit Void Aff
+component =
   H.parentComponent
     { initialState: const initialState
     , render
