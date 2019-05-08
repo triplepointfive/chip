@@ -45,6 +45,7 @@ tileClasses (Boy Down) = ["tile", "-boy", "-down"]
 tileClasses (Boy Left) = ["tile", "-boy", "-left"]
 tileClasses (Boy Up) = ["tile", "-boy", "-up"]
 tileClasses (Boy Right) = ["tile", "-boy", "-right"]
+tileClasses (Tile Socket) = ["tile", "-socket"]
 
 tileToElem :: forall p i. DisplayTile -> HH.HTML p i
 tileToElem tile = HH.span [ HP.classes $ map H.ClassName (tileClasses tile) ] []

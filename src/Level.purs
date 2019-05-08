@@ -27,7 +27,7 @@ type Level =
 
 data Color = Red | Cyan | Yellow | Green
 
-data Tile = Wall | Key Color | Door Color | Chip
+data Tile = Wall | Key Color | Door Color | Chip | Socket
 
 movePlayer :: Direction -> Level -> Level
 movePlayer direction level =
@@ -39,9 +39,16 @@ movePlayerTo { x, y } level
   | otherwise = case lookup { x, y } level.tiles of
       Just Wall         -> level
       Just Chip         -> pickChip { x, y } level
+      Just Socket       -> moveToSocket { x, y } level
       Just (Key color)  -> pickUpKey color (level { player { pos = { x, y } } })
       Just (Door color) -> openDoor { x, y } color level
       Nothing           -> level { player { pos = { x, y } } }
+
+moveToSocket :: Point -> Level -> Level
+moveToSocket pos level
+  | level.chipsLeft == 0 = removeCurrentTile (level { player { pos = pos } })
+  | otherwise            = level
+
 
 pickChip :: Point -> Level -> Level
 pickChip pos level = countChip (removeCurrentTile (level { player { pos = pos } }))
@@ -130,6 +137,7 @@ addCell p 'C' = insertTile p (Door Cyan)
 addCell p 'Y' = insertTile p (Door Yellow)
 addCell p 'G' = insertTile p (Door Green)
 addCell p '@' = _ { player { pos = p } }
+addCell p '-' = insertTile p Socket
 addCell _   _ = identity
 
 insertTile :: Point -> Tile -> Level -> Level

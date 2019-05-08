@@ -106,5 +106,11 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
         background-position: $sprite-ratio * -3 $sprite-ratio * -1;
       }
     }
+
+    &.-socket {
+      &::after {
+        background-position: $sprite-ratio * -4 $sprite-ratio * -1;
+      }
+    }
   }
 }
