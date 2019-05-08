@@ -100,5 +100,11 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
         background-position: $sprite-ratio * -2 $sprite-ratio * -1;
       }
     }
+
+    &.-chip {
+      &::after {
+        background-position: $sprite-ratio * -3 $sprite-ratio * -1;
+      }
+    }
   }
 }

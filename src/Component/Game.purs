@@ -11,7 +11,7 @@ import Data.Const (Const)
 import Data.Functor.Coproduct.Nested (type (<\/>))
 import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff)
-import Prelude (type (~>), Unit, Void, absurd, const, discard, map, pure, unit)
+import Prelude (type (~>), Unit, Void, absurd, const, discard, map, pure, unit, show)
 
 import Halogen as H
 import Halogen.Component.ChildPath (cp1, cp2)
@@ -45,6 +45,7 @@ component =
   render state =
     HH.div_
       [ HH.div [] (map tilesRowElem (levelTiles 4 state))
+      , HH.div_ [ HH.text (show state.chipsLeft) ]
       , HH.button [ HP.title "u" , HE.onClick (HE.input_ (Move Down)) ] [ HH.text "D" ]
       , HH.button [ HP.title "u" , HE.onClick (HE.input_ (Move Left)) ] [ HH.text "L" ]
       , HH.button [ HP.title "u" , HE.onClick (HE.input_ (Move Up)) ] [ HH.text "U" ]
@@ -83,16 +84,16 @@ lvl1 =
   , "                                "
   , "          ##### #####           "
   , "          #   ###   #           "
-  , "          #   # #   #           "
+  , "          # + # # + #           "
   , "        #####G# #G#####         "
   , "        # y C     R y #         "
-  , "        #   #c   r#   #         "
-  , "        #####  @  #####         "
-  , "        #   #c   r#   #         "
-  , "        #   R     C   #         "
+  , "        # + #c   r# + #         "
+  , "        #####+ @ +#####         "
+  , "        # + #c   r# + #         "
+  , "        #   R  +  C   #         "
   , "        ######Y#Y######         "
   , "            #  #  #             "
-  , "            #  #  #             "
+  , "            # +#+ #             "
   , "            #  #g #             "
   , "            #######             "
   , "                                "

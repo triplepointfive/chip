@@ -18,11 +18,16 @@ type Tiles = Map Point Tile
 
 type Player = { pos :: Point, direction :: Direction }
 
-type Level = { player :: Player, tiles :: Tiles, inventory :: Inventory }
+type Level =
+  { player :: Player
+  , tiles :: Tiles
+  , inventory :: Inventory
+  , chipsLeft :: Int
+  }
 
 data Color = Red | Cyan | Yellow | Green
 
-data Tile = Wall | Key Color | Door Color
+data Tile = Wall | Key Color | Door Color | Chip
 
 movePlayer :: Direction -> Level -> Level
 movePlayer direction level =
@@ -33,14 +38,23 @@ movePlayerTo { x, y } level
   | x < 0 || y < 0 || x >= mapSize || y >= mapSize = level
   | otherwise = case lookup { x, y } level.tiles of
       Just Wall         -> level
+      Just Chip         -> pickChip { x, y } level
       Just (Key color)  -> pickUpKey color (level { player { pos = { x, y } } })
       Just (Door color) -> openDoor { x, y } color level
       Nothing           -> level { player { pos = { x, y } } }
+
+pickChip :: Point -> Level -> Level
+pickChip pos level = countChip (removeCurrentTile (level { player { pos = pos } }))
 
 openDoor :: Point -> Color -> Level -> Level
 openDoor pos color level
   | hasKey color level.inventory = removeCurrentTile (withdrawKey color (level { player { pos = pos } }))
   | otherwise                    = level
+
+countChip :: Level -> Level
+countChip level
+  | level.chipsLeft == 0 = level
+  | otherwise            = level { chipsLeft = level.chipsLeft - 1 }
 
 withdrawKey :: Color -> Level -> Level
 withdrawKey Red l    = l { inventory { red = l.inventory.red - 1 } }
@@ -88,6 +102,7 @@ initLevel =
   { player: { pos: { x: 0, y: 0 }, direction: Down }
   , tiles: empty
   , inventory: initInventory
+  , chipsLeft: 11
   }
 
 build :: Array String -> Level
@@ -105,6 +120,7 @@ build =
 addCell :: Point -> Char -> Level -> Level
 addCell p ' ' = identity
 addCell p '#' = insertTile p Wall
+addCell p '+' = insertTile p Chip
 addCell p 'r' = insertTile p (Key Red)
 addCell p 'c' = insertTile p (Key Cyan)
 addCell p 'y' = insertTile p (Key Yellow)
