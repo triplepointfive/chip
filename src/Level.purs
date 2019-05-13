@@ -158,11 +158,12 @@ type Blank =
   { grid :: Array String
   , hint :: Maybe String
   , name :: String
+  , chips :: Int
   }
 
 -- | Builds a level from its blank
 build :: Blank -> Level
-build { grid, hint } =
+build { grid, hint, chips } =
   foldl
     (\level (Tuple y row) ->
       foldr
@@ -180,7 +181,7 @@ build { grid, hint } =
     { player: { pos: { x: 0, y: 0 }, direction: Down }
     , tiles: empty
     , inventory: initInventory
-    , chipsLeft: 11
+    , chipsLeft: chips
     , hint
     }
 

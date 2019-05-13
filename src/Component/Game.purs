@@ -115,4 +115,46 @@ lvl1 =
       ]
   , hint: Just "Collect chips to get past the chip socket. Use keys to open doors."
   , name: "LESSON 1"
+  , chips: 11
+  }
+
+lvl2 :: Level.Blank
+lvl2 =
+  { grid:
+      [ "                                "
+      , "                                "
+      , "                                "
+      , "                                "
+      , "                                "
+      , "       #######                  "
+      , "       #  +  #                  "
+      , "       #     #                  "
+      , "       #  #  ##########         "
+      , "     ###  #   ~~     +#         "
+      , "     #<-  ##  ~~ 00@? #         "
+      , "     ###  #   ~~     +#         "
+      , "       #  #  ##########         "
+      , "       #     #                  "
+      , "       #  +  #                  "
+      , "       #######                  "
+      , "                                "
+      , "                                "
+      , "                                "
+      , "                                "
+      , "                                "
+      , "                                "
+      , "                                "
+      , "                                "
+      , "                                "
+      , "                                "
+      , "                                "
+      , "                                "
+      , "                                "
+      , "                                "
+      , "                                "
+      , "                                "
+      ]
+  , hint: Just "Push blocks into water to make dirt. Watch out for monsters."
+  , name: "LESSON 2"
+  , chips: 4
   }
