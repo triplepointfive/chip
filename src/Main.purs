@@ -9,9 +9,10 @@ import Halogen.Aff as HA
 import Halogen.VDom.Driver (runUI)
 
 import Component.Game as Game
+import Lib (getJSON)
 
 -- | Outputs main game component
 main :: Effect Unit
 main = HA.runHalogenAff do
   body <- HA.awaitBody
-  runUI Game.component unit body
+  getJSON "levels/1.json" (\level -> runUI (Game.component level) unit body)

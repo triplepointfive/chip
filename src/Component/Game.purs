@@ -33,8 +33,8 @@ type ChildSlot = Unit \/ Unit \/ Void
 type ChildQuery = Inventory.Query <\/> Keyboard.Query <\/> Const Void
 
 -- | Top game component
-component :: H.Component HH.HTML Query Unit Void Aff
-component =
+component :: Level.Blank -> H.Component HH.HTML Query Unit Void Aff
+component blank =
   H.parentComponent
     { initialState: const initialState
     , render
@@ -44,7 +44,7 @@ component =
   where
 
   initialState :: State
-  initialState = Level.build lvl1
+  initialState = Level.build blank
 
   render :: State -> H.ParentHTML Query ChildQuery ChildSlot Aff
   render state =
@@ -76,44 +76,3 @@ component =
   eval (Move direction next) = do
     H.modify_ (Level.movePlayer direction)
     pure next
-
-lvl1 :: Level.Blank
-lvl1 =
-  { grid:
-      [ "                                "
-      , "                                "
-      , "                                "
-      , "                                "
-      , "                                "
-      , "                                "
-      , "                                "
-      , "                                "
-      , "          ##### #####           "
-      , "          #   ###   #           "
-      , "          # + #<# + #           "
-      , "        #####G#-#G#####         "
-      , "        # y C     R y #         "
-      , "        # + #c ? r# + #         "
-      , "        #####+ @ +#####         "
-      , "        # + #c   r# + #         "
-      , "        #   R  +  C   #         "
-      , "        ######Y#Y######         "
-      , "            #  #  #             "
-      , "            # +#+ #             "
-      , "            #  #g #             "
-      , "            #######             "
-      , "                                "
-      , "                                "
-      , "                                "
-      , "                                "
-      , "                                "
-      , "                                "
-      , "                                "
-      , "                                "
-      , "                                "
-      , "                                "
-      ]
-  , hint: Just "Collect chips to get past the chip socket. Use keys to open doors."
-  , name: "LESSON 1"
-  , chips: 11
-  }
