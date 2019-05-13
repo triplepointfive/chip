@@ -44,7 +44,6 @@ tileClasses :: DisplayTile -> Array String
 tileClasses Floor = ["tile", "-floor"]
 tileClasses (Tile Wall) = ["tile", "-wall"]
 tileClasses (Tile Chip) = ["tile", "-chip"]
-tileClasses (Tile Exit) = ["tile", "-exit"]
 tileClasses (Tile (Key Red)) = ["tile", "-key", "-red"]
 tileClasses (Tile (Key Cyan)) = ["tile", "-key", "-cyan"]
 tileClasses (Tile (Key Yellow)) = ["tile", "-key", "-yellow"]
@@ -57,6 +56,8 @@ tileClasses (Boy Down) = ["tile", "-boy", "-down"]
 tileClasses (Boy Left) = ["tile", "-boy", "-left"]
 tileClasses (Boy Up) = ["tile", "-boy", "-up"]
 tileClasses (Boy Right) = ["tile", "-boy", "-right"]
+tileClasses (Tile Exit) = ["tile", "-exit"]
+tileClasses (Tile Hint) = ["tile", "-hint"]
 tileClasses (Tile Socket) = ["tile", "-socket"]
 
 tileToElem :: forall p i. DisplayTile -> HH.HTML p i

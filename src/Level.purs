@@ -1,6 +1,7 @@
 module Level
   ( Color(..)
   , Level(..)
+  , Blank(..)
   , Tile(..)
   , Player(..)
   , Inventory(..)
@@ -48,6 +49,7 @@ type Level =
   , tiles :: Tiles
   , inventory :: Inventory
   , chipsLeft :: Int
+  , hint :: Maybe String
   }
 
 -- | Colors for keys and related doors
@@ -65,6 +67,7 @@ data Tile
   | Chip
   | Socket
   | Exit
+  | Hint
 
 -- | Tries to move player
 movePlayer :: Direction -> Level -> Level
@@ -75,13 +78,14 @@ movePlayerTo :: Point -> Level -> Level
 movePlayerTo { x, y } level
   | x < 0 || y < 0 || x >= mapSize || y >= mapSize = level
   | otherwise = case lookup { x, y } level.tiles of
-      Just Wall         -> level
+      Nothing           -> level { player { pos = { x, y } } }
       Just Chip         -> pickChip { x, y } level
-      Just Exit         -> level -- TODO
-      Just Socket       -> moveToSocket { x, y } level
       Just (Key color)  -> pickUpKey color (level { player { pos = { x, y } } })
       Just (Door color) -> openDoor { x, y } color level
-      Nothing           -> level { player { pos = { x, y } } }
+      Just Wall         -> level
+      Just Hint         -> level { player { pos = { x, y } } }
+      Just Socket       -> moveToSocket { x, y } level
+      Just Exit         -> level -- TODO
 
 moveToSocket :: Point -> Level -> Level
 moveToSocket pos level
@@ -142,17 +146,16 @@ initInventory =
   , yellow: 0
   , green: false }
 
-initLevel :: Level
-initLevel =
-  { player: { pos: { x: 0, y: 0 }, direction: Down }
-  , tiles: empty
-  , inventory: initInventory
-  , chipsLeft: 11
+-- | Structure used to build a level
+type Blank =
+  { grid :: Array String
+  , hint :: Maybe String
+  , name :: String
   }
 
--- | Builds a level from string representation
-build :: Array String -> Level
-build =
+-- | Builds a level from its blank
+build :: Blank -> Level
+build { grid, hint } =
   foldl
     (\level (Tuple y row) ->
       foldr
@@ -161,24 +164,35 @@ build =
         row
     )
     initLevel
-  <<< addIndex <<< map (addIndex <<< toCharArray)
+    (addIndex $ map (addIndex <<< toCharArray) grid)
+  where
+    initLevel :: Level
+    initLevel =
+      { player: { pos: { x: 0, y: 0 }, direction: Down }
+      , tiles: empty
+      , inventory: initInventory
+      , chipsLeft: 11
+      , hint
+      }
 
-addCell :: Point -> Char -> Level -> Level
-addCell p ' ' = identity
-addCell p '#' = insertTile p Wall
-addCell p '+' = insertTile p Chip
-addCell p 'r' = insertTile p (Key Red)
-addCell p 'c' = insertTile p (Key Cyan)
-addCell p 'y' = insertTile p (Key Yellow)
-addCell p 'g' = insertTile p (Key Green)
-addCell p 'R' = insertTile p (Door Red)
-addCell p 'C' = insertTile p (Door Cyan)
-addCell p 'Y' = insertTile p (Door Yellow)
-addCell p 'G' = insertTile p (Door Green)
-addCell p '@' = _ { player { pos = p } }
-addCell p '-' = insertTile p Socket
-addCell p '<' = insertTile p Exit
-addCell _   _ = identity
-
-insertTile :: Point -> Tile -> Level -> Level
-insertTile p tile l = l { tiles = insert p tile l.tiles}
+    addCell :: Point -> Char -> Level -> Level
+    addCell p c = case c of
+      ' ' -> identity
+      '#' -> insertTile Wall
+      '+' -> insertTile Chip
+      'r' -> insertTile (Key Red)
+      'c' -> insertTile (Key Cyan)
+      'y' -> insertTile (Key Yellow)
+      'g' -> insertTile (Key Green)
+      'R' -> insertTile (Door Red)
+      'C' -> insertTile (Door Cyan)
+      'Y' -> insertTile (Door Yellow)
+      'G' -> insertTile (Door Green)
+      '@' -> _ { player { pos = p } }
+      '-' -> insertTile Socket
+      '<' -> insertTile Exit
+      '?' -> insertTile Hint
+      _   -> identity
+      where
+        insertTile :: Tile -> Level -> Level
+        insertTile tile l = l { tiles = insert p tile l.tiles}

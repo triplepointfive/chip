@@ -118,5 +118,11 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
         background-position: $sprite-ratio * -5 $sprite-ratio * -1;
       }
     }
+
+    &.-hint {
+      &::after {
+        background-position: $sprite-ratio * -1 $sprite-ratio * -1;
+      }
+    }
   }
 }
