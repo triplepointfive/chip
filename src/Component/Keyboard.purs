@@ -1,13 +1,15 @@
-module Component.Keyboard (component, Query(..), Message(..)) where
+module Component.Keyboard
+  ( component
+  , Query(..)
+  , Message(..)
+  ) where
 
-import Utils (Direction(..))
+import Prelude
 
 import Data.Maybe (Maybe(..))
 import Data.Foldable (traverse_)
 import Effect (Effect)
 import Effect.Aff (Aff)
-import Prelude (type (~>), Unit, bind, const, discard, pure, unit, ($), (<<<), (=<<))
-
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.Query.EventSource as ES
@@ -21,14 +23,21 @@ import Web.UIEvent.KeyboardEvent as KE
 import Web.UIEvent.KeyboardEvent (KeyboardEvent)
 import Web.UIEvent.KeyboardEvent.EventTypes as KET
 
+import Utils (Direction(..))
+
 type State = Unit
 
+-- | Has Init event to set up listeners and
+-- | HandleKey event for keyboard keypress
 data Query a
   = Init a
   | HandleKey KeyboardEvent (H.SubscribeStatus -> a)
 
-data Message = Move Direction
+-- | Produces move event with direction to move
+data Message
+  = Move Direction
 
+-- | Hidden component which sets up keyboard event listeners
 component :: H.Component HH.HTML Query Unit Message Aff
 component =
   H.lifecycleComponent
@@ -50,7 +59,8 @@ component =
   eval :: Query ~> H.ComponentDSL State Query Message Aff
   eval (Init next) = do
     document <- H.liftEffect $ DOM.document =<< DOM.window
-    H.subscribe $ ES.eventSource' (onKeyUp document) (Just <<< H.request <<< HandleKey)
+    H.subscribe $
+      ES.eventSource' (onKeyUp document) (Just <<< H.request <<< HandleKey)
     pure next
   eval (HandleKey ev reply) = case KE.key ev of
       "ArrowDown"  -> raiseMoveEvent Down

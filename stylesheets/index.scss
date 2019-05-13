@@ -112,5 +112,11 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
         background-position: $sprite-ratio * -4 $sprite-ratio * -1;
       }
     }
+
+    &.-exit {
+      &::after {
+        background-position: $sprite-ratio * -5 $sprite-ratio * -1;
+      }
+    }
   }
 }

@@ -1,23 +1,48 @@
-module Level where
+module Level
+  ( Color(..)
+  , Level(..)
+  , Tile(..)
+  , Player(..)
+  , Inventory(..)
+  , Tiles(..)
+  , mapSize
+  , build
+  , movePlayer
+  ) where
 
-import Utils
+import Prelude
 
-import Data.Array (foldl, replicate, range, zip)
+import Data.Array (foldl, foldr)
 import Data.Map (Map, lookup, empty, insert, delete)
 import Data.Maybe (Maybe(..))
 import Data.String.CodeUnits (toCharArray)
 import Data.Tuple (Tuple(..))
-import Prelude
 
+import Utils (Direction(..), Point, addIndex)
+
+-- | Height and widht of a level grid
 mapSize :: Int
 mapSize = 32
 
-type Inventory = { red :: Int, cyan :: Int, yellow :: Int, green :: Boolean }
+-- | Everything player can take along
+type Inventory =
+  { red :: Int
+  , cyan :: Int
+  , yellow :: Int
+  , green :: Boolean
+  }
 
+-- | Maping for cell coordinates to object on it.
+-- | Does not include floor for simplicity
 type Tiles = Map Point Tile
 
-type Player = { pos :: Point, direction :: Direction }
+-- | Main character and its data
+type Player =
+  { pos :: Point
+  , direction :: Direction
+  }
 
+-- | Represents a floor with all its objects
 type Level =
   { player :: Player
   , tiles :: Tiles
@@ -25,10 +50,23 @@ type Level =
   , chipsLeft :: Int
   }
 
-data Color = Red | Cyan | Yellow | Green
+-- | Colors for keys and related doors
+data Color
+  = Red
+  | Cyan
+  | Yellow
+  | Green
 
-data Tile = Wall | Key Color | Door Color | Chip | Socket
+-- | A single cell on a level grid
+data Tile
+  = Wall
+  | Key Color
+  | Door Color
+  | Chip
+  | Socket
+  | Exit
 
+-- | Tries to move player
 movePlayer :: Direction -> Level -> Level
 movePlayer direction level =
   movePlayerTo (adjustPoint level.player.pos direction) level
@@ -39,6 +77,7 @@ movePlayerTo { x, y } level
   | otherwise = case lookup { x, y } level.tiles of
       Just Wall         -> level
       Just Chip         -> pickChip { x, y } level
+      Just Exit         -> level -- TODO
       Just Socket       -> moveToSocket { x, y } level
       Just (Key color)  -> pickUpKey color (level { player { pos = { x, y } } })
       Just (Door color) -> openDoor { x, y } color level
@@ -48,7 +87,6 @@ moveToSocket :: Point -> Level -> Level
 moveToSocket pos level
   | level.chipsLeft == 0 = removeCurrentTile (level { player { pos = pos } })
   | otherwise            = level
-
 
 pickChip :: Point -> Level -> Level
 pickChip pos level = countChip (removeCurrentTile (level { player { pos = pos } }))
@@ -112,12 +150,13 @@ initLevel =
   , chipsLeft: 11
   }
 
+-- | Builds a level from string representation
 build :: Array String -> Level
 build =
   foldl
     (\level (Tuple y row) ->
-      foldl
-        (\level (Tuple x c) -> addCell { x: x, y: y } c level)
+      foldr
+        (\(Tuple x c) -> addCell { x: x, y: y } c)
         level
         row
     )
@@ -138,6 +177,7 @@ addCell p 'Y' = insertTile p (Door Yellow)
 addCell p 'G' = insertTile p (Door Green)
 addCell p '@' = _ { player { pos = p } }
 addCell p '-' = insertTile p Socket
+addCell p '<' = insertTile p Exit
 addCell _   _ = identity
 
 insertTile :: Point -> Tile -> Level -> Level

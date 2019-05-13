@@ -1,20 +1,31 @@
-module Display (DisplayTile(..), levelTiles, tilesRowElem) where
+module Display
+  ( DisplayTile(..)
+  , levelTiles
+  , tilesRowElem
+  ) where
 
-import Level
-import Utils
+import Prelude
 
 import Data.Array (range)
 import Data.Map (lookup)
 import Data.Maybe (maybe)
 import Data.Tuple (Tuple(..))
-import Prelude
-
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 
-data DisplayTile = Floor | Tile Tile | Boy Direction
+import Level (Color(..), Level, Tile(..), mapSize)
+import Utils (Direction(..), Point)
 
+-- | What shall be output on sceen
+data DisplayTile
+  = Floor
+  | Tile Tile
+  | Boy Direction
+
+-- | Builds a matrix of `DisplayTile` with `radius` * 2 + 1 size.
+-- | This function transforms raw level data to what shall be
+-- | presented in specific cell
 levelTiles :: Int -> Level -> Array (Array DisplayTile)
 levelTiles radius level =
   map
@@ -33,6 +44,7 @@ tileClasses :: DisplayTile -> Array String
 tileClasses Floor = ["tile", "-floor"]
 tileClasses (Tile Wall) = ["tile", "-wall"]
 tileClasses (Tile Chip) = ["tile", "-chip"]
+tileClasses (Tile Exit) = ["tile", "-exit"]
 tileClasses (Tile (Key Red)) = ["tile", "-key", "-red"]
 tileClasses (Tile (Key Cyan)) = ["tile", "-key", "-cyan"]
 tileClasses (Tile (Key Yellow)) = ["tile", "-key", "-yellow"]
@@ -50,6 +62,8 @@ tileClasses (Tile Socket) = ["tile", "-socket"]
 tileToElem :: forall p i. DisplayTile -> HH.HTML p i
 tileToElem tile = HH.span [ HP.classes $ map H.ClassName (tileClasses tile) ] []
 
+-- | Builds a row of HTML tags including the parent one
+-- | for given `DisplayTile`s
 tilesRowElem :: forall p i. Array DisplayTile -> HH.HTML p i
 tilesRowElem tiles =
   HH.div

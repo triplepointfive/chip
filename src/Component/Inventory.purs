@@ -1,21 +1,25 @@
-module Component.Inventory (component, Query(..), State(..)) where
+module Component.Inventory
+  ( component
+  , Query(..)
+  , State(..)
+  ) where
 
-import Level (Inventory)
-
-import Data.Maybe (Maybe(..))
 import Prelude
 
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
-import Halogen.HTML.Properties as HP
+
+import Level (Inventory)
 
 type State = Inventory
 
+-- | Accepts current inventory state
 data Query a = HandleInput State a
 
 type Input = Inventory
 
+-- | Component to display current inventory
 component :: forall m. H.Component HH.HTML Query Input Void m
 component =
   H.component
