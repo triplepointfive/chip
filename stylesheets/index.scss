@@ -126,3 +126,7 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
     }
   }
 }
+
+.game-sidebar {
+  background-color: grey;
+}

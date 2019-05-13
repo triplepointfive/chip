@@ -9,6 +9,7 @@ module Level
   , mapSize
   , build
   , movePlayer
+  , visibleHint
   ) where
 
 import Prelude
@@ -139,6 +140,12 @@ adjustPoint { x, y } Left  = { x: x - 1, y }
 adjustPoint { x, y } Down  = { x, y: y + 1 }
 adjustPoint { x, y } Right = { x: x + 1, y }
 
+-- | Returns hint text if it should be shown
+visibleHint :: Level -> Maybe String
+visibleHint { tiles, player: { pos }, hint } = case lookup pos tiles of
+  Just Hint -> hint
+  _ -> Nothing
+
 initInventory :: Inventory
 initInventory =
   { red: 0
@@ -165,34 +172,38 @@ build { grid, hint } =
     )
     initLevel
     (addIndex $ map (addIndex <<< toCharArray) grid)
-  where
-    initLevel :: Level
-    initLevel =
-      { player: { pos: { x: 0, y: 0 }, direction: Down }
-      , tiles: empty
-      , inventory: initInventory
-      , chipsLeft: 11
-      , hint
-      }
 
-    addCell :: Point -> Char -> Level -> Level
-    addCell p c = case c of
-      ' ' -> identity
-      '#' -> insertTile Wall
-      '+' -> insertTile Chip
-      'r' -> insertTile (Key Red)
-      'c' -> insertTile (Key Cyan)
-      'y' -> insertTile (Key Yellow)
-      'g' -> insertTile (Key Green)
-      'R' -> insertTile (Door Red)
-      'C' -> insertTile (Door Cyan)
-      'Y' -> insertTile (Door Yellow)
-      'G' -> insertTile (Door Green)
-      '@' -> _ { player { pos = p } }
-      '-' -> insertTile Socket
-      '<' -> insertTile Exit
-      '?' -> insertTile Hint
-      _   -> identity
-      where
-        insertTile :: Tile -> Level -> Level
-        insertTile tile l = l { tiles = insert p tile l.tiles}
+  where
+
+  initLevel :: Level
+  initLevel =
+    { player: { pos: { x: 0, y: 0 }, direction: Down }
+    , tiles: empty
+    , inventory: initInventory
+    , chipsLeft: 11
+    , hint
+    }
+
+  addCell :: Point -> Char -> Level -> Level
+  addCell p c = case c of
+    ' ' -> identity
+    '#' -> insertTile Wall
+    '+' -> insertTile Chip
+    'r' -> insertTile (Key Red)
+    'c' -> insertTile (Key Cyan)
+    'y' -> insertTile (Key Yellow)
+    'g' -> insertTile (Key Green)
+    'R' -> insertTile (Door Red)
+    'C' -> insertTile (Door Cyan)
+    'Y' -> insertTile (Door Yellow)
+    'G' -> insertTile (Door Green)
+    '@' -> _ { player { pos = p } }
+    '-' -> insertTile Socket
+    '<' -> insertTile Exit
+    '?' -> insertTile Hint
+    _   -> identity
+
+    where
+
+    insertTile :: Tile -> Level -> Level
+    insertTile tile l = l { tiles = insert p tile l.tiles}

@@ -59,7 +59,7 @@ component =
           cp1
           unit
           Inventory.component
-          state.inventory
+          { inventory: state.inventory, hint: Level.visibleHint state }
           absurd
       , HH.slot'
           cp2
