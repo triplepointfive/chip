@@ -1,5 +1,7 @@
 module Level
-  ( Color(..)
+  ( Action(..)
+  , ActionResult(..)
+  , Color(..)
   , Level(..)
   , Blank(..)
   , Tile(..)
@@ -70,23 +72,34 @@ data Tile
   | Exit
   | Hint
 
+data ActionResult
+  = CompleteLevel
+
+type Action = Tuple Level (Array ActionResult)
+
+inactive :: Level -> Action
+inactive level = Tuple level []
+
+withAction :: Level -> ActionResult -> Action
+withAction level action = Tuple level [action]
+
 -- | Tries to move player
-movePlayer :: Direction -> Level -> Level
+movePlayer :: Direction -> Level -> Action
 movePlayer direction level =
   movePlayerTo (adjustPoint level.player.pos direction) level
 
-movePlayerTo :: Point -> Level -> Level
+movePlayerTo :: Point -> Level -> Action
 movePlayerTo { x, y } level
-  | x < 0 || y < 0 || x >= mapSize || y >= mapSize = level
+  | x < 0 || y < 0 || x >= mapSize || y >= mapSize = inactive $ level
   | otherwise = case lookup { x, y } level.tiles of
-      Nothing           -> level { player { pos = { x, y } } }
-      Just Chip         -> pickChip { x, y } level
-      Just (Key color)  -> pickUpKey color (level { player { pos = { x, y } } })
-      Just (Door color) -> openDoor { x, y } color level
-      Just Wall         -> level
-      Just Hint         -> level { player { pos = { x, y } } }
-      Just Socket       -> moveToSocket { x, y } level
-      Just Exit         -> level -- TODO
+      Nothing           -> inactive $ level { player { pos = { x, y } } }
+      Just Chip         -> inactive $ pickChip { x, y } level
+      Just (Key color)  -> inactive $ pickUpKey color (level { player { pos = { x, y } } })
+      Just (Door color) -> inactive $ openDoor { x, y } color level
+      Just Wall         -> inactive $ level
+      Just Hint         -> inactive $ level { player { pos = { x, y } } }
+      Just Socket       -> inactive $ moveToSocket { x, y } level
+      Just Exit         -> withAction (level { player { pos = { x, y } } }) CompleteLevel
 
 moveToSocket :: Point -> Level -> Level
 moveToSocket pos level
@@ -146,13 +159,6 @@ visibleHint { tiles, player: { pos }, hint } = case lookup pos tiles of
   Just Hint -> hint
   _ -> Nothing
 
-initInventory :: Inventory
-initInventory =
-  { red: 0
-  , cyan: 0
-  , yellow: 0
-  , green: false }
-
 -- | Structure used to build a level
 type Blank =
   { grid :: Array String
@@ -183,6 +189,14 @@ build { grid, hint, chips } =
     , inventory: initInventory
     , chipsLeft: chips
     , hint
+    }
+
+  initInventory :: Inventory
+  initInventory =
+    { red: 0
+    , cyan: 0
+    , yellow: 0
+    , green: false
     }
 
   addCell :: Point -> Char -> Level -> Level

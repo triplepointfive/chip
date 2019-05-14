@@ -9,6 +9,7 @@ import Data.Either.Nested (type (\/))
 import Data.Const (Const)
 import Data.Functor.Coproduct.Nested (type (<\/>))
 import Data.Maybe (Maybe(..))
+import Data.Tuple (Tuple(..))
 import Effect.Aff (Aff)
 import Halogen as H
 import Halogen.Component.ChildPath (cp1, cp2)
@@ -19,8 +20,9 @@ import Halogen.HTML.Properties as HP
 import Component.Inventory as Inventory
 import Component.Keyboard as Keyboard
 import Display (levelTiles, tilesRowElem)
-import Game (Game, onLevel)
+import Game (Game)
 import Level as Level
+import Lib (getJSON)
 
 -- | Accepts keyboard keypress events
 data Query a
@@ -71,5 +73,18 @@ component blank levelNum =
 
   eval :: Query ~> H.ParentDSL State Query ChildQuery ChildSlot Void Aff
   eval (KeyboardEvent (Keyboard.Move direction) next) = do
-    H.modify_ $ onLevel (Level.movePlayer direction)
-    pure next
+    game <- H.get
+    let Tuple level actions = Level.movePlayer direction game.level
+    H.put (game { level = level })
+
+    case actions of
+      [Level.CompleteLevel] -> do
+        result <- H.liftAff $ getJSON ("levels/" <> show (game.levelNum + 1) <> ".json")
+        case result of
+          Just blank -> do
+            H.put (game { level = Level.build blank, levelNum = game.levelNum + 1 })
+            pure next
+          Nothing ->
+            pure next
+      _ -> do
+        pure next
