@@ -83,23 +83,28 @@ inactive level = Tuple level []
 withAction :: Level -> ActionResult -> Action
 withAction level action = Tuple level [action]
 
+outOfLevel :: Point -> Boolean
+outOfLevel { x, y } = x < 0 || y < 0 || x >= mapSize || y >= mapSize
+
 -- | Tries to move player
 movePlayer :: Direction -> Level -> Action
 movePlayer direction level =
-  movePlayerTo (adjustPoint level.player.pos direction) level
-
-movePlayerTo :: Point -> Level -> Action
-movePlayerTo { x, y } level
-  | x < 0 || y < 0 || x >= mapSize || y >= mapSize = inactive $ level
-  | otherwise = case lookup { x, y } level.tiles of
-      Nothing           -> inactive $ level { player { pos = { x, y } } }
-      Just Chip         -> inactive $ pickChip { x, y } level
-      Just (Key color)  -> inactive $ pickUpKey color (level { player { pos = { x, y } } })
-      Just (Door color) -> inactive $ openDoor { x, y } color level
+  if outOfLevel dest
+  then inactive $ level
+  else case lookup dest level.tiles of
+      Nothing           -> inactive $ level { player { pos = dest } }
+      Just Chip         -> inactive $ pickChip dest level
+      Just (Key color)  -> inactive $ pickUpKey color (level { player { pos = dest } })
+      Just (Door color) -> inactive $ openDoor dest color level
       Just Wall         -> inactive $ level
-      Just Hint         -> inactive $ level { player { pos = { x, y } } }
-      Just Socket       -> inactive $ moveToSocket { x, y } level
-      Just Exit         -> withAction (level { player { pos = { x, y } } }) CompleteLevel
+      Just Hint         -> inactive $ level { player { pos = dest } }
+      Just Socket       -> inactive $ moveToSocket dest level
+      Just Exit         -> withAction (level { player { pos = dest } }) CompleteLevel
+
+  where
+
+  dest :: Point
+  dest = adjustPoint level.player.pos direction
 
 moveToSocket :: Point -> Level -> Level
 moveToSocket pos level
@@ -148,10 +153,11 @@ removeTile :: Point -> Tiles -> Tiles
 removeTile pos = delete pos
 
 adjustPoint :: Point -> Direction -> Point
-adjustPoint { x, y } Up    = { x, y: y - 1 }
-adjustPoint { x, y } Left  = { x: x - 1, y }
-adjustPoint { x, y } Down  = { x, y: y + 1 }
-adjustPoint { x, y } Right = { x: x + 1, y }
+adjustPoint { x, y } direction = case direction of
+  Up -> { x, y: y - 1 }
+  Left -> { x: x - 1, y }
+  Down -> { x, y: y + 1 }
+  Right -> { x: x + 1, y }
 
 -- | Returns hint text if it should be shown
 visibleHint :: Level -> Maybe String
