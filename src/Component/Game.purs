@@ -35,7 +35,7 @@ type ChildQuery = Inventory.Query <\/> Keyboard.Query <\/> Const Void
 
 -- | Top game component
 component :: Level.Blank -> Int -> H.Component HH.HTML Query Unit Void Aff
-component blank levelNum =
+component initBlank levelNum =
   H.parentComponent
     { initialState: const initialState
     , render
@@ -45,7 +45,7 @@ component blank levelNum =
   where
 
   initialState :: State
-  initialState = { level: Level.build blank, levelNum }
+  initialState = { level: Level.build initBlank, levelNum }
 
   render :: State -> H.ParentHTML Query ChildQuery ChildSlot Aff
   render { level } =

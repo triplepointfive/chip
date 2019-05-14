@@ -28,17 +28,17 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
       }
       &.-left {
         &::after {
-          background-position: 0 $sprite-ratio * -1;
+          background-position: $sprite-ratio * -1 0;
         }
       }
       &.-up {
         &::after {
-          background-position: 0 $sprite-ratio * -2;
+          background-position: $sprite-ratio * -2 0;
         }
       }
       &.-right {
         &::after {
-          background-position: 0 $sprite-ratio * -3;
+          background-position: $sprite-ratio * -3 0;
         }
       }
     }

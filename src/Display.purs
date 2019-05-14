@@ -17,7 +17,7 @@ import Halogen.HTML.Properties as HP
 import Level (Color(..), Level, Tile(..), mapSize)
 import Utils (Direction(..), Point)
 
--- | What shall be output on sceen
+-- | What shall be output on screen
 data DisplayTile
   = Floor
   | Tile Tile
@@ -35,30 +35,33 @@ levelTiles radius level =
 rangeSlice :: Int -> Point ->  Array (Tuple Int (Array Int))
 rangeSlice r { x, y } =
   map (flip Tuple xRange) (range (from y) (d + from y - 1))
+
   where
-    xRange = range (from x) (d + from x - 1)
-    d = (2 * r) + 1
-    from c = min (max 0 (c - r)) (mapSize - d)
+
+  xRange = range (from x) (d + from x - 1)
+  d = (2 * r) + 1
+  from c = min (max 0 (c - r)) (mapSize - d)
 
 tileClasses :: DisplayTile -> Array String
-tileClasses Floor = ["tile", "-floor"]
-tileClasses (Tile Wall) = ["tile", "-wall"]
-tileClasses (Tile Chip) = ["tile", "-chip"]
-tileClasses (Tile (Key Red)) = ["tile", "-key", "-red"]
-tileClasses (Tile (Key Cyan)) = ["tile", "-key", "-cyan"]
-tileClasses (Tile (Key Yellow)) = ["tile", "-key", "-yellow"]
-tileClasses (Tile (Key Green)) = ["tile", "-key", "-green"]
-tileClasses (Tile (Door Red)) = ["tile", "-door", "-red"]
-tileClasses (Tile (Door Cyan)) = ["tile", "-door", "-cyan"]
-tileClasses (Tile (Door Yellow)) = ["tile", "-door", "-yellow"]
-tileClasses (Tile (Door Green)) = ["tile", "-door", "-green"]
-tileClasses (Boy Down) = ["tile", "-boy", "-down"]
-tileClasses (Boy Left) = ["tile", "-boy", "-left"]
-tileClasses (Boy Up) = ["tile", "-boy", "-up"]
-tileClasses (Boy Right) = ["tile", "-boy", "-right"]
-tileClasses (Tile Exit) = ["tile", "-exit"]
-tileClasses (Tile Hint) = ["tile", "-hint"]
-tileClasses (Tile Socket) = ["tile", "-socket"]
+tileClasses = case _ of
+  Floor -> ["tile", "-floor"]
+  Tile Wall -> ["tile", "-wall"]
+  Tile Chip -> ["tile", "-chip"]
+  Tile (Key Red) -> ["tile", "-key", "-red"]
+  Tile (Key Cyan) -> ["tile", "-key", "-cyan"]
+  Tile (Key Yellow) -> ["tile", "-key", "-yellow"]
+  Tile (Key Green) -> ["tile", "-key", "-green"]
+  Tile (Door Red) -> ["tile", "-door", "-red"]
+  Tile (Door Cyan) -> ["tile", "-door", "-cyan"]
+  Tile (Door Yellow) -> ["tile", "-door", "-yellow"]
+  Tile (Door Green) -> ["tile", "-door", "-green"]
+  Boy Down -> ["tile", "-boy", "-down"]
+  Boy Left -> ["tile", "-boy", "-left"]
+  Boy Up -> ["tile", "-boy", "-up"]
+  Boy Right -> ["tile", "-boy", "-right"]
+  Tile Exit -> ["tile", "-exit"]
+  Tile Hint -> ["tile", "-hint"]
+  Tile Socket -> ["tile", "-socket"]
 
 tileToElem :: forall p i. DisplayTile -> HH.HTML p i
 tileToElem tile = HH.span [ HP.classes $ map H.ClassName (tileClasses tile) ] []
@@ -72,6 +75,6 @@ tilesRowElem tiles =
     (map tileToElem tiles)
 
 buildTile :: Point -> Level -> DisplayTile
-buildTile p { player: { pos }, tiles }
-  | p == pos  = Boy Down
+buildTile p { player: { pos, direction }, tiles }
+  | p == pos  = Boy direction
   | otherwise = maybe Floor Tile (lookup p tiles)

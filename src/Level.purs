@@ -12,6 +12,7 @@ module Level
   , build
   , movePlayer
   , visibleHint
+  , hasKey
   ) where
 
 import Prelude
@@ -24,7 +25,7 @@ import Data.Tuple (Tuple(..))
 
 import Utils (Direction(..), Point, addIndex)
 
--- | Height and widht of a level grid
+-- | Height and width of a level grid
 mapSize :: Int
 mapSize = 32
 
@@ -36,7 +37,7 @@ type Inventory =
   , green :: Boolean
   }
 
--- | Maping for cell coordinates to object on it.
+-- | Mapping for cell coordinates to object on it.
 -- | Does not include floor for simplicity
 type Tiles = Map Point Tile
 
@@ -62,6 +63,8 @@ data Color
   | Yellow
   | Green
 
+derive instance eqColor :: Eq Color
+
 -- | A single cell on a level grid
 data Tile
   = Wall
@@ -72,47 +75,82 @@ data Tile
   | Exit
   | Hint
 
-data ActionResult
+derive instance eqTile :: Eq Tile
+
+instance showTile :: Show Tile where
+  show = case _ of
+    Wall -> "#"
+    Key color -> case color of
+      Red -> "r"
+      Cyan -> "c"
+      Yellow -> "y"
+      Green -> "g"
+    Door color -> case color of
+      Red -> "R"
+      Cyan -> "C"
+      Yellow -> "Y"
+      Green -> "G"
+    Chip -> "+"
+    Socket -> "-"
+    Exit -> "<"
+    Hint -> "?"
+
+data Action
   = CompleteLevel
 
-type Action = Tuple Level (Array ActionResult)
+derive instance eqAction :: Eq Action
 
-inactive :: Level -> Action
+instance showAction :: Show Action where
+  show = case _ of
+    CompleteLevel -> "CompleteLevel"
+
+type ActionResult = Tuple Level (Array Action)
+
+inactive :: Level -> ActionResult
 inactive level = Tuple level []
 
-withAction :: Level -> ActionResult -> Action
+withAction :: Level -> Action -> ActionResult
 withAction level action = Tuple level [action]
 
 outOfLevel :: Point -> Boolean
 outOfLevel { x, y } = x < 0 || y < 0 || x >= mapSize || y >= mapSize
 
 -- | Tries to move player
-movePlayer :: Direction -> Level -> Action
+movePlayer :: Direction -> Level -> ActionResult
 movePlayer direction level =
   if outOfLevel dest
-  then inactive $ level
+  then inactive turned
   else case lookup dest level.tiles of
-      Nothing           -> inactive $ level { player { pos = dest } }
-      Just Chip         -> inactive $ pickChip dest level
-      Just (Key color)  -> inactive $ pickUpKey color (level { player { pos = dest } })
-      Just (Door color) -> inactive $ openDoor dest color level
-      Just Wall         -> inactive $ level
-      Just Hint         -> inactive $ level { player { pos = dest } }
+      Nothing           -> inactive moved
+      Just Chip         -> inactive (pickUpChip moved)
+      Just (Key color)  -> inactive (pickUpKey color moved)
+      Just (Door color) -> inactive $ openDoor dest color turned
+      Just Wall         -> inactive turned
+      Just Hint         -> inactive moved
       Just Socket       -> inactive $ moveToSocket dest level
-      Just Exit         -> withAction (level { player { pos = dest } }) CompleteLevel
+      Just Exit         -> withAction moved CompleteLevel
 
   where
 
+  turned :: Level
+  turned = level { player { direction = direction } }
+
+  moved :: Level
+  moved = turned { player { pos = dest } }
+
   dest :: Point
   dest = adjustPoint level.player.pos direction
+
+  pickUpChip :: Level -> Level
+  pickUpChip = countChip <<< removeCurrentTile
+
+  pickUpKey :: Color -> Level -> Level
+  pickUpKey color = removeCurrentTile <<< onInventory (addKey color)
 
 moveToSocket :: Point -> Level -> Level
 moveToSocket pos level
   | level.chipsLeft == 0 = removeCurrentTile (level { player { pos = pos } })
   | otherwise            = level
-
-pickChip :: Point -> Level -> Level
-pickChip pos level = countChip (removeCurrentTile (level { player { pos = pos } }))
 
 openDoor :: Point -> Color -> Level -> Level
 openDoor pos color level
@@ -139,9 +177,8 @@ hasKey Green { green }   = green
 removeCurrentTile :: Level -> Level
 removeCurrentTile l = l { tiles = removeTile l.player.pos l.tiles }
 
-pickUpKey :: Color -> Level -> Level
-pickUpKey color level = removeCurrentTile $
-  level { inventory = addKey color level.inventory }
+onInventory :: (Inventory -> Inventory) -> Level -> Level
+onInventory f level = level { inventory = f level.inventory }
 
 addKey :: Color -> Inventory -> Inventory
 addKey Red    inv = inv { red = inv.red + 1 }
