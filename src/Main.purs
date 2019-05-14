@@ -15,4 +15,4 @@ import Lib (getJSON)
 main :: Effect Unit
 main = HA.runHalogenAff do
   body <- HA.awaitBody
-  getJSON "levels/1.json" (\level -> runUI (Game.component level) unit body)
+  getJSON "levels/1.json" (\level -> runUI (Game.component level 1) unit body)
