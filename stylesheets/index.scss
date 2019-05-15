@@ -4,6 +4,11 @@ $sprite-x: 8;
 $sprite-y: 12;
 $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
 
+@font-face {
+  font-family: DigitalDream;
+  src: url(../fonts/digital-dream.regular.ttf);
+}
+
 .level-row {
   > .tile {
     width: $cell-size;
@@ -134,10 +139,7 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
 }
 
 .game-container {
-  > .content {
-    display: inline-block;
-    vertical-align: top;
-
+  > .panel {
     border-top: 5px solid white;
     border-left: 5px solid white;
     border-right: 5px solid gray;
@@ -147,9 +149,27 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
     background-color: lightgray;
   }
 
+  > .content {
+    display: inline-block;
+    vertical-align: top;
+  }
+
   > .sidebar {
+    text-align: center;
     margin-left: 1rem;
     display: inline-block;
     vertical-align: top;
+  }
+}
+
+.data-list {
+  .term {
+    color: red;
+  }
+
+  .description {
+    font-family: "DigitalDream", sans-serif;
+    color: greenyellow;
+    background-color: green;
   }
 }

@@ -8,9 +8,11 @@ import Prelude
 import Data.Either.Nested (type (\/))
 import Data.Const (Const)
 import Data.Functor.Coproduct.Nested (type (<\/>))
+import Data.Int (ceil, toNumber)
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Effect.Aff (Aff)
+import Effect.Console (log)
 import Halogen as H
 import Halogen.Component.ChildPath (cp1, cp2)
 import Halogen.HTML as HH
@@ -20,13 +22,14 @@ import Halogen.HTML.Properties as HP
 import Component.Inventory as Inventory
 import Component.Keyboard as Keyboard
 import Display (levelTiles, tilesRowElem)
-import Game (Game)
+import Game (Game, tick)
 import Level as Level
 import Lib (getJSON)
 
 -- | Accepts keyboard keypress events
 data Query a
   = KeyboardEvent Keyboard.Message a
+  | Tick a
 
 type State = Game
 
@@ -45,17 +48,28 @@ component initBlank levelNum =
   where
 
   initialState :: State
-  initialState = { level: Level.build initBlank, levelNum }
+  initialState = { level: Level.build initBlank, levelNum, ticksLeft: 100 * 4 }
 
   render :: State -> H.ParentHTML Query ChildQuery ChildSlot Aff
-  render { level } =
+  render { level, levelNum, ticksLeft } =
     HH.div [ HP.class_ (H.ClassName "game-container") ]
       [ HH.div
-          [ HP.class_ (H.ClassName "content") ]
+          [ HP.class_ (H.ClassName "panel content") ]
           (map tilesRowElem (levelTiles 4 level))
       , HH.div
-          [ HP.class_ (H.ClassName "sidebar") ]
-          [ HH.div_ [ HH.text (show level.chipsLeft) ]
+          [ HP.class_ (H.ClassName "panel sidebar") ]
+          [ HH.div
+              [ HP.class_ (H.ClassName "data-list") ]
+              [ HH.div [ HP.class_ (H.ClassName "term") ] [ HH.text "LEVEL" ]
+              , HH.div [ HP.class_ (H.ClassName "description") ] [ HH.text (show levelNum) ]
+              ]
+          , HH.div
+              [ HP.class_ (H.ClassName "data-list") ]
+              [ HH.div [ HP.class_ (H.ClassName "term") ] [ HH.text "TIME" ]
+              , HH.div
+                  [ HP.class_ (H.ClassName "description") ]
+                  [ HH.text (show $ ceil ((toNumber ticksLeft) / 4.0 )) ]
+              ]
           , HH.slot'
               cp1
               unit
@@ -88,3 +102,6 @@ component initBlank levelNum =
             pure next
       _ -> do
         pure next
+  eval (Tick next) = do
+    H.modify_ (tick)
+    pure next

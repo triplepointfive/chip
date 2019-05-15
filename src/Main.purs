@@ -6,9 +6,10 @@ import Prelude
 
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
+import Effect.Aff (Aff, launchAff)
 import Effect.Class (liftEffect)
-import Effect.Console (log)
 import Effect.Timer (setInterval)
+import Halogen as H
 import Halogen.Aff as HA
 import Halogen.VDom.Driver (runUI)
 
@@ -20,10 +21,13 @@ main :: Effect Unit
 main = HA.runHalogenAff do
   body <- HA.awaitBody
   result <- getJSON "levels/1.json"
-  _ <- liftEffect $ setTimeout 250 (log "Hi")
   case result of
     Just blank -> do
-      _ <- runUI (Game.component blank 1) unit body
+      io <- runUI (Game.component blank 1) unit body
+      liftEffect $ void $
+          setInterval
+              250
+              (void $ launchAff $ io.query (H.action Game.Tick))
       pure unit
     Nothing ->
       pure unit
