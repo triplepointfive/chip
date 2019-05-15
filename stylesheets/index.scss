@@ -124,6 +124,12 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
         background-position: $sprite-ratio * -1 $sprite-ratio * -1;
       }
     }
+
+    &.-water {
+      &::after {
+        background-position: 0 $sprite-ratio * -3;
+      }
+    }
   }
 }
 

@@ -29,7 +29,7 @@ level2 :: Level.Level
 level2 = Level.build
   { grid:
       [ "#?#"
-      , "+@ "
+      , "+@-"
       , "# #"
       ]
   , name: "Spec"
@@ -109,7 +109,6 @@ main = run [consoleReporter] do
       it "leaves hint" do
         (Map.lookup { x: 1, y: 0} level.tiles) `shouldEqual` Just Level.Hint
 
-
     -- TODO: Right 2 down 2
 
     describe "on common key" do
@@ -123,7 +122,7 @@ main = run [consoleReporter] do
       it "removes key from map" do
         (Map.lookup { x: 0, y: 1 } level.tiles) `shouldEqual` Nothing
       it "adds key to inventory" do
-        Level.hasKey Level.Red level.inventory `shouldEqual` true
+        Level.hasKey Level.Red level `shouldEqual` true
 
     describe "on common door" do
       describe "without a key" do
@@ -144,7 +143,7 @@ main = run [consoleReporter] do
         it "removes door from map" do
           (Map.lookup { x: 1, y: 0 } level.tiles) `shouldEqual` Nothing
         it "takes key from inventory" do
-          Level.hasKey Level.Red level.inventory `shouldEqual` false
+          Level.hasKey Level.Red level `shouldEqual` false
 
     describe "on green key" do
       let Tuple level actions = Level.movePlayer Right level3
@@ -157,7 +156,7 @@ main = run [consoleReporter] do
       it "removes key from map" do
         (Map.lookup { x: 2, y: 1 } level.tiles) `shouldEqual` Nothing
       it "adds key to inventory" do
-        Level.hasKey Level.Green level.inventory `shouldEqual` true
+        Level.hasKey Level.Green level `shouldEqual` true
 
     describe "on green door" do
       describe "without a key" do
@@ -178,5 +177,4 @@ main = run [consoleReporter] do
         it "removes door from map" do
           (Map.lookup { x: 1, y: 2 } level.tiles) `shouldEqual` Nothing
         it "leaves key in inventory" do
-          Level.hasKey Level.Green level.inventory `shouldEqual` true
-
+          Level.hasKey Level.Green level `shouldEqual` true

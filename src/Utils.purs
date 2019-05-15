@@ -2,6 +2,7 @@ module Utils
   ( Point(..)
   , Direction(..)
   , addIndex
+  , try
   ) where
 
 import Prelude
@@ -35,3 +36,6 @@ instance showDirection :: Show Direction where
 -- | element of the set
 addIndex :: forall a. Array a -> Array (Tuple Int a)
 addIndex a = mapWithIndex Tuple a
+
+try :: forall a. (a -> Boolean) -> (a -> a) -> a -> a
+try predicate f v = if predicate v then f v else v

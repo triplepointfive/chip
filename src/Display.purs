@@ -59,6 +59,7 @@ tileClasses = case _ of
   Boy Left -> ["tile", "-boy", "-left"]
   Boy Up -> ["tile", "-boy", "-up"]
   Boy Right -> ["tile", "-boy", "-right"]
+  Tile Water -> ["tile", "-water"]
   Tile Exit -> ["tile", "-exit"]
   Tile Hint -> ["tile", "-hint"]
   Tile Socket -> ["tile", "-socket"]
