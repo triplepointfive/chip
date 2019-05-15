@@ -1,6 +1,11 @@
 {
   "name": "pure",
-  "ignore": ["**/.*", "node_modules", "bower_components", "output"],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "output"
+  ],
   "dependencies": {
     "purescript-prelude": "^4.1.1",
     "purescript-console": "^4.2.0",
@@ -8,7 +13,8 @@
     "purescript-lists": "^5.4.0",
     "purescript-halogen": "^4.0.0",
     "purescript-simple-json": "~4",
-    "purescript-affjax": "~7"
+    "purescript-affjax": "~7",
+    "purescript-js-timers": "^4.0.1"
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0",
