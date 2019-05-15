@@ -3,13 +3,14 @@ module Component.Game
   , Query(..)
   ) where
 
-import Prelude
+import Prelude hiding (div)
 
-import Data.Either.Nested (type (\/))
+import Data.Array (singleton)
 import Data.Const (Const)
+import Data.Either.Nested (type (\/))
 import Data.Functor.Coproduct.Nested (type (<\/>))
 import Data.Int (ceil, toNumber)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), maybe)
 import Data.Tuple (Tuple(..))
 import Effect.Aff (Aff)
 import Halogen as H
@@ -20,9 +21,10 @@ import Web.UIEvent.KeyboardEvent as KE
 import Web.UIEvent.KeyboardEvent (KeyboardEvent)
 
 import Component.Inventory as Inventory
-import Display (levelTiles, tilesRowElem)
+import Display (levelTiles, tilesRowElem, DisplayTile(..))
 import Game (Game, tick)
 import Level as Level
+import Level (Tile(..), Color(..))
 import Lib (getJSON)
 import Utils (Direction(..))
 
@@ -35,6 +37,16 @@ type State = Game
 
 type ChildSlot = Unit \/ Void
 type ChildQuery = Inventory.Query <\/> Const Void
+
+div :: forall p i. String -> Array (H.HTML p i) -> H.HTML p i
+div classes = HH.div [ HP.class_ (H.ClassName classes) ]
+
+dl :: forall a p i. Show a => String -> a -> H.HTML p i
+dl term description =
+  div "data-list"
+    [ div "term" [ HH.text term ]
+    , div "description" [ HH.text "888", div "value" [ HH.text (show description) ] ]
+    ]
 
 -- | Top game component
 component :: Level.Blank -> Int -> H.Component HH.HTML Query Unit Void Aff
@@ -56,30 +68,15 @@ component initBlank initLevelNum =
 
   render :: State -> H.ParentHTML Query ChildQuery ChildSlot Aff
   render { level, levelNum, ticksLeft } =
-    HH.div [ HP.class_ (H.ClassName "game-container") ]
-      [ HH.div
-          [ HP.class_ (H.ClassName "panel content") ]
-          (map tilesRowElem (levelTiles 4 level))
-      , HH.div
-          [ HP.class_ (H.ClassName "panel sidebar") ]
-          [ HH.div
-              [ HP.class_ (H.ClassName "data-list") ]
-              [ HH.div [ HP.class_ (H.ClassName "term") ] [ HH.text "LEVEL" ]
-              , HH.div [ HP.class_ (H.ClassName "description") ] [ HH.text (show levelNum) ]
+    div "game-container"
+      [ div "content panel" (map tilesRowElem (levelTiles 4 level))
+      , div "sidebar panel"
+          [ HH.div_
+              [ dl "LEVEL" levelNum
+              , dl "TIME" (ceil ((toNumber ticksLeft) / 4.0 ))
+              , dl "CHIPS LEFT" level.chipsLeft
               ]
-          , HH.div
-              [ HP.class_ (H.ClassName "data-list") ]
-              [ HH.div [ HP.class_ (H.ClassName "term") ] [ HH.text "TIME" ]
-              , HH.div
-                  [ HP.class_ (H.ClassName "description") ]
-                  [ HH.text (show $ ceil ((toNumber ticksLeft) / 4.0 )) ]
-              ]
-          , HH.slot'
-              cp1
-              unit
-              Inventory.component
-              { inventory: level.inventory, hint: Level.visibleHint level }
-              absurd
+          , renderInventory { inventory: level.inventory, hint: Level.visibleHint level }
           ]
       ]
 
@@ -113,3 +110,23 @@ component initBlank initLevelNum =
   eval (Tick next) = do
     H.modify_ (tick)
     pure next
+
+renderInventory
+  :: forall p i. { inventory :: Level.Inventory, hint :: Maybe String }
+  -> H.HTML p i
+renderInventory { inventory: { red, cyan, yellow, green }, hint } =
+  div "inventory"
+    -- [ HH.div_ (maybe [] (singleton <<< HH.text) hint)
+    [ tilesRowElem
+        [ if red > 0 then Tile (Key Red) else Floor
+        , if cyan > 0 then Tile (Key Cyan) else Floor
+        , if yellow > 0 then Tile (Key Yellow) else Floor
+        , if green then Tile (Key Green) else Floor
+        ]
+    , tilesRowElem
+        [ Floor
+        , Floor
+        , Floor
+        , Floor
+        ]
+    ]
