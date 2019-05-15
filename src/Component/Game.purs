@@ -5,22 +5,17 @@ module Component.Game
 
 import Prelude hiding (div)
 
-import Data.Array (singleton)
 import Data.Const (Const)
-import Data.Either.Nested (type (\/))
-import Data.Functor.Coproduct.Nested (type (<\/>))
 import Data.Int (ceil, toNumber)
-import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Effect.Aff (Aff)
 import Halogen as H
-import Halogen.Component.ChildPath (cp1)
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Web.UIEvent.KeyboardEvent as KE
 import Web.UIEvent.KeyboardEvent (KeyboardEvent)
 
-import Component.Inventory as Inventory
 import Display (levelTiles, tilesRowElem, DisplayTile(..))
 import Game (Game, tick)
 import Level as Level
@@ -35,8 +30,8 @@ data Query a
 
 type State = Game
 
-type ChildSlot = Unit \/ Void
-type ChildQuery = Inventory.Query <\/> Const Void
+type ChildSlot = Void
+type ChildQuery = Const Void
 
 div :: forall p i. String -> Array (H.HTML p i) -> H.HTML p i
 div classes = HH.div [ HP.class_ (H.ClassName classes) ]
