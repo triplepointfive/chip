@@ -12,33 +12,33 @@ import Data.Int (ceil, toNumber)
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Effect.Aff (Aff)
-import Effect.Console (log)
 import Halogen as H
-import Halogen.Component.ChildPath (cp1, cp2)
+import Halogen.Component.ChildPath (cp1)
 import Halogen.HTML as HH
-import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Web.UIEvent.KeyboardEvent as KE
+import Web.UIEvent.KeyboardEvent (KeyboardEvent)
 
 import Component.Inventory as Inventory
-import Component.Keyboard as Keyboard
 import Display (levelTiles, tilesRowElem)
 import Game (Game, tick)
 import Level as Level
 import Lib (getJSON)
+import Utils (Direction(..))
 
 -- | Accepts keyboard keypress events
 data Query a
-  = KeyboardEvent Keyboard.Message a
+  = KeyboardEvent KeyboardEvent a
   | Tick a
 
 type State = Game
 
-type ChildSlot = Unit \/ Unit \/ Void
-type ChildQuery = Inventory.Query <\/> Keyboard.Query <\/> Const Void
+type ChildSlot = Unit \/ Void
+type ChildQuery = Inventory.Query <\/> Const Void
 
 -- | Top game component
 component :: Level.Blank -> Int -> H.Component HH.HTML Query Unit Void Aff
-component initBlank levelNum =
+component initBlank initLevelNum =
   H.parentComponent
     { initialState: const initialState
     , render
@@ -48,7 +48,11 @@ component initBlank levelNum =
   where
 
   initialState :: State
-  initialState = { level: Level.build initBlank, levelNum, ticksLeft: 100 * 4 }
+  initialState =
+    { level: Level.build initBlank
+    , levelNum: initLevelNum
+    , ticksLeft: 100 * 4
+    }
 
   render :: State -> H.ParentHTML Query ChildQuery ChildSlot Aff
   render { level, levelNum, ticksLeft } =
@@ -76,32 +80,36 @@ component initBlank levelNum =
               Inventory.component
               { inventory: level.inventory, hint: Level.visibleHint level }
               absurd
-          , HH.slot'
-              cp2
-              unit
-              Keyboard.component
-              unit
-              (HE.input KeyboardEvent)
           ]
       ]
 
   eval :: Query ~> H.ParentDSL State Query ChildQuery ChildSlot Void Aff
-  eval (KeyboardEvent (Keyboard.Move direction) next) = do
-    game <- H.get
-    let Tuple level actions = Level.movePlayer direction game.level
-    H.put (game { level = level })
+  eval (KeyboardEvent ev next) = case KE.key ev of
+    "ArrowDown"  -> raiseMoveEvent Down
+    "ArrowLeft"  -> raiseMoveEvent Left
+    "ArrowUp"    -> raiseMoveEvent Up
+    "ArrowRight" -> raiseMoveEvent Right
+    otherwise    -> pure next
 
-    case actions of
-      [Level.CompleteLevel] -> do
-        result <- H.liftAff $ getJSON ("levels/" <> show (game.levelNum + 1) <> ".json")
-        case result of
-          Just blank -> do
-            H.put (game { level = Level.build blank, levelNum = game.levelNum + 1 })
-            pure next
-          Nothing ->
-            pure next
-      _ -> do
-        pure next
+    where
+
+    raiseMoveEvent direction = do
+      game <- H.get
+      let Tuple level actions = Level.movePlayer direction game.level
+      H.put (game { level = level })
+
+      case actions of
+        [Level.CompleteLevel] -> do
+          result <- H.liftAff $ getJSON ("levels/" <> show (game.levelNum + 1) <> ".json")
+          case result of
+            Just blank -> do
+              H.put (game { level = Level.build blank, levelNum = game.levelNum + 1 })
+              pure next
+            Nothing ->
+              pure next
+        _ -> do
+          pure next
+
   eval (Tick next) = do
     H.modify_ (tick)
     pure next
