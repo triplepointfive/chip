@@ -14,7 +14,8 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 
-import Level (Color(..), Level, Tile(..), mapSize)
+import Level (Color(..), Tile(..), mapSize)
+import Game (Game, isDead)
 import Utils (Direction(..), Point)
 
 -- | What shall be output on screen
@@ -23,15 +24,16 @@ data DisplayTile
   | Tile Tile
   | Boy Direction
   | Swimming Direction
+  | Drown
 
 -- | Builds a matrix of `DisplayTile` with `radius` * 2 + 1 size.
 -- | This function transforms raw level data to what shall be
 -- | presented in specific cell
-levelTiles :: Int -> Level -> Array (Array DisplayTile)
-levelTiles radius level =
+levelTiles :: Int -> Game -> Array (Array DisplayTile)
+levelTiles radius game =
   map
-    (\(Tuple y row) -> map (\x -> buildTile { x: x, y: y } level) row)
-    (rangeSlice radius level.player.pos)
+    (\(Tuple y row) -> map (\x -> buildTile { x: x, y: y } game) row)
+    (rangeSlice radius game.level.player.pos)
 
 rangeSlice :: Int -> Point ->  Array (Tuple Int (Array Int))
 rangeSlice r { x, y } =
@@ -68,6 +70,7 @@ tileClasses = case _ of
   Tile Exit -> "tile -exit"
   Tile Hint -> "tile -hint"
   Tile Socket -> "tile -socket"
+  Drown -> "tile -boy -drown"
 
 tileToElem :: forall p i. DisplayTile -> HH.HTML p i
 tileToElem tile = HH.span [ HP.class_ (H.ClassName (tileClasses tile)) ] []
@@ -80,12 +83,16 @@ tilesRowElem tiles =
     [ HP.class_ (H.ClassName "level-row") ]
     (map tileToElem tiles)
 
-buildTile :: Point -> Level -> DisplayTile
-buildTile p { player: { pos, direction }, tiles } = withTile (lookup p tiles)
-
+buildTile :: Point -> Game -> DisplayTile
+buildTile p game = withTile (lookup p game.level.tiles)
   where
+  { player: { pos, direction } } = game.level
 
   withTile tile
-    | p == pos && tile == Just Water = Swimming direction
-    | p == pos = Boy direction
+    | p == pos = boyTile tile
     | otherwise = maybe Floor Tile tile
+
+  boyTile tile
+    | isDead game = Drown
+    | tile == Just Water = Swimming direction
+    | otherwise = Boy direction

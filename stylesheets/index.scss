@@ -38,6 +38,9 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
     }
 
     &.-boy {
+      &.-drown {
+        @include tile(1, 3);
+      }
       &.-down {
         @include tile(0, 0);
         &.-swimming {

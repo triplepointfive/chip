@@ -130,7 +130,7 @@ movePlayer direction level =
       Just (Key color)  -> inactive (pickUpKey color moved)
       Just (Door color) -> inactive (openDoor color turned)
       Just Wall         -> inactive turned
-      Just Water        -> withAction moved (Die "Oops")
+      Just Water        -> withAction moved (Die "Ooops! Chip can't swim without flippers!")
       Just Hint         -> inactive moved
       Just Socket       -> inactive $ moveToSocket dest level
       Just Exit         -> withAction moved Complete

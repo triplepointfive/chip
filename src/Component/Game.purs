@@ -71,7 +71,7 @@ component initBlank initLevelNum =
     div "game-container"
       [ div "content panel"
           ( renderMessage game
-          <> map tilesRowElem (levelTiles 4 game.level)
+          <> map tilesRowElem (levelTiles 4 game)
           )
       , renderSidebar game
       ]

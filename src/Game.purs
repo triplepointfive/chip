@@ -1,6 +1,7 @@
 module Game
   ( Game(..)
   , State(..)
+  , isDead
   , onLevel
   , tick
   ) where
@@ -25,6 +26,11 @@ type Game =
   , state :: State
   , name :: String
   }
+
+isDead :: Game -> Boolean
+isDead { state } = case state of
+  Dead _ -> true
+  _ -> false
 
 tick :: Game -> Game
 tick game = game { ticksLeft = game.ticksLeft - 1 }
