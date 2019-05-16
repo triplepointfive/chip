@@ -14,6 +14,12 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
   src: url(../fonts/digital-7.ttf);
 }
 
+@mixin tile($x, $y) {
+  &::after {
+    background-position: $sprite-ratio * -1 * $x $sprite-ratio * -1 * $y;
+  }
+}
+
 .level-row {
   > .tile {
     width: $cell-size;
@@ -33,113 +39,87 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
 
     &.-boy {
       &.-down {
-        &::after {
-          background-position: 0 0;
+        @include tile(0, 0);
+        &.-swimming {
+          @include tile(4, 0);
         }
       }
       &.-left {
-        &::after {
-          background-position: $sprite-ratio * -1 0;
+        @include tile(1, 0);
+        &.-swimming {
+          @include tile(5, 0);
         }
       }
       &.-up {
-        &::after {
-          background-position: $sprite-ratio * -2 0;
+        @include tile(2, 0);
+        &.-swimming {
+          @include tile(6, 0);
         }
       }
       &.-right {
-        &::after {
-          background-position: $sprite-ratio * -3 0;
+        @include tile(3, 0);
+        &.-swimming {
+          @include tile(7, 0);
         }
       }
     }
 
     &.-key {
       &.-red {
-        &::after {
-          background-position: 0 $sprite-ratio * -5;
-        }
+        @include tile(0, 5);
       }
       &.-cyan {
-        &::after {
-          background-position: $sprite-ratio * -1 $sprite-ratio * -5;
-        }
+        @include tile(1, 5);
       }
       &.-yellow {
-        &::after {
-          background-position: $sprite-ratio * -2 $sprite-ratio * -5;
-        }
+        @include tile(2, 5);
       }
       &.-green {
-        &::after {
-          background-position: $sprite-ratio * -3 $sprite-ratio * -5;
-        }
+        @include tile(3, 5);
       }
     }
 
     &.-door {
       &.-red {
-        &::after {
-          background-position: 0 $sprite-ratio * -4;
-        }
+        @include tile(0, 4);
       }
       &.-cyan {
-        &::after {
-          background-position: $sprite-ratio * -1 $sprite-ratio * -4;
-        }
+        @include tile(1, 4);
       }
       &.-yellow {
-        &::after {
-          background-position: $sprite-ratio * -2 $sprite-ratio * -4;
-        }
+        @include tile(2, 4);
       }
       &.-green {
-        &::after {
-          background-position: $sprite-ratio * -3 $sprite-ratio * -4;
-        }
+        @include tile(3, 4);
       }
     }
 
     &.-floor {
-      &::after {
-        background-position: 0 $sprite-ratio * -1;
-      }
+      @include tile(0, 1);
     }
 
     &.-wall {
-      &::after {
-        background-position: $sprite-ratio * -2 $sprite-ratio * -1;
-      }
+      @include tile(2, 1);
     }
 
     &.-chip {
-      &::after {
-        background-position: $sprite-ratio * -3 $sprite-ratio * -1;
-      }
+      @include tile(3, 1);
     }
 
     &.-socket {
-      &::after {
-        background-position: $sprite-ratio * -4 $sprite-ratio * -1;
-      }
+      @include tile(4, 1);
     }
 
     &.-exit {
-      &::after {
-        background-position: $sprite-ratio * -5 $sprite-ratio * -1;
-      }
+      @include tile(5, 1);
     }
 
     &.-hint {
-      &::after {
-        background-position: $sprite-ratio * -1 $sprite-ratio * -1;
-      }
+      @include tile(1, 1);
     }
 
     &.-water {
-      &::after {
-        background-position: 0 $sprite-ratio * -3;
-      }
+      @include tile(0, 3);
     }
   }
 }
@@ -183,9 +163,9 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
         background-color: white;
         border: 0.5rem solid blue;
 
-        top: 50%;
+        bottom: 20%;
         left: 50%;
-        transform: translate(-50%, -50%);
+        transform: translate(-50%, 0);
       }
     }
   }
