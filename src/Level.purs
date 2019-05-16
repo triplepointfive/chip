@@ -98,13 +98,15 @@ instance showTile :: Show Tile where
     Water -> "~"
 
 data Action
-  = CompleteLevel
+  = Complete
+  | Die String
 
 derive instance eqAction :: Eq Action
 
 instance showAction :: Show Action where
   show = case _ of
-    CompleteLevel -> "CompleteLevel"
+    Complete -> "Complete"
+    Die reason -> "Die " <> reason
 
 type ActionResult = Tuple Level (Array Action)
 
@@ -128,10 +130,10 @@ movePlayer direction level =
       Just (Key color)  -> inactive (pickUpKey color moved)
       Just (Door color) -> inactive (openDoor color turned)
       Just Wall         -> inactive turned
-      Just Water        -> inactive moved
+      Just Water        -> withAction moved (Die "Oops")
       Just Hint         -> inactive moved
       Just Socket       -> inactive $ moveToSocket dest level
-      Just Exit         -> withAction moved CompleteLevel
+      Just Exit         -> withAction moved Complete
 
   where
 

@@ -23,6 +23,7 @@ level1 = Level.build
   , name: "Spec"
   , hint: Nothing
   , chips: 1
+  , timeLimit: 10
   }
 
 level2 :: Level.Level
@@ -35,6 +36,7 @@ level2 = Level.build
   , name: "Spec"
   , hint: Nothing
   , chips: 1
+  , timeLimit: 10
   }
 
 level3 :: Level.Level
@@ -47,6 +49,7 @@ level3 = Level.build
   , name: "Spec"
   , hint: Nothing
   , chips: 1
+  , timeLimit: 10
   }
 
 main :: Effect Unit
@@ -80,7 +83,7 @@ main = run [consoleReporter] do
     describe "on exit" do
       let Tuple level actions = Level.movePlayer Down level1
       it "produces complete action" do
-        actions `shouldEqual` [Level.CompleteLevel]
+        actions `shouldEqual` [Level.Complete]
       it "changes position" do
         level.player.pos `shouldEqual` { x: 1, y: 1 }
       it "turns" do

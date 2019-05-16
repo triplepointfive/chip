@@ -1,6 +1,7 @@
 module Component.Game
   ( component
   , Query(..)
+  , processAction
   ) where
 
 import Prelude hiding (div)
@@ -10,6 +11,7 @@ import Data.Int (ceil, toNumber)
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Effect.Aff (Aff)
+import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
@@ -22,7 +24,7 @@ import Game as Game
 import Level as Level
 import Level (Tile(..), Color(..))
 import Lib (getJSON)
-import Utils (Direction(..))
+import Utils (Direction(..), foldlM)
 
 -- | Accepts keyboard keypress events
 data Query a
@@ -95,25 +97,9 @@ component initBlank initLevelNum =
 
       game <- H.get
       let Tuple level actions = Level.movePlayer direction game.level
-      H.put (game { level = level })
 
-      case actions of
-        [Level.CompleteLevel] -> do
-          result <- H.liftAff $ getJSON ("levels/" <> show (game.levelNum + 1) <> ".json")
-          case result of
-            Just blank -> do
-              H.put $ game
-                  { level = Level.build blank
-                  , levelNum = game.levelNum + 1
-                  , name = blank.name
-                  , ticksLeft = blank.timeLimit * 4
-                  , state = Game.Init
-                  }
-              pure next
-            Nothing ->
-              pure next
-        _ -> do
-          pure next
+      foldlM processAction (game { level = level }) actions >>= H.put
+      pure next
 
   eval (Tick next) = do
     { state, ticksLeft } <- H.get
@@ -125,6 +111,21 @@ component initBlank initLevelNum =
         when (ticksLeft == 1) (H.modify_ (_ { state = Game.Dead "Ooops! Out of time!" }))
         H.modify_ tick
         pure next
+
+processAction :: forall m. Bind m => MonadAff m => Game -> Level.Action -> m Game
+processAction game = case _ of
+  Level.Complete -> do
+      result <- H.liftAff $ getJSON ("levels/" <> show (game.levelNum + 1) <> ".json")
+      case result of
+        Just blank -> pure $ game
+            { level = Level.build blank
+            , levelNum = game.levelNum + 1
+            , name = blank.name
+            , ticksLeft = blank.timeLimit * 4
+            , state = Game.Init
+            }
+        Nothing -> pure game
+  Level.Die reason -> pure (game { state = Game.Dead reason })
 
 renderMessage :: forall p i. Game -> Array (H.HTML p i)
 renderMessage { state, name } = case state of
