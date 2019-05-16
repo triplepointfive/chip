@@ -1,5 +1,6 @@
 module Game
   ( Game(..)
+  , State(..)
   , onLevel
   , tick
   ) where
@@ -8,10 +9,17 @@ import Prelude
 
 import Level (Level)
 
+data State
+  = Alive
+  | Dead String
+  | Pause
+  | Complete
+
 type Game =
   { level :: Level
   , levelNum :: Int
   , ticksLeft :: Int
+  , state :: State
   }
 
 tick :: Game -> Game

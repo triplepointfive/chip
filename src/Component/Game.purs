@@ -18,6 +18,7 @@ import Web.UIEvent.KeyboardEvent (KeyboardEvent)
 
 import Display (levelTiles, tilesRowElem, DisplayTile(..))
 import Game (Game, tick)
+import Game as Game
 import Level as Level
 import Level (Tile(..), Color(..))
 import Lib (getJSON)
@@ -58,7 +59,8 @@ component initBlank initLevelNum =
   initialState =
     { level: Level.build initBlank
     , levelNum: initLevelNum
-    , ticksLeft: 100 * 4
+    , ticksLeft: initBlank.timeLimit * 4
+    , state: Game.Alive
     }
 
   render :: State -> H.ParentHTML Query ChildQuery ChildSlot Aff
@@ -95,7 +97,11 @@ component initBlank initLevelNum =
           result <- H.liftAff $ getJSON ("levels/" <> show (game.levelNum + 1) <> ".json")
           case result of
             Just blank -> do
-              H.put (game { level = Level.build blank, levelNum = game.levelNum + 1 })
+              H.put $ game
+                  { level = Level.build blank
+                  , levelNum = game.levelNum + 1
+                  , ticksLeft = blank.timeLimit * 4
+                  }
               pure next
             Nothing ->
               pure next
@@ -111,7 +117,6 @@ renderInventory
   -> H.HTML p i
 renderInventory { inventory: { red, cyan, yellow, green }, hint } =
   div "inventory"
-    -- [ HH.div_ (maybe [] (singleton <<< HH.text) hint)
     [ tilesRowElem
         [ if red > 0 then Tile (Key Red) else Floor
         , if cyan > 0 then Tile (Key Cyan) else Floor

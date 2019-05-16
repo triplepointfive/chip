@@ -216,6 +216,7 @@ type Blank =
   , hint :: Maybe String
   , name :: String
   , chips :: Int
+  , timeLimit :: Int
   }
 
 -- | Builds a level from its blank
