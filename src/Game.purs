@@ -10,16 +10,20 @@ import Prelude
 import Level (Level)
 
 data State
-  = Alive
+  = Init
+  | Alive
   | Dead String
   | Pause
   | Complete
+
+derive instance eqState :: Eq State
 
 type Game =
   { level :: Level
   , levelNum :: Int
   , ticksLeft :: Int
   , state :: State
+  , name :: String
   }
 
 tick :: Game -> Game

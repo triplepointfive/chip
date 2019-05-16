@@ -144,22 +144,50 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
   }
 }
 
+.panel {
+  border-top: 5px solid white;
+  border-left: 5px solid white;
+  border-right: 5px solid gray;
+  border-bottom: 5px solid gray;
+}
+
 .game-container {
   display: flex;
-
-  > .panel {
-    border-top: 5px solid white;
-    border-left: 5px solid white;
-    border-right: 5px solid gray;
-    border-bottom: 5px solid gray;
-
-    background-color: lightgray;
-  }
 
   > .content {
     display: inline-block;
     vertical-align: top;
     padding: 3px;
+    position: relative;
+    background-color: lightgray;
+
+    > .modal {
+      position: absolute;
+      padding: 0.5rem 1rem;
+      z-index: 1;
+      text-align: center;
+
+      &.-level {
+        font-size: 2rem;
+        color: yellow;
+        background-color: black;
+
+        bottom: 10%;
+        left: 50%;
+        transform: translate(-50%, 0);
+        white-space: nowrap;
+      }
+
+      &.-dead {
+        color: black;
+        background-color: white;
+        border: 0.5rem solid blue;
+
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+    }
   }
 
   > .sidebar {
@@ -168,6 +196,7 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
     display: inline-block;
     vertical-align: top;
     padding: 0.5rem;
+    background-color: lightgray;
 
     display: flex;
     flex-direction: column;

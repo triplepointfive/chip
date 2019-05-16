@@ -60,34 +60,39 @@ component initBlank initLevelNum =
     { level: Level.build initBlank
     , levelNum: initLevelNum
     , ticksLeft: initBlank.timeLimit * 4
-    , state: Game.Alive
+    , name: initBlank.name
+    , state: Game.Init
     }
 
   render :: State -> H.ParentHTML Query ChildQuery ChildSlot Aff
-  render { level, levelNum, ticksLeft } =
+  render game =
     div "game-container"
-      [ div "content panel" (map tilesRowElem (levelTiles 4 level))
-      , div "sidebar panel"
-          [ HH.div_
-              [ dl "LEVEL" levelNum
-              , dl "TIME" (ceil ((toNumber ticksLeft) / 4.0 ))
-              , dl "CHIPS LEFT" level.chipsLeft
-              ]
-          , renderInventory { inventory: level.inventory, hint: Level.visibleHint level }
-          ]
+      [ div "content panel"
+          ( renderMessage game
+          <> map tilesRowElem (levelTiles 4 game.level)
+          )
+      , renderSidebar game
       ]
 
   eval :: Query ~> H.ParentDSL State Query ChildQuery ChildSlot Void Aff
-  eval (KeyboardEvent ev next) = case KE.key ev of
-    "ArrowDown"  -> raiseMoveEvent Down
-    "ArrowLeft"  -> raiseMoveEvent Left
-    "ArrowUp"    -> raiseMoveEvent Up
-    "ArrowRight" -> raiseMoveEvent Right
-    otherwise    -> pure next
+  eval (KeyboardEvent ev next) = do
+    { state } <- H.get
+
+    case state of
+      Game.Dead _ -> pure next
+      _ -> case KE.key ev of
+          "ArrowDown"  -> raiseMoveEvent Down
+          "ArrowLeft"  -> raiseMoveEvent Left
+          "ArrowUp"    -> raiseMoveEvent Up
+          "ArrowRight" -> raiseMoveEvent Right
+          otherwise    -> pure next
 
     where
 
     raiseMoveEvent direction = do
+      { state } <- H.get
+      when (state == Game.Init) (H.modify_ (_ { state = Game.Alive }))
+
       game <- H.get
       let Tuple level actions = Level.movePlayer direction game.level
       H.put (game { level = level })
@@ -100,7 +105,9 @@ component initBlank initLevelNum =
               H.put $ game
                   { level = Level.build blank
                   , levelNum = game.levelNum + 1
+                  , name = blank.name
                   , ticksLeft = blank.timeLimit * 4
+                  , state = Game.Init
                   }
               pure next
             Nothing ->
@@ -109,24 +116,46 @@ component initBlank initLevelNum =
           pure next
 
   eval (Tick next) = do
-    H.modify_ (tick)
-    pure next
+    { state, ticksLeft } <- H.get
 
-renderInventory
-  :: forall p i. { inventory :: Level.Inventory, hint :: Maybe String }
-  -> H.HTML p i
-renderInventory { inventory: { red, cyan, yellow, green }, hint } =
-  div "inventory"
-    [ tilesRowElem
-        [ if red > 0 then Tile (Key Red) else Floor
-        , if cyan > 0 then Tile (Key Cyan) else Floor
-        , if yellow > 0 then Tile (Key Yellow) else Floor
-        , if green then Tile (Key Green) else Floor
+    case state of
+      Game.Init -> pure next
+      Game.Dead _ -> pure next
+      _ -> do
+        when (ticksLeft == 1) (H.modify_ (_ { state = Game.Dead "Ooops! Out of time!" }))
+        H.modify_ tick
+        pure next
+
+renderMessage :: forall p i. Game -> Array (H.HTML p i)
+renderMessage { state, name } = case state of
+  Game.Init -> [ div "panel modal -level" [ HH.text name ] ]
+  Game.Dead msg -> [ div "modal -dead" [ HH.text msg, HH.br_, HH.text "Press R to restart" ] ]
+  _ -> []
+
+renderSidebar :: forall p i. Game -> H.HTML p i
+renderSidebar { level, levelNum, ticksLeft } =
+  div "sidebar panel"
+    [ HH.div_
+        [ dl "LEVEL" levelNum
+        , dl "TIME" (ceil ((toNumber ticksLeft) / 4.0 ))
+        , dl "CHIPS LEFT" level.chipsLeft
         ]
-    , tilesRowElem
-        [ Floor
-        , Floor
-        , Floor
-        , Floor
+    , div "inventory"
+        [ tilesRowElem
+            [ if level.inventory.red > 0 then Tile (Key Red) else Floor
+            , if level.inventory.cyan > 0 then Tile (Key Cyan) else Floor
+            , if level.inventory.yellow > 0 then Tile (Key Yellow) else Floor
+            , if level.inventory.green then Tile (Key Green) else Floor
+            ]
+        , tilesRowElem
+            [ Floor
+            , Floor
+            , Floor
+            , Floor
+            ]
         ]
     ]
+
+  where
+
+  hint = Level.visibleHint level
