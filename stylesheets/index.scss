@@ -20,6 +20,20 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
   }
 }
 
+@mixin inverse-panel {
+  border-top: 5px solid gray;
+  border-left: 5px solid gray;
+  border-right: 5px solid white;
+  border-bottom: 5px solid white;
+}
+
+@mixin panel {
+  border-top: 5px solid white;
+  border-left: 5px solid white;
+  border-right: 5px solid gray;
+  border-bottom: 5px solid gray;
+}
+
 .level-row {
   > .tile {
     width: $cell-size;
@@ -142,17 +156,11 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
   }
 }
 
-.panel {
-  border-top: 5px solid white;
-  border-left: 5px solid white;
-  border-right: 5px solid gray;
-  border-bottom: 5px solid gray;
-}
-
 .game-container {
   display: flex;
 
   > .content {
+    @include panel();
     display: inline-block;
     vertical-align: top;
     padding: 3px;
@@ -160,6 +168,7 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
     background-color: lightgray;
 
     > .modal {
+      @include panel();
       position: absolute;
       padding: 0.5rem 1rem;
       z-index: 1;
@@ -189,6 +198,7 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
   }
 
   > .sidebar {
+    @include panel();
     text-align: center;
     margin-left: 1rem;
     display: inline-block;
@@ -199,6 +209,17 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+
+    > .hint {
+      @include inverse-panel();
+
+      font-size: 2rem;
+      font-style: oblique;
+      color: cyan;
+      background-color: black;
+
+      width: $cell-size * 4 - 10px;
+    }
   }
 }
 
@@ -215,6 +236,8 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
   }
 
   > .description {
+    @include inverse-panel();
+
     font-family: "Digital7", sans-serif;
     color: darken(darkgreen, 10%);
     background-color: black;
@@ -224,11 +247,6 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
     z-index: 1;
     display: inline-block;
     line-height: 100%;
-
-    border-top: 5px solid gray;
-    border-left: 5px solid gray;
-    border-right: 5px solid white;
-    border-bottom: 5px solid white;
 
     > .value {
       color: greenyellow;

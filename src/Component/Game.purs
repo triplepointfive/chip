@@ -8,7 +8,7 @@ import Prelude hiding (div)
 
 import Data.Const (Const)
 import Data.Int (ceil, toNumber)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), isJust)
 import Data.Tuple (Tuple(..))
 import Effect.Aff (Aff)
 import Effect.Aff.Class (class MonadAff)
@@ -24,7 +24,7 @@ import Game as Game
 import Level as Level
 import Level (Tile(..), Color(..))
 import Lib (getJSON)
-import Utils (Direction(..), foldlM)
+import Utils (Direction(..), foldlM, try)
 
 -- | Accepts keyboard keypress events
 data Query a
@@ -69,7 +69,7 @@ component initBlank initLevelNum =
   render :: State -> H.ParentHTML Query ChildQuery ChildSlot Aff
   render game =
     div "game-container"
-      [ div "content panel"
+      [ div "content"
           ( renderMessage game
           <> map tilesRowElem (levelTiles 4 game)
           )
@@ -134,19 +134,22 @@ processAction game = case _ of
 
 renderMessage :: forall p i. Game -> Array (H.HTML p i)
 renderMessage { state, name } = case state of
-  Game.Init -> [ div "panel modal -level" [ HH.text name ] ]
+  Game.Init -> [ div "modal -level" [ HH.text name ] ]
   Game.Dead msg -> [ div "modal -dead" [ HH.text msg, HH.br_, HH.text "Press R to restart" ] ]
   _ -> []
 
 renderSidebar :: forall p i. Game -> H.HTML p i
 renderSidebar { level, levelNum, ticksLeft } =
-  div "sidebar panel"
-    [ HH.div_
+  div "sidebar"
+    [ HH.div_ $ (
         [ dl "LEVEL" levelNum
         , dl "TIME" (ceil ((toNumber ticksLeft) / 4.0 ))
-        , dl "CHIPS LEFT" level.chipsLeft
         ]
-    , div "inventory"
+        <> (if isJust hint then [] else [dl "CHIPS LEFT" level.chipsLeft])
+        )
+    , case hint of
+      Just msg -> div "hint" [ HH.text msg ]
+      Nothing -> div "inventory"
         [ tilesRowElem
             [ if level.inventory.red > 0 then Tile (Key Red) else Floor
             , if level.inventory.cyan > 0 then Tile (Key Cyan) else Floor
