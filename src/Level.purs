@@ -20,8 +20,9 @@ module Level
 import Prelude
 
 import Data.Array (foldl, foldr, uncons, filter, (:))
-import Data.Map (Map, lookup, empty, insert, delete)
+import Data.Map (Map, lookup, delete)
 import Data.Map as Map
+import Data.Set as Set
 import Data.Maybe (Maybe(..), isNothing)
 import Data.String.CodeUnits (toCharArray)
 import Data.Tuple (Tuple(..))
@@ -61,6 +62,7 @@ type Level =
   , chipsLeft :: Int
   , hint :: Maybe String
   , enemies :: Map Point Enemy
+  , blocks :: Set.Set Point
   }
 
 -- | Colors for keys and related doors
@@ -82,6 +84,7 @@ data Tile
   | Exit
   | Hint
   | Water
+  | Dirt
 
 derive instance eqTile :: Eq Tile
 
@@ -103,6 +106,7 @@ instance showTile :: Show Tile where
     Exit -> "<"
     Hint -> "?"
     Water -> "~"
+    Dirt -> "≈"
 
 data Action
   = Complete
@@ -129,18 +133,22 @@ outOfLevel { x, y } = x < 0 || y < 0 || x >= mapSize || y >= mapSize
 -- | Tries to move player
 movePlayer :: Direction -> Level -> ActionResult
 movePlayer direction level = checkForEnemies $
-  if outOfLevel dest
-  then inactive turned
-  else case lookup dest level.tiles of
-      Nothing           -> inactive moved
-      Just Chip         -> inactive (pickUpChip moved)
-      Just (Key color)  -> inactive (pickUpKey color moved)
-      Just (Door color) -> inactive (openDoor color turned)
-      Just Wall         -> inactive turned
-      Just Water        -> withAction moved (Die "Ooops! Chip can't swim without flippers!")
-      Just Hint         -> inactive moved
-      Just Socket       -> inactive $ moveToSocket dest level
-      Just Exit         -> withAction moved Complete
+  if Set.member dest level.blocks
+    then pushBlock (adjustPoint dest direction)
+    else
+      if outOfLevel dest
+      then inactive turned
+      else case lookup dest level.tiles of
+          Nothing           -> inactive moved
+          Just Chip         -> inactive (pickUpChip moved)
+          Just (Key color)  -> inactive (pickUpKey color moved)
+          Just (Door color) -> inactive (openDoor color turned)
+          Just Wall         -> inactive turned
+          Just Water        -> withAction moved (Die "Ooops! Chip can't swim without flippers!")
+          Just Hint         -> inactive moved
+          Just Dirt         -> inactive (removeCurrentTile moved)
+          Just Socket       -> inactive $ moveToSocket dest level
+          Just Exit         -> withAction moved Complete
 
   where
 
@@ -165,6 +173,24 @@ movePlayer direction level = checkForEnemies $
   openDoor :: Color -> Level -> Level
   openDoor color
     = try (hasKey color) (removeCurrentTile <<< withdrawKey color <<< move)
+
+  -- TODO: Check if pushed into a monster
+  pushBlock :: Point -> ActionResult
+  pushBlock blockDest
+    | Set.member blockDest level.blocks = inactive turned
+    | otherwise = case lookup blockDest level.tiles of
+        Just Water -> inactive $ moved
+            { tiles = Map.insert blockDest Dirt moved.tiles
+            , blocks = Set.delete dest level.blocks
+            }
+        Nothing -> inactive (moveBlock dest blockDest moved)
+        -- Just Hint -> inactive (moveBlock dest blockDest moved) -- TODO: Check chip as well
+        _ -> inactive turned
+
+moveBlock :: Point -> Point -> Level -> Level
+moveBlock from to level = level
+  { blocks = Set.insert to (Set.delete from level.blocks)
+  }
 
 moveToSocket :: Point -> Level -> Level
 moveToSocket pos level
@@ -231,7 +257,7 @@ enemyAct :: Level -> ActionResult
 enemyAct level = checkForEnemies $ inactive $ level { enemies = actedEnemies }
   where
 
-  actedEnemies = foldEnemies { new: empty, old: level.enemies }
+  actedEnemies = foldEnemies { new: Map.empty, old: level.enemies }
 
   foldEnemies { new, old } = case Map.findMin old of
     Just { key, value } ->
@@ -242,6 +268,7 @@ enemyAct level = checkForEnemies $ inactive $ level { enemies = actedEnemies }
           }
     Nothing -> new
 
+  -- TODO: Check for blocks
   isFloor :: Point -> Boolean
   isFloor p = isNothing (lookup p level.tiles)
 
@@ -281,10 +308,11 @@ build { grid, hint, chips } =
   initLevel :: Level
   initLevel =
     { player: { pos: { x: 0, y: 0 }, direction: Down }
-    , tiles: empty
+    , tiles: Map.empty
     , inventory: initInventory
     , chipsLeft: chips
-    , enemies: empty
+    , enemies: Map.empty
+    , blocks: Set.empty
     , hint
     }
 
@@ -315,12 +343,17 @@ build { grid, hint, chips } =
     '-' -> insertTile Socket
     '<' -> insertTile Exit
     '?' -> insertTile Hint
+    'O' -> addBlock
+    '≈' -> insertTile Dirt
     _   -> identity
 
     where
 
+    addBlock :: Level -> Level
+    addBlock l = l { blocks = Set.insert p l.blocks }
+
     addEnemy :: Enemy -> Level -> Level
-    addEnemy enemy l = l { enemies = insert p enemy l.enemies }
+    addEnemy enemy l = l { enemies = Map.insert p enemy l.enemies }
 
     insertTile :: Tile -> Level -> Level
-    insertTile tile l = l { tiles = insert p tile l.tiles}
+    insertTile tile l = l { tiles = Map.insert p tile l.tiles}

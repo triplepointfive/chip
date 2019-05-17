@@ -9,6 +9,7 @@ import Prelude
 import Data.Array (range)
 import Data.Map (lookup)
 import Data.Maybe (maybe, Maybe(..))
+import Data.Set as Set
 import Data.Tuple (Tuple(..))
 import Halogen as H
 import Halogen.HTML as HH
@@ -26,6 +27,7 @@ data DisplayTile
   | Creature Enemy
   | Swimming Direction
   | Drown
+  | Block
 
 -- | Builds a matrix of `DisplayTile` with `radius` * 2 + 1 size.
 -- | This function transforms raw level data to what shall be
@@ -67,12 +69,14 @@ tileClasses = case _ of
   Creature (Bee Left) -> "tile -bee -left"
   Creature (Bee Up) -> "tile -bee -up"
   Creature (Bee Right) -> "tile -bee -right"
+  Block -> "tile -block"
   Swimming Down -> "tile -boy -down -swimming"
   Swimming Left -> "tile -boy -left -swimming"
   Swimming Up -> "tile -boy -up -swimming"
   Swimming Right -> "tile -boy -right -swimming"
   Tile Water -> "tile -water"
   Tile Exit -> "tile -exit"
+  Tile Dirt -> "tile -dirt"
   Tile Hint -> "tile -hint"
   Tile Socket -> "tile -socket"
   Drown -> "tile -boy -drown"
@@ -95,6 +99,7 @@ buildTile p game = withTile (lookup p game.level.tiles)
 
   withTile tile
     | p == pos = boyTile tile
+    | Set.member p game.level.blocks = Block
     | otherwise = maybe (maybe Floor Tile tile) Creature (lookup p game.level.enemies)
 
   boyTile tile

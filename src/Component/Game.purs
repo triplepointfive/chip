@@ -24,7 +24,7 @@ import Game as Game
 import Level as Level
 import Level (Tile(..), Color(..))
 import Lib (getJSON)
-import Utils (Direction(..), foldlM, try)
+import Utils (Direction(..), foldlM)
 
 -- | Accepts keyboard keypress events
 data Query a

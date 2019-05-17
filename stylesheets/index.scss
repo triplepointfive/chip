@@ -139,6 +139,14 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
       @include tile(0, 3);
     }
 
+    &.-dirt {
+      @include tile(1, 2);
+    }
+
+    &.-block {
+      @include tile(0, 2);
+    }
+
     &.-bee {
       &.-down {
         @include tile(0, 8);
