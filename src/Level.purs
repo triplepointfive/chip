@@ -19,7 +19,7 @@ module Level
 
 import Prelude
 
-import Data.Array (foldl, foldr, uncons, filter)
+import Data.Array (foldl, foldr, uncons, filter, (:))
 import Data.Map (Map, lookup, empty, insert, delete)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), isNothing)
@@ -128,7 +128,7 @@ outOfLevel { x, y } = x < 0 || y < 0 || x >= mapSize || y >= mapSize
 
 -- | Tries to move player
 movePlayer :: Direction -> Level -> ActionResult
-movePlayer direction level =
+movePlayer direction level = checkForEnemies $
   if outOfLevel dest
   then inactive turned
   else case lookup dest level.tiles of
@@ -221,8 +221,14 @@ type Blank =
   , timeLimit :: Int
   }
 
-enemyAct :: Level -> Level
-enemyAct level = level { enemies = actedEnemies }
+checkForEnemies :: ActionResult -> ActionResult
+checkForEnemies (Tuple level actions)
+  = case lookup level.player.pos level.enemies of
+    Just _ -> Tuple level (Die "Ooops! Look out for creatures!" : actions)
+    Nothing -> Tuple level actions
+
+enemyAct :: Level -> ActionResult
+enemyAct level = checkForEnemies $ inactive $ level { enemies = actedEnemies }
   where
 
   actedEnemies = foldEnemies { new: empty, old: level.enemies }

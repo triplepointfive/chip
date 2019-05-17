@@ -109,7 +109,12 @@ component initBlank initLevelNum =
       Game.Dead _ -> pure next
       _ -> do
         when (ticksLeft == 1) (H.modify_ (_ { state = Game.Dead "Ooops! Out of time!" }))
-        H.modify_ (tick >>> Game.onLevel Level.enemyAct)
+        H.modify_ tick
+
+        game <- H.get
+        let Tuple level actions = Level.enemyAct game.level
+
+        foldlM processAction (game { level = level }) actions >>= H.put
         pure next
 
 processAction :: forall m. Bind m => MonadAff m => Game -> Level.Action -> m Game
