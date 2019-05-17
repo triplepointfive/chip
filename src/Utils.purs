@@ -2,7 +2,10 @@ module Utils
   ( Point(..)
   , Direction(..)
   , addIndex
+  , adjustPoint
   , foldlM
+  , toLeft
+  , toRight
   , try
   ) where
 
@@ -33,6 +36,27 @@ instance showDirection :: Show Direction where
     Down -> "Down"
     Left -> "Left"
     Right -> "Right"
+
+adjustPoint :: Point -> Direction -> Point
+adjustPoint { x, y } direction = case direction of
+  Up -> { x, y: y - 1 }
+  Left -> { x: x - 1, y }
+  Down -> { x, y: y + 1 }
+  Right -> { x: x + 1, y }
+
+toLeft :: Direction -> Direction
+toLeft = case _ of
+  Up -> Left
+  Left -> Down
+  Down -> Right
+  Right -> Up
+
+toRight :: Direction -> Direction
+toRight = case _ of
+  Up -> Right
+  Right -> Down
+  Down -> Left
+  Left -> Up
 
 -- | Map a set to the same set but indexed so fst is the index and snd is
 -- | element of the set

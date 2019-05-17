@@ -124,6 +124,21 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
     &.-water {
       @include tile(0, 3);
     }
+
+    &.-bee {
+      &.-down {
+        @include tile(0, 8);
+      }
+      &.-left {
+        @include tile(1, 8);
+      }
+      &.-up {
+        @include tile(2, 8);
+      }
+      &.-right {
+        @include tile(3, 8);
+      }
+    }
   }
 }
 

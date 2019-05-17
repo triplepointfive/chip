@@ -1,29 +1,32 @@
 module Level
   ( Action(..)
   , ActionResult(..)
-  , Color(..)
-  , Level(..)
   , Blank(..)
-  , Tile(..)
-  , Player(..)
+  , Color(..)
+  , Enemy(..)
   , Inventory(..)
+  , Level(..)
+  , Player(..)
+  , Tile(..)
   , Tiles(..)
-  , mapSize
   , build
+  , enemyAct
+  , hasKey
+  , mapSize
   , movePlayer
   , visibleHint
-  , hasKey
   ) where
 
 import Prelude
 
-import Data.Array (foldl, foldr)
+import Data.Array (foldl, foldr, uncons, filter)
 import Data.Map (Map, lookup, empty, insert, delete)
-import Data.Maybe (Maybe(..))
+import Data.Map as Map
+import Data.Maybe (Maybe(..), isNothing)
 import Data.String.CodeUnits (toCharArray)
 import Data.Tuple (Tuple(..))
 
-import Utils (Direction(..), Point, addIndex, try)
+import Utils (Direction(..), Point, addIndex, try, adjustPoint, toLeft, toRight)
 
 -- | Height and width of a level grid
 mapSize :: Int
@@ -47,6 +50,9 @@ type Player =
   , direction :: Direction
   }
 
+data Enemy
+  = Bee Direction
+
 -- | Represents a floor with all its objects
 type Level =
   { player :: Player
@@ -54,6 +60,7 @@ type Level =
   , inventory :: Inventory
   , chipsLeft :: Int
   , hint :: Maybe String
+  , enemies :: Map Point Enemy
   }
 
 -- | Colors for keys and related doors
@@ -199,13 +206,6 @@ addKey color inv = case color of
 removeTile :: Point -> Tiles -> Tiles
 removeTile pos = delete pos
 
-adjustPoint :: Point -> Direction -> Point
-adjustPoint { x, y } direction = case direction of
-  Up -> { x, y: y - 1 }
-  Left -> { x: x - 1, y }
-  Down -> { x, y: y + 1 }
-  Right -> { x: x + 1, y }
-
 -- | Returns hint text if it should be shown
 visibleHint :: Level -> Maybe String
 visibleHint { tiles, player: { pos }, hint } = case lookup pos tiles of
@@ -220,6 +220,42 @@ type Blank =
   , chips :: Int
   , timeLimit :: Int
   }
+
+enemyAct :: Level -> Level
+enemyAct level = level { enemies = actedEnemies }
+  where
+
+  actedEnemies = foldEnemies { new: empty, old: level.enemies }
+
+  foldEnemies { new, old } = case Map.findMin old of
+    Just { key, value } ->
+        let { pos, enemy } = act key value in
+        foldEnemies
+          { new: Map.insert pos enemy new
+          , old: Map.delete key old
+          }
+    Nothing -> new
+
+  isFloor :: Point -> Boolean
+  isFloor p = isNothing (lookup p level.tiles)
+
+  act :: Point -> Enemy -> { pos :: Point, enemy :: Enemy }
+  act pos (Bee direction)
+    = case uncons (filter (isFloor <<< adjustPoint pos) directions) of
+      Just { head: floorDirection } ->
+          { pos: adjustPoint pos floorDirection
+          , enemy: Bee floorDirection
+          }
+      Nothing -> { pos, enemy: Bee direction }
+
+    where
+
+    directions =
+        [ toLeft direction
+        , direction
+        , toRight direction
+        , toRight (toRight direction)
+        ]
 
 -- | Builds a level from its blank
 build :: Blank -> Level
@@ -242,6 +278,7 @@ build { grid, hint, chips } =
     , tiles: empty
     , inventory: initInventory
     , chipsLeft: chips
+    , enemies: empty
     , hint
     }
 
@@ -266,6 +303,7 @@ build { grid, hint, chips } =
     'C' -> insertTile (Door Cyan)
     'Y' -> insertTile (Door Yellow)
     'G' -> insertTile (Door Green)
+    'b' -> addEnemy (Bee Up)
     '~' -> insertTile Water
     '@' -> _ { player { pos = p } }
     '-' -> insertTile Socket
@@ -274,6 +312,9 @@ build { grid, hint, chips } =
     _   -> identity
 
     where
+
+    addEnemy :: Enemy -> Level -> Level
+    addEnemy enemy l = l { enemies = insert p enemy l.enemies }
 
     insertTile :: Tile -> Level -> Level
     insertTile tile l = l { tiles = insert p tile l.tiles}

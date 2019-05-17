@@ -14,7 +14,7 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 
-import Level (Color(..), Tile(..), mapSize)
+import Level (Color(..), Tile(..), mapSize, Enemy(..))
 import Game (Game, isDead)
 import Utils (Direction(..), Point)
 
@@ -23,6 +23,7 @@ data DisplayTile
   = Floor
   | Tile Tile
   | Boy Direction
+  | Creature Enemy
   | Swimming Direction
   | Drown
 
@@ -62,6 +63,10 @@ tileClasses = case _ of
   Boy Left -> "tile -boy -left"
   Boy Up -> "tile -boy -up"
   Boy Right -> "tile -boy -right"
+  Creature (Bee Down) -> "tile -bee -down"
+  Creature (Bee Left) -> "tile -bee -left"
+  Creature (Bee Up) -> "tile -bee -up"
+  Creature (Bee Right) -> "tile -bee -right"
   Swimming Down -> "tile -boy -down -swimming"
   Swimming Left -> "tile -boy -left -swimming"
   Swimming Up -> "tile -boy -up -swimming"
@@ -90,7 +95,7 @@ buildTile p game = withTile (lookup p game.level.tiles)
 
   withTile tile
     | p == pos = boyTile tile
-    | otherwise = maybe Floor Tile tile
+    | otherwise = maybe (maybe Floor Tile tile) Creature (lookup p game.level.enemies)
 
   boyTile tile
     | isDead game = Drown
