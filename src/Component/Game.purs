@@ -19,11 +19,11 @@ import Halogen.HTML.Properties as HP
 import Web.UIEvent.KeyboardEvent as KE
 import Web.UIEvent.KeyboardEvent (KeyboardEvent)
 
+import Chip.Tile (Color(..), Item(..), Tile(..))
 import Display (levelTiles, tilesRowElem, DisplayTile(..))
 import Game (Game, tick)
 import Game as Game
 import Level as Level
-import Level (Tile(..), Color(..), Item(..))
 import Lib (getJSON)
 import Utils (Direction(..), foldlM)
 

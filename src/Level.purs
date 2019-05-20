@@ -2,14 +2,10 @@ module Level
   ( Action(..)
   , ActionResult(..)
   , Blank(..)
-  , Color(..)
   , DieReason(..)
   , Enemy(..)
-  , Inventory(..)
-  , Item(..)
   , Level(..)
   , Player(..)
-  , Tile(..)
   , Tiles(..)
   , build
   , enemyAct
@@ -30,23 +26,13 @@ import Data.Maybe (Maybe(..), isNothing)
 import Data.String.CodeUnits (toCharArray)
 import Data.Tuple (Tuple(..))
 
+import Chip.Inventory (Inventory, initInventory, addItem, addKey)
+import Chip.Tile (Tile(..), Color(..), Item(..))
 import Utils (Direction(..), Point, addIndex, try, adjustPoint, toLeft, toRight, invert)
 
 -- | Height and width of a level grid
 mapSize :: Int
 mapSize = 32
-
--- | Everything player can take along
-type Inventory =
-  { red :: Int
-  , cyan :: Int
-  , yellow :: Int
-  , green :: Boolean
-  , skiSkates :: Boolean
-  , suctionBoots :: Boolean
-  , fireBoots :: Boolean
-  , flippers :: Boolean
-  }
 
 -- | Mapping for cell coordinates to object on it.
 -- | Does not include floor for simplicity
@@ -71,82 +57,6 @@ type Level =
   , enemies :: Map Point Enemy
   , blocks :: Set.Set Point
   }
-
--- | Colors for keys and related doors
-data Color
-  = Red
-  | Cyan
-  | Yellow
-  | Green
-
-derive instance eqColor :: Eq Color
-
-data Item
-  = SkiSkates
-  | SuctionBoots
-  | FireBoots
-  | Flippers
-
-derive instance eqItem :: Eq Item
-
-instance showItem :: Show Item where
-  show = case _ of
-    SkiSkates -> "S"
-    SuctionBoots -> "U"
-    FireBoots -> "I"
-    Flippers -> "F"
-
--- | A single cell on a level grid
-data Tile
-  = Wall
-  | Key Color
-  | Door Color
-  | Chip
-  | Socket
-  | Exit
-  | Hint
-  | Water
-  | Dirt
-  | Fire
-  | Item Item
-  | Force Direction
-  | Ice
-  | IceCorner Direction
-
-derive instance eqTile :: Eq Tile
-
-instance showTile :: Show Tile where
-  show = case _ of
-    Wall -> "#"
-    Key color -> case color of
-      Red -> "r"
-      Cyan -> "c"
-      Yellow -> "y"
-      Green -> "g"
-    Door color -> case color of
-      Red -> "R"
-      Cyan -> "C"
-      Yellow -> "Y"
-      Green -> "G"
-    Chip -> "+"
-    Socket -> "-"
-    Exit -> "<"
-    Hint -> "?"
-    Water -> "~"
-    Dirt -> "≈"
-    Fire -> "^"
-    Item item -> show item
-    Force direction -> case direction of
-      Down -> "↓"
-      Left -> "←"
-      Up -> "↑"
-      Right -> "→"
-    Ice -> "╬"
-    IceCorner direction -> case direction of
-      Down -> "╝"
-      Left -> "╚"
-      Up -> "╔"
-      Right -> "╗"
 
 data DieReason
   = Drown
@@ -200,6 +110,7 @@ movePlayer direction level = checkForEnemies $
           Just (Key color)  -> inactive (pickUpKey color moved)
           Just (Door color) -> inactive (openDoor color turned)
           Just Wall         -> inactive turned
+          -- TODO: Forbid to move on 'em
           Just (Force _)    -> inactive moved
           Just Ice          -> inactive moved
           Just (IceCorner _) -> inactive moved
@@ -294,20 +205,6 @@ removeCurrentTile l = l { tiles = removeTile l.player.pos l.tiles }
 
 onInventory :: (Inventory -> Inventory) -> Level -> Level
 onInventory f level = level { inventory = f level.inventory }
-
-addKey :: Color -> Inventory -> Inventory
-addKey color inv = case color of
-  Red -> inv { red = inv.red + 1 }
-  Cyan -> inv { cyan = inv.cyan + 1 }
-  Yellow -> inv { yellow = inv.yellow + 1 }
-  Green -> inv { green = true }
-
-addItem :: Item -> Inventory -> Inventory
-addItem item inv = case item of
-  SkiSkates -> inv { skiSkates = true }
-  SuctionBoots -> inv { suctionBoots = true }
-  FireBoots -> inv { fireBoots = true }
-  Flippers -> inv { flippers = true }
 
 removeTile :: Point -> Tiles -> Tiles
 removeTile pos = delete pos
@@ -404,18 +301,6 @@ build { grid, hint, chips } =
     , enemies: Map.empty
     , blocks: Set.empty
     , hint
-    }
-
-  initInventory :: Inventory
-  initInventory =
-    { red: 0
-    , cyan: 0
-    , yellow: 0
-    , green: false
-    , skiSkates: false
-    , suctionBoots: false
-    , fireBoots: false
-    , flippers: false
     }
 
   addCell :: Point -> Char -> Level -> Level
