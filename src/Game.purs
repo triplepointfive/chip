@@ -1,19 +1,18 @@
 module Game
   ( Game(..)
   , State(..)
-  , isDead
   , onLevel
   , tick
   ) where
 
 import Prelude
 
-import Level (Level)
+import Level (Level, DieReason)
 
 data State
   = Init
   | Alive
-  | Dead String
+  | Dead DieReason
   | Pause
   | Complete
 
@@ -26,11 +25,6 @@ type Game =
   , state :: State
   , name :: String
   }
-
-isDead :: Game -> Boolean
-isDead { state } = case state of
-  Dead _ -> true
-  _ -> false
 
 tick :: Game -> Game
 tick game = game { ticksLeft = game.ticksLeft - 1 }

@@ -55,6 +55,9 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
       &.-drown {
         @include tile(1, 3);
       }
+      &.-burned {
+        @include tile(7, 2);
+      }
       &.-down {
         @include tile(0, 0);
         &.-swimming {
@@ -145,6 +148,10 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
 
     &.-block {
       @include tile(0, 2);
+    }
+
+    &.-fire {
+      @include tile(7, 1);
     }
 
     &.-bee {

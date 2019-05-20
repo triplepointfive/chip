@@ -3,6 +3,7 @@ module Level
   , ActionResult(..)
   , Blank(..)
   , Color(..)
+  , DieReason(..)
   , Enemy(..)
   , Inventory(..)
   , Level(..)
@@ -85,6 +86,7 @@ data Tile
   | Hint
   | Water
   | Dirt
+  | Fire
 
 derive instance eqTile :: Eq Tile
 
@@ -107,17 +109,33 @@ instance showTile :: Show Tile where
     Hint -> "?"
     Water -> "~"
     Dirt -> "≈"
+    Fire -> "^"
+
+data DieReason
+  = Drown
+  | Burned
+  | Eaten
+  | Timed
+
+derive instance eqDieReason :: Eq DieReason
+
+instance showDieReason :: Show DieReason where
+  show = case _ of
+    Drown -> "Drown"
+    Burned -> "Burned"
+    Eaten -> "Eaten"
+    Timed -> "Timed"
 
 data Action
   = Complete
-  | Die String
+  | Die DieReason
 
 derive instance eqAction :: Eq Action
 
 instance showAction :: Show Action where
   show = case _ of
     Complete -> "Complete"
-    Die reason -> "Die " <> reason
+    Die reason -> "Die " <> show reason
 
 type ActionResult = Tuple Level (Array Action)
 
@@ -144,7 +162,8 @@ movePlayer direction level = checkForEnemies $
           Just (Key color)  -> inactive (pickUpKey color moved)
           Just (Door color) -> inactive (openDoor color turned)
           Just Wall         -> inactive turned
-          Just Water        -> withAction moved (Die "Ooops! Chip can't swim without flippers!")
+          Just Water        -> withAction moved (Die Drown)
+          Just Fire         -> withAction moved (Die Burned)
           Just Hint         -> inactive moved
           Just Dirt         -> inactive (removeCurrentTile moved)
           Just Socket       -> inactive $ moveToSocket dest level
@@ -250,7 +269,7 @@ type Blank =
 checkForEnemies :: ActionResult -> ActionResult
 checkForEnemies (Tuple level actions)
   = case lookup level.player.pos level.enemies of
-    Just _ -> Tuple level (Die "Ooops! Look out for creatures!" : actions)
+    Just _ -> Tuple level (Die Eaten : actions)
     Nothing -> Tuple level actions
 
 enemyAct :: Level -> ActionResult
@@ -339,6 +358,7 @@ build { grid, hint, chips } =
     'G' -> insertTile (Door Green)
     'b' -> addEnemy (Bee Up)
     '~' -> insertTile Water
+    '^' -> insertTile Fire
     '@' -> _ { player { pos = p } }
     '-' -> insertTile Socket
     '<' -> insertTile Exit

@@ -16,7 +16,8 @@ import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 
 import Level (Color(..), Tile(..), mapSize, Enemy(..))
-import Game (Game, isDead)
+import Level as Level
+import Game (Game, State(..))
 import Utils (Direction(..), Point)
 
 -- | What shall be output on screen
@@ -27,6 +28,7 @@ data DisplayTile
   | Creature Enemy
   | Swimming Direction
   | Drown
+  | Burned
   | Block
 
 -- | Builds a matrix of `DisplayTile` with `radius` * 2 + 1 size.
@@ -75,11 +77,13 @@ tileClasses = case _ of
   Swimming Up -> "tile -boy -up -swimming"
   Swimming Right -> "tile -boy -right -swimming"
   Tile Water -> "tile -water"
+  Tile Fire -> "tile -fire"
   Tile Exit -> "tile -exit"
   Tile Dirt -> "tile -dirt"
   Tile Hint -> "tile -hint"
   Tile Socket -> "tile -socket"
   Drown -> "tile -boy -drown"
+  Burned -> "tile -boy -burned"
 
 tileToElem :: forall p i. DisplayTile -> HH.HTML p i
 tileToElem tile = HH.span [ HP.class_ (H.ClassName (tileClasses tile)) ] []
@@ -98,11 +102,13 @@ buildTile p game = withTile (lookup p game.level.tiles)
   { player: { pos, direction } } = game.level
 
   withTile tile
-    | p == pos = boyTile tile
+    | p == pos = case game.state of
+      Dead Level.Drown -> Drown
+      Dead Level.Burned -> Burned
+      _ -> boyTile tile
     | Set.member p game.level.blocks = Block
     | otherwise = maybe (maybe Floor Tile tile) Creature (lookup p game.level.enemies)
 
   boyTile tile
-    | isDead game = Drown
     | tile == Just Water = Swimming direction
     | otherwise = Boy direction

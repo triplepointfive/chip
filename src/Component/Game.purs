@@ -71,7 +71,7 @@ component initBlank initLevelNum =
     div "game-container"
       [ div "content"
           ( renderMessage game
-          <> map tilesRowElem (levelTiles 4 game)
+          <> map tilesRowElem (levelTiles 7 game)
           )
       , renderSidebar game
       ]
@@ -108,7 +108,7 @@ component initBlank initLevelNum =
       Game.Init -> pure next
       Game.Dead _ -> pure next
       _ -> do
-        when (ticksLeft == 1) (H.modify_ (_ { state = Game.Dead "Ooops! Out of time!" }))
+        when (ticksLeft == 1) (H.modify_ (_ { state = Game.Dead Level.Timed }))
         H.modify_ tick
 
         game <- H.get
@@ -132,10 +132,17 @@ processAction game = case _ of
         Nothing -> pure game
   Level.Die reason -> pure (game { state = Game.Dead reason })
 
+dieMessage :: Level.DieReason -> String
+dieMessage = case _ of
+  Level.Drown -> "Ooops! Chip can't swim without flippers!"
+  Level.Burned -> "Ooops! Don't step in the fire without fire boots!"
+  Level.Eaten -> "Ooops! Look out for creatures!"
+  Level.Timed -> "Ooops! Don't step in the fire without fire boots!"
+
 renderMessage :: forall p i. Game -> Array (H.HTML p i)
 renderMessage { state, name } = case state of
   Game.Init -> [ div "modal -level" [ HH.text name ] ]
-  Game.Dead msg -> [ div "modal -dead" [ HH.text msg, HH.br_, HH.text "Press R to restart" ] ]
+  Game.Dead reason -> [ div "modal -dead" [ HH.text (dieMessage reason), HH.br_, HH.text "Press R to restart" ] ]
   _ -> []
 
 renderSidebar :: forall p i. Game -> H.HTML p i
