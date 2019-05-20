@@ -84,6 +84,21 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
       }
     }
 
+    &.-force {
+      &.-down {
+        @include tile(4, 4);
+      }
+      &.-left {
+        @include tile(5, 4);
+      }
+      &.-up {
+        @include tile(6, 4);
+      }
+      &.-right {
+        @include tile(7, 4);
+      }
+    }
+
     &.-key {
       &.-red {
         @include tile(0, 5);

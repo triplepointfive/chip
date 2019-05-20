@@ -87,6 +87,7 @@ data Tile
   | Water
   | Dirt
   | Fire
+  | Force Direction
 
 derive instance eqTile :: Eq Tile
 
@@ -110,6 +111,11 @@ instance showTile :: Show Tile where
     Water -> "~"
     Dirt -> "≈"
     Fire -> "^"
+    Force direction -> case direction of
+      Down -> "↓"
+      Left -> "←"
+      Up -> "↑"
+      Right -> "→"
 
 data DieReason
   = Drown
@@ -162,6 +168,7 @@ movePlayer direction level = checkForEnemies $
           Just (Key color)  -> inactive (pickUpKey color moved)
           Just (Door color) -> inactive (openDoor color turned)
           Just Wall         -> inactive turned
+          Just (Force _)    -> inactive moved
           Just Water        -> withAction moved (Die Drown)
           Just Fire         -> withAction moved (Die Burned)
           Just Hint         -> inactive moved
@@ -359,6 +366,12 @@ build { grid, hint, chips } =
     'b' -> addEnemy (Bee Up)
     '~' -> insertTile Water
     '^' -> insertTile Fire
+
+    '↓' -> insertTile (Force Down)
+    '←' -> insertTile (Force Left)
+    '↑' -> insertTile (Force Up)
+    '→' -> insertTile (Force Right)
+
     '@' -> _ { player { pos = p } }
     '-' -> insertTile Socket
     '<' -> insertTile Exit
