@@ -184,7 +184,7 @@ movePlayer direction level = checkForEnemies $
             , blocks = Set.delete dest level.blocks
             }
         Nothing -> inactive (moveBlock dest blockDest moved)
-        -- Just Hint -> inactive (moveBlock dest blockDest moved) -- TODO: Check chip as well
+        Just Hint -> inactive (moveBlock dest blockDest moved)
         _ -> inactive turned
 
 moveBlock :: Point -> Point -> Level -> Level
