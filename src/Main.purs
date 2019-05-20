@@ -44,7 +44,7 @@ main = HA.runHalogenAff do
 tickInterval :: forall o. (H.HalogenIO Game.Query o Aff) -> Effect Unit
 tickInterval game = void $
   setInterval
-      250
+      (1000 / Game.ticksPerSecond)
       (void $ launchAff $ game.query (H.action Game.Tick))
 
 onKeyUp :: HTMLDocument -> (KeyboardEvent -> Effect Unit) -> Effect Unit

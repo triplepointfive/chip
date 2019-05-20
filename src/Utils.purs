@@ -4,6 +4,7 @@ module Utils
   , addIndex
   , adjustPoint
   , foldlM
+  , invert
   , toLeft
   , toRight
   , try
@@ -57,6 +58,13 @@ toRight = case _ of
   Right -> Down
   Down -> Left
   Left -> Up
+
+invert :: Direction -> Direction
+invert = case _ of
+  Up -> Down
+  Down -> Up
+  Right -> Left
+  Left -> Right
 
 -- | Map a set to the same set but indexed so fst is the index and snd is
 -- | element of the set

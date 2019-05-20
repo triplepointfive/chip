@@ -2,6 +2,7 @@ module Component.Game
   ( component
   , Query(..)
   , processAction
+  , ticksPerSecond
   ) where
 
 import Prelude hiding (div)
@@ -25,6 +26,9 @@ import Level as Level
 import Level (Tile(..), Color(..), Item(..))
 import Lib (getJSON)
 import Utils (Direction(..), foldlM)
+
+ticksPerSecond :: Int
+ticksPerSecond = 8
 
 -- | Accepts keyboard keypress events
 data Query a
@@ -61,7 +65,7 @@ component initBlank initLevelNum =
   initialState =
     { level: Level.build initBlank
     , levelNum: initLevelNum
-    , ticksLeft: initBlank.timeLimit * 4
+    , ticksLeft: initBlank.timeLimit * ticksPerSecond
     , name: initBlank.name
     , state: Game.Init
     }
@@ -115,6 +119,11 @@ component initBlank initLevelNum =
         let Tuple level actions = Level.enemyAct game.level
 
         foldlM processAction (game { level = level }) actions >>= H.put
+
+        game <- H.get
+        let Tuple level actions = Level.slide game.level
+        foldlM processAction (game { level = level }) actions >>= H.put
+
         pure next
 
 processAction :: forall m. Bind m => MonadAff m => Game -> Level.Action -> m Game
@@ -126,7 +135,7 @@ processAction game = case _ of
             { level = Level.build blank
             , levelNum = game.levelNum + 1
             , name = blank.name
-            , ticksLeft = blank.timeLimit * 4
+            , ticksLeft = blank.timeLimit * ticksPerSecond
             , state = Game.Init
             }
         Nothing -> pure game
@@ -150,7 +159,7 @@ renderSidebar { level, levelNum, ticksLeft } =
   div "sidebar"
     [ HH.div_ $ (
         [ dl "LEVEL" levelNum
-        , dl "TIME" (ceil ((toNumber ticksLeft) / 4.0 ))
+        , dl "TIME" (ceil ((toNumber ticksLeft) / (toNumber ticksPerSecond) ))
         ]
         <> (if isJust hint then [] else [dl "CHIPS LEFT" level.chipsLeft])
         )

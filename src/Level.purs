@@ -16,6 +16,7 @@ module Level
   , hasKey
   , mapSize
   , movePlayer
+  , slide
   , visibleHint
   ) where
 
@@ -29,7 +30,7 @@ import Data.Maybe (Maybe(..), isNothing)
 import Data.String.CodeUnits (toCharArray)
 import Data.Tuple (Tuple(..))
 
-import Utils (Direction(..), Point, addIndex, try, adjustPoint, toLeft, toRight)
+import Utils (Direction(..), Point, addIndex, try, adjustPoint, toLeft, toRight, invert)
 
 -- | Height and width of a level grid
 mapSize :: Int
@@ -109,6 +110,8 @@ data Tile
   | Fire
   | Item Item
   | Force Direction
+  | Ice
+  | IceCorner Direction
 
 derive instance eqTile :: Eq Tile
 
@@ -138,6 +141,12 @@ instance showTile :: Show Tile where
       Left -> "←"
       Up -> "↑"
       Right -> "→"
+    Ice -> "╬"
+    IceCorner direction -> case direction of
+      Down -> "╝"
+      Left -> "╚"
+      Up -> "╔"
+      Right -> "╗"
 
 data DieReason
   = Drown
@@ -192,6 +201,8 @@ movePlayer direction level = checkForEnemies $
           Just (Door color) -> inactive (openDoor color turned)
           Just Wall         -> inactive turned
           Just (Force _)    -> inactive moved
+          Just Ice          -> inactive moved
+          Just (IceCorner _) -> inactive moved
           Just Water        -> stepInWater moved
           Just Fire         -> stepInFire moved
           Just Hint         -> inactive moved
@@ -359,6 +370,16 @@ enemyAct level = checkForEnemies $ inactive $ level { enemies = actedEnemies }
         , toRight (toRight direction)
         ]
 
+slide :: Level -> ActionResult
+slide level = case lookup level.player.pos level.tiles of
+  Just (Force direction) -> movePlayer direction level
+  Just Ice -> movePlayer level.player.direction level
+  Just (IceCorner direction) ->
+      if level.player.direction == direction
+          then movePlayer (toRight direction) level
+          else movePlayer (invert direction) level
+  _ -> inactive level
+
 -- | Builds a level from its blank
 build :: Blank -> Level
 build { grid, hint, chips } =
@@ -428,6 +449,12 @@ build { grid, hint, chips } =
     'U' -> insertTile (Item SuctionBoots)
     'I' -> insertTile (Item FireBoots)
     'F' -> insertTile (Item Flippers)
+
+    '╝' -> insertTile (IceCorner Down)
+    '╚' -> insertTile (IceCorner Left)
+    '╔' -> insertTile (IceCorner Up)
+    '╗' -> insertTile (IceCorner Right)
+    '╬' -> insertTile Ice
 
     'O' -> addBlock
     '≈' -> insertTile Dirt

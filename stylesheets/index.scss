@@ -182,6 +182,22 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
       @include tile(7, 1);
     }
 
+    &.-ice {
+      @include tile(6, 3);
+      &.-down {
+        @include tile(4, 3);
+      }
+      &.-left {
+        @include tile(5, 3);
+      }
+      &.-up {
+        @include tile(2, 3);
+      }
+      &.-right {
+        @include tile(3, 3);
+      }
+    }
+
     &.-bee {
       &.-down {
         @include tile(0, 8);
