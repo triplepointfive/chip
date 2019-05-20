@@ -23,6 +23,7 @@ data Item
   | SuctionBoots
   | FireBoots
   | Flippers
+  | Key Color
 
 derive instance eqItem :: Eq Item
 
@@ -32,11 +33,15 @@ instance showItem :: Show Item where
     SuctionBoots -> "U"
     FireBoots -> "I"
     Flippers -> "F"
+    Key color -> case color of
+      Red -> "r"
+      Cyan -> "c"
+      Yellow -> "y"
+      Green -> "g"
 
 -- | A single cell on a level grid
 data Tile
   = Wall
-  | Key Color
   | Door Color
   | Chip
   | Socket
@@ -55,11 +60,6 @@ derive instance eqTile :: Eq Tile
 instance showTile :: Show Tile where
   show = case _ of
     Wall -> "#"
-    Key color -> case color of
-      Red -> "r"
-      Cyan -> "c"
-      Yellow -> "y"
-      Green -> "g"
     Door color -> case color of
       Red -> "R"
       Cyan -> "C"

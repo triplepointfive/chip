@@ -26,7 +26,7 @@ import Data.Maybe (Maybe(..), isNothing)
 import Data.String.CodeUnits (toCharArray)
 import Data.Tuple (Tuple(..))
 
-import Chip.Inventory (Inventory, initInventory, addItem, addKey)
+import Chip.Inventory (Inventory, initInventory, addItem)
 import Chip.Tile (Tile(..), Color(..), Item(..))
 import Utils (Direction(..), Point, addIndex, try, adjustPoint, toLeft, toRight, invert)
 
@@ -107,7 +107,6 @@ movePlayer direction level = checkForEnemies $
           Nothing           -> inactive moved
           Just Chip         -> inactive (pickUpChip moved)
           Just (Item item)  -> inactive (pickUp item moved)
-          Just (Key color)  -> inactive (pickUpKey color moved)
           Just (Door color) -> inactive (openDoor color turned)
           Just Wall         -> inactive turned
           -- TODO: Forbid to move on 'em
@@ -137,9 +136,6 @@ movePlayer direction level = checkForEnemies $
 
   pickUpChip :: Level -> Level
   pickUpChip = countChip <<< removeCurrentTile
-
-  pickUpKey :: Color -> Level -> Level
-  pickUpKey color = removeCurrentTile <<< onInventory (addKey color)
 
   pickUp :: Item -> Level -> Level
   pickUp item = removeCurrentTile <<< onInventory (addItem item)
@@ -308,10 +304,10 @@ build { grid, hint, chips } =
     ' ' -> identity
     '#' -> insertTile Wall
     '+' -> insertTile Chip
-    'r' -> insertTile (Key Red)
-    'c' -> insertTile (Key Cyan)
-    'y' -> insertTile (Key Yellow)
-    'g' -> insertTile (Key Green)
+    'r' -> insertTile (Item (Key Red))
+    'c' -> insertTile (Item (Key Cyan))
+    'y' -> insertTile (Item (Key Yellow))
+    'g' -> insertTile (Item (Key Green))
     'R' -> insertTile (Door Red)
     'C' -> insertTile (Door Cyan)
     'Y' -> insertTile (Door Yellow)

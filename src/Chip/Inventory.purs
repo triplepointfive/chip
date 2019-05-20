@@ -1,7 +1,6 @@
 module Chip.Inventory
-  ( Inventory(..)
+  ( Inventory
   , addItem
-  , addKey
   , initInventory
   ) where
 
@@ -34,17 +33,15 @@ initInventory =
   , flippers: false
   }
 
-
-addKey :: Color -> Inventory -> Inventory
-addKey color inv = case color of
-  Red -> inv { red = inv.red + 1 }
-  Cyan -> inv { cyan = inv.cyan + 1 }
-  Yellow -> inv { yellow = inv.yellow + 1 }
-  Green -> inv { green = true }
-
+-- | Adds an item to inventory
 addItem :: Item -> Inventory -> Inventory
 addItem item inv = case item of
   SkiSkates -> inv { skiSkates = true }
   SuctionBoots -> inv { suctionBoots = true }
   FireBoots -> inv { fireBoots = true }
   Flippers -> inv { flippers = true }
+  Key color -> case color of
+      Red -> inv { red = inv.red + 1 }
+      Cyan -> inv { cyan = inv.cyan + 1 }
+      Yellow -> inv { yellow = inv.yellow + 1 }
+      Green -> inv { green = true }

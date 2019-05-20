@@ -167,10 +167,10 @@ renderSidebar { level, levelNum, ticksLeft } =
       Just msg -> div "hint" [ HH.text msg ]
       Nothing -> div "inventory"
         [ tilesRowElem
-            [ if level.inventory.red > 0 then Tile (Key Red) else Floor
-            , if level.inventory.cyan > 0 then Tile (Key Cyan) else Floor
-            , if level.inventory.yellow > 0 then Tile (Key Yellow) else Floor
-            , if level.inventory.green then Tile (Key Green) else Floor
+            [ if level.inventory.red > 0 then Tile (Item (Key Red)) else Floor
+            , if level.inventory.cyan > 0 then Tile (Item (Key Cyan)) else Floor
+            , if level.inventory.yellow > 0 then Tile (Item (Key Yellow)) else Floor
+            , if level.inventory.green then Tile (Item (Key Green)) else Floor
             ]
         , tilesRowElem
             [ if level.inventory.skiSkates then Tile (Item SkiSkates) else Floor
