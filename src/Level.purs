@@ -192,8 +192,8 @@ movePlayer direction level = checkForEnemies $
           Just (Door color) -> inactive (openDoor color turned)
           Just Wall         -> inactive turned
           Just (Force _)    -> inactive moved
-          Just Water        -> withAction moved (Die Drown)
-          Just Fire         -> withAction moved (Die Burned)
+          Just Water        -> stepInWater moved
+          Just Fire         -> stepInFire moved
           Just Hint         -> inactive moved
           Just Dirt         -> inactive (removeCurrentTile moved)
           Just Socket       -> inactive $ moveToSocket dest level
@@ -238,6 +238,16 @@ movePlayer direction level = checkForEnemies $
         Nothing -> inactive (moveBlock dest blockDest moved)
         Just Hint -> inactive (moveBlock dest blockDest moved)
         _ -> inactive turned
+
+stepInWater :: Level -> ActionResult
+stepInWater level
+  | level.inventory.flippers = inactive level
+  | otherwise = withAction level (Die Drown)
+
+stepInFire :: Level -> ActionResult
+stepInFire level
+  | level.inventory.fireBoots = inactive level
+  | otherwise = withAction level (Die Burned)
 
 moveBlock :: Point -> Point -> Level -> Level
 moveBlock from to level = level
