@@ -137,6 +137,19 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
       @include tile(2, 1);
     }
 
+    &.-ski-skates {
+      @include tile(0, 6);
+    }
+    &.-suction-boots {
+      @include tile(1, 6);
+    }
+    &.-fire-boots {
+      @include tile(2, 6);
+    }
+    &.-flippers {
+      @include tile(3, 6);
+    }
+
     &.-chip {
       @include tile(3, 1);
     }

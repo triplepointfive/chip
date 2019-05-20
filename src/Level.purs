@@ -6,6 +6,7 @@ module Level
   , DieReason(..)
   , Enemy(..)
   , Inventory(..)
+  , Item(..)
   , Level(..)
   , Player(..)
   , Tile(..)
@@ -40,6 +41,10 @@ type Inventory =
   , cyan :: Int
   , yellow :: Int
   , green :: Boolean
+  , skiSkates :: Boolean
+  , suctionBoots :: Boolean
+  , fireBoots :: Boolean
+  , flippers :: Boolean
   }
 
 -- | Mapping for cell coordinates to object on it.
@@ -75,6 +80,21 @@ data Color
 
 derive instance eqColor :: Eq Color
 
+data Item
+  = SkiSkates
+  | SuctionBoots
+  | FireBoots
+  | Flippers
+
+derive instance eqItem :: Eq Item
+
+instance showItem :: Show Item where
+  show = case _ of
+    SkiSkates -> "S"
+    SuctionBoots -> "U"
+    FireBoots -> "I"
+    Flippers -> "F"
+
 -- | A single cell on a level grid
 data Tile
   = Wall
@@ -87,6 +107,7 @@ data Tile
   | Water
   | Dirt
   | Fire
+  | Item Item
   | Force Direction
 
 derive instance eqTile :: Eq Tile
@@ -111,6 +132,7 @@ instance showTile :: Show Tile where
     Water -> "~"
     Dirt -> "≈"
     Fire -> "^"
+    Item item -> show item
     Force direction -> case direction of
       Down -> "↓"
       Left -> "←"
@@ -165,6 +187,7 @@ movePlayer direction level = checkForEnemies $
       else case lookup dest level.tiles of
           Nothing           -> inactive moved
           Just Chip         -> inactive (pickUpChip moved)
+          Just (Item item)  -> inactive (pickUp item moved)
           Just (Key color)  -> inactive (pickUpKey color moved)
           Just (Door color) -> inactive (openDoor color turned)
           Just Wall         -> inactive turned
@@ -195,6 +218,9 @@ movePlayer direction level = checkForEnemies $
 
   pickUpKey :: Color -> Level -> Level
   pickUpKey color = removeCurrentTile <<< onInventory (addKey color)
+
+  pickUp :: Item -> Level -> Level
+  pickUp item = removeCurrentTile <<< onInventory (addItem item)
 
   openDoor :: Color -> Level -> Level
   openDoor color
@@ -254,6 +280,13 @@ addKey color inv = case color of
   Cyan -> inv { cyan = inv.cyan + 1 }
   Yellow -> inv { yellow = inv.yellow + 1 }
   Green -> inv { green = true }
+
+addItem :: Item -> Inventory -> Inventory
+addItem item inv = case item of
+  SkiSkates -> inv { skiSkates = true }
+  SuctionBoots -> inv { suctionBoots = true }
+  FireBoots -> inv { fireBoots = true }
+  Flippers -> inv { flippers = true }
 
 removeTile :: Point -> Tiles -> Tiles
 removeTile pos = delete pos
@@ -348,6 +381,10 @@ build { grid, hint, chips } =
     , cyan: 0
     , yellow: 0
     , green: false
+    , skiSkates: false
+    , suctionBoots: false
+    , fireBoots: false
+    , flippers: false
     }
 
   addCell :: Point -> Char -> Level -> Level
@@ -376,6 +413,12 @@ build { grid, hint, chips } =
     '-' -> insertTile Socket
     '<' -> insertTile Exit
     '?' -> insertTile Hint
+
+    'S' -> insertTile (Item SkiSkates)
+    'U' -> insertTile (Item SuctionBoots)
+    'I' -> insertTile (Item FireBoots)
+    'F' -> insertTile (Item Flippers)
+
     'O' -> addBlock
     '≈' -> insertTile Dirt
     _   -> identity

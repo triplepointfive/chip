@@ -22,7 +22,7 @@ import Display (levelTiles, tilesRowElem, DisplayTile(..))
 import Game (Game, tick)
 import Game as Game
 import Level as Level
-import Level (Tile(..), Color(..))
+import Level (Tile(..), Color(..), Item(..))
 import Lib (getJSON)
 import Utils (Direction(..), foldlM)
 
@@ -164,10 +164,10 @@ renderSidebar { level, levelNum, ticksLeft } =
             , if level.inventory.green then Tile (Key Green) else Floor
             ]
         , tilesRowElem
-            [ Floor
-            , Floor
-            , Floor
-            , Floor
+            [ if level.inventory.skiSkates then Tile (Item SkiSkates) else Floor
+            , if level.inventory.suctionBoots then Tile (Item SuctionBoots) else Floor
+            , if level.inventory.fireBoots then Tile (Item FireBoots) else Floor
+            , if level.inventory.flippers then Tile (Item Flippers) else Floor
             ]
         ]
     ]

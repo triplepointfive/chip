@@ -15,7 +15,7 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 
-import Level (Color(..), Tile(..), mapSize, Enemy(..))
+import Level (Color(..), Tile(..), mapSize, Enemy(..), Item(..))
 import Level as Level
 import Game (Game, State(..))
 import Utils (Direction(..), Point)
@@ -82,6 +82,10 @@ tileClasses = case _ of
   Swimming Right -> "tile -boy -right -swimming"
   Tile Water -> "tile -water"
   Tile Fire -> "tile -fire"
+  Tile (Item SkiSkates) -> "tile -ski-skates"
+  Tile (Item SuctionBoots) -> "tile -suction-boots"
+  Tile (Item FireBoots) -> "tile -fire-boots"
+  Tile (Item Flippers) -> "tile -flippers"
   Tile Exit -> "tile -exit"
   Tile Dirt -> "tile -dirt"
   Tile Hint -> "tile -hint"
