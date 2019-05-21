@@ -88,6 +88,10 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
       @include tile(6, 6);
     }
 
+    &.-tank-button {
+      @include tile(5, 6);
+    }
+
     &.-switchable-wall {
       &.-on {
         @include tile(4, 5);
