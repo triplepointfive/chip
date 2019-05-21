@@ -9,7 +9,6 @@ module Level
   , Tiles(..)
   , build
   , enemyAct
-  , hasKey
   , mapSize
   , movePlayer
   , slide
@@ -26,7 +25,7 @@ import Data.Maybe (Maybe(..), isNothing)
 import Data.String.CodeUnits (toCharArray)
 import Data.Tuple (Tuple(..))
 
-import Chip.Inventory (Inventory, initInventory, addItem)
+import Chip.Inventory (Inventory, initInventory, addItem, has)
 import Chip.Tile (Tile(..), Color(..), Item(..))
 import Utils (Direction(..), Point, addIndex, try, adjustPoint, toLeft, toRight, invert)
 
@@ -96,31 +95,38 @@ outOfLevel :: Point -> Boolean
 outOfLevel { x, y } = x < 0 || y < 0 || x >= mapSize || y >= mapSize
 
 -- | Tries to move player
-movePlayer :: Direction -> Level -> ActionResult
-movePlayer direction level = checkForEnemies $
-  if Set.member dest level.blocks
-    then pushBlock (adjustPoint dest direction)
-    else
-      if outOfLevel dest
-      then inactive turned
-      else case lookup dest level.tiles of
-          Nothing           -> inactive moved
-          Just Chip         -> inactive (pickUpChip moved)
-          Just (Item item)  -> inactive (pickUp item moved)
-          Just (Door color) -> inactive (openDoor color turned)
-          Just Wall         -> inactive turned
-          -- TODO: Forbid to move on 'em
-          Just (Force _)    -> inactive moved
-          Just Ice          -> inactive moved
-          Just (IceCorner _) -> inactive moved
-          Just Water        -> stepInWater moved
-          Just Fire         -> stepInFire moved
-          Just Hint         -> inactive moved
-          Just Dirt         -> inactive (removeCurrentTile moved)
-          Just Socket       -> inactive $ moveToSocket dest level
-          Just Exit         -> withAction moved Complete
-
+movePlayer :: Boolean -> Direction -> Level -> ActionResult
+movePlayer manually direction level = checkForEnemies $ case unit of
+  _ | Set.member dest level.blocks -> pushBlock (adjustPoint dest direction)
+  _ | outOfLevel dest -> inactive turned
+  _ | manually && onIce && not (has SkiSkates level.inventory) -> inactive level
+  _ -> move'
   where
+
+  move' = case lookup dest level.tiles of
+      Nothing           -> inactive moved
+      Just Chip         -> inactive (pickUpChip moved)
+      Just (Item item)  -> inactive (pickUp item moved)
+      Just (Door color) -> inactive (openDoor color turned)
+      Just Wall         -> inactive turned
+      -- TODO: Forbid to move on 'em
+      Just (Force _)    -> inactive moved
+      Just Ice          -> inactive moved
+      Just (IceCorner _) -> inactive moved
+      Just Water        -> stepInWater moved
+      Just Fire         -> stepInFire moved
+      Just Hint         -> inactive moved
+      Just Dirt         -> inactive (removeCurrentTile moved)
+      Just Socket       -> inactive $ moveToSocket dest level
+      Just Exit         -> withAction moved Complete
+
+
+  currentTile = lookup level.player.pos level.tiles
+
+  onIce = case currentTile of
+    Just Ice -> true
+    Just (IceCorner _) -> true
+    _ -> false
 
   turned :: Level
   turned = level { player { direction = direction } }
@@ -142,7 +148,7 @@ movePlayer direction level = checkForEnemies $
 
   openDoor :: Color -> Level -> Level
   openDoor color
-    = try (hasKey color) (removeCurrentTile <<< withdrawKey color <<< move)
+    = try (has (Key color) <<< _.inventory) (removeCurrentTile <<< withdrawKey color <<< move)
 
   -- TODO: Check if pushed into a monster
   pushBlock :: Point -> ActionResult
@@ -188,13 +194,6 @@ withdrawKey color l = case color of
   Cyan -> l { inventory { cyan = l.inventory.cyan - 1 } }
   Yellow -> l { inventory { yellow = l.inventory.yellow - 1 } }
   Green -> l
-
-hasKey :: Color -> Level -> Boolean
-hasKey color { inventory: { red, cyan, yellow, green } } = case color of
-  Red -> red > 0
-  Cyan -> cyan > 0
-  Yellow -> yellow > 0
-  Green -> green
 
 removeCurrentTile :: Level -> Level
 removeCurrentTile l = l { tiles = removeTile l.player.pos l.tiles }
@@ -265,12 +264,12 @@ enemyAct level = checkForEnemies $ inactive $ level { enemies = actedEnemies }
 
 slide :: Level -> ActionResult
 slide level = case lookup level.player.pos level.tiles of
-  Just (Force direction) -> movePlayer direction level
-  Just Ice -> movePlayer level.player.direction level
-  Just (IceCorner direction) ->
+  Just (Force direction) | not (has SuctionBoots level.inventory) -> movePlayer false direction level
+  Just Ice | not (has SkiSkates level.inventory) -> movePlayer false level.player.direction level
+  Just (IceCorner direction) | not (has SkiSkates level.inventory) ->
       if level.player.direction == direction
-          then movePlayer (toRight direction) level
-          else movePlayer (invert direction) level
+          then movePlayer false (toRight direction) level
+          else movePlayer false (invert direction) level
   _ -> inactive level
 
 -- | Builds a level from its blank

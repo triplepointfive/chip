@@ -1,6 +1,7 @@
 module Chip.Inventory
   ( Inventory
   , addItem
+  , has
   , initInventory
   ) where
 
@@ -45,3 +46,16 @@ addItem item inv = case item of
       Cyan -> inv { cyan = inv.cyan + 1 }
       Yellow -> inv { yellow = inv.yellow + 1 }
       Green -> inv { green = true }
+
+-- | Checks whether an item in inventory
+has :: Item -> Inventory -> Boolean
+has item inv = case item of
+  SkiSkates -> inv.skiSkates
+  SuctionBoots -> inv.suctionBoots
+  FireBoots -> inv.fireBoots
+  Flippers -> inv.flippers
+  Key color -> case color of
+      Red -> inv.red > 0
+      Cyan -> inv.cyan > 0
+      Yellow -> inv.yellow > 0
+      Green -> inv.green

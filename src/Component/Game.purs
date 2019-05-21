@@ -8,7 +8,7 @@ module Component.Game
 import Prelude hiding (div)
 
 import Data.Const (Const)
-import Data.Int (ceil, toNumber)
+import Data.Int (ceil, even, toNumber)
 import Data.Maybe (Maybe(..), isJust)
 import Data.Tuple (Tuple(..))
 import Effect.Aff (Aff)
@@ -100,7 +100,7 @@ component initBlank initLevelNum =
       when (state == Game.Init) (H.modify_ (_ { state = Game.Alive }))
 
       game <- H.get
-      let Tuple level actions = Level.movePlayer direction game.level
+      let Tuple level actions = Level.movePlayer true direction game.level
 
       foldlM processAction (game { level = level }) actions >>= H.put
       pure next
@@ -115,10 +115,10 @@ component initBlank initLevelNum =
         when (ticksLeft == 1) (H.modify_ (_ { state = Game.Dead Level.Timed }))
         H.modify_ tick
 
-        game <- H.get
-        let Tuple level actions = Level.enemyAct game.level
-
-        foldlM processAction (game { level = level }) actions >>= H.put
+        when (even ticksLeft) $ do
+          game <- H.get
+          let Tuple level actions = Level.enemyAct game.level
+          foldlM processAction (game { level = level }) actions >>= H.put
 
         game <- H.get
         let Tuple level actions = Level.slide game.level
