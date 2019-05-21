@@ -1,6 +1,7 @@
 module Utils
-  ( Point(..)
-  , Direction(..)
+  ( Direction(..)
+  , Point(..)
+  , SwitchState(..)
   , addIndex
   , adjustPoint
   , foldlM
@@ -20,6 +21,13 @@ type Point =
   { x :: Int
   , y :: Int
   }
+
+-- | Switch state
+data SwitchState
+  = On
+  | Off
+
+derive instance eqSwitchState :: Eq SwitchState
 
 -- | 4 side direction
 data Direction

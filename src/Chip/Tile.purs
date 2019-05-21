@@ -6,7 +6,7 @@ module Chip.Tile
 
 import Prelude
 
-import Utils (Direction(..))
+import Utils (Direction(..), SwitchState(..))
 
 -- | Colors for keys and related doors
 data Color
@@ -54,6 +54,7 @@ data Tile
   | Force Direction
   | Ice
   | IceCorner Direction
+  | SwitchableWall SwitchState
 
 derive instance eqTile :: Eq Tile
 
@@ -84,3 +85,6 @@ instance showTile :: Show Tile where
       Left -> "╚"
       Up -> "╔"
       Right -> "╗"
+    SwitchableWall On -> "["
+    SwitchableWall Off -> "]"
+

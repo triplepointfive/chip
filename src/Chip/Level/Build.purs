@@ -15,7 +15,7 @@ import Chip.Enemy (Enemy(..))
 import Chip.Inventory (initInventory)
 import Chip.Tile (Tile(..), Item(..), Color(..))
 import Level (Level)
-import Utils (Point, Direction(..), addIndex)
+import Utils (Direction(..), Point, SwitchState(..), addIndex)
 
 -- | Structure used to build a level
 type Blank =
@@ -89,6 +89,9 @@ build { grid, hint, chips } =
     '╔' -> insertTile (IceCorner Up)
     '╗' -> insertTile (IceCorner Right)
     '╬' -> insertTile Ice
+
+    '[' -> insertTile (SwitchableWall On)
+    ']' -> insertTile (SwitchableWall Off)
 
     'O' -> addBlock
     '≈' -> insertTile Dirt

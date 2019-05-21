@@ -20,7 +20,7 @@ import Chip.Tile (Color(..), Tile(..), Item(..))
 import Level (mapSize)
 import Level as Level
 import Game (Game, State(..))
-import Utils (Direction(..), Point)
+import Utils (Direction(..), Point, SwitchState(..))
 
 -- | What shall be output on screen
 data DisplayTile
@@ -93,6 +93,8 @@ tileClasses = case _ of
   Tile (Item SuctionBoots) -> "tile -suction-boots"
   Tile (Item FireBoots) -> "tile -fire-boots"
   Tile (Item Flippers) -> "tile -flippers"
+  Tile (SwitchableWall On) -> "tile -switchable-wall -on"
+  Tile (SwitchableWall Off) -> "tile -switchable-wall -off"
   Tile Exit -> "tile -exit"
   Tile Dirt -> "tile -dirt"
   Tile Hint -> "tile -hint"

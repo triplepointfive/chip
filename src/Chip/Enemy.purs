@@ -4,5 +4,6 @@ module Chip.Enemy
 
 import Utils (Direction)
 
+-- | Living creature to avoid
 data Enemy
   = Bee Direction

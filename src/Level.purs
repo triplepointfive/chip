@@ -14,7 +14,7 @@ module Level
 
 import Prelude
 
-import Data.Array (foldl, foldr, uncons, filter, (:))
+import Data.Array (uncons, filter, (:))
 import Data.Map (Map, lookup, delete)
 import Data.Map as Map
 import Data.Set as Set
@@ -22,9 +22,9 @@ import Data.Maybe (Maybe(..), isNothing)
 import Data.Tuple (Tuple(..))
 
 import Chip.Enemy (Enemy(..))
-import Chip.Inventory (Inventory, initInventory, addItem, has)
+import Chip.Inventory (Inventory, addItem, has)
 import Chip.Tile (Tile(..), Color(..), Item(..))
-import Utils (Direction(..), Point, try, adjustPoint, toLeft, toRight, invert)
+import Utils (Direction, Point, SwitchState(..), try, adjustPoint, toLeft, toRight, invert)
 
 -- | Height and width of a level grid
 mapSize :: Int
@@ -109,11 +109,12 @@ movePlayer manually direction level = checkForEnemies $ case unit of
       Just (IceCorner _) -> inactive moved
       Just Water        -> stepInWater moved
       Just Fire         -> stepInFire moved
+      Just (SwitchableWall On) -> inactive turned
+      Just (SwitchableWall Off) -> inactive moved
       Just Hint         -> inactive moved
       Just Dirt         -> inactive (removeCurrentTile moved)
       Just Socket       -> inactive $ moveToSocket dest level
       Just Exit         -> withAction moved Complete
-
 
   currentTile = lookup level.player.pos level.tiles
 
@@ -141,8 +142,10 @@ movePlayer manually direction level = checkForEnemies $ case unit of
   pickUp item = removeCurrentTile <<< onInventory (addItem item)
 
   openDoor :: Color -> Level -> Level
-  openDoor color
-    = try (has (Key color) <<< _.inventory) (removeCurrentTile <<< withdrawKey color <<< move)
+  openDoor color =
+    try
+        (has (Key color) <<< _.inventory)
+        (removeCurrentTile <<< withdrawKey color <<< move)
 
   -- TODO: Check if pushed into a monster
   pushBlock :: Point -> ActionResult

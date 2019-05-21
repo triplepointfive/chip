@@ -84,6 +84,15 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
       }
     }
 
+    &.-switchable-wall {
+      &.-on {
+        @include tile(4, 5);
+      }
+      &.-off {
+        @include tile(5, 5);
+      }
+    }
+
     &.-force {
       &.-down {
         @include tile(4, 4);
