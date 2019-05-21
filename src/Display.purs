@@ -15,8 +15,9 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 
+import Chip.Enemy (Enemy(..))
 import Chip.Tile (Color(..), Tile(..), Item(..))
-import Level (mapSize, Enemy(..))
+import Level (mapSize)
 import Level as Level
 import Game (Game, State(..))
 import Utils (Direction(..), Point)

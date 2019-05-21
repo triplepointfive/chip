@@ -19,6 +19,7 @@ import Halogen.HTML.Properties as HP
 import Web.UIEvent.KeyboardEvent as KE
 import Web.UIEvent.KeyboardEvent (KeyboardEvent)
 
+import Chip.Level.Build (Blank, build)
 import Chip.Tile (Color(..), Item(..), Tile(..))
 import Display (levelTiles, tilesRowElem, DisplayTile(..))
 import Game (Game, tick)
@@ -51,7 +52,7 @@ dl term description =
     ]
 
 -- | Top game component
-component :: Level.Blank -> Int -> H.Component HH.HTML Query Unit Void Aff
+component :: Blank -> Int -> H.Component HH.HTML Query Unit Void Aff
 component initBlank initLevelNum =
   H.parentComponent
     { initialState: const initialState
@@ -63,7 +64,7 @@ component initBlank initLevelNum =
 
   initialState :: State
   initialState =
-    { level: Level.build initBlank
+    { level: build initBlank
     , levelNum: initLevelNum
     , ticksLeft: initBlank.timeLimit * ticksPerSecond
     , name: initBlank.name
@@ -132,7 +133,7 @@ processAction game = case _ of
       result <- H.liftAff $ getJSON ("levels/" <> show (game.levelNum + 1) <> ".json")
       case result of
         Just blank -> pure $ game
-            { level = Level.build blank
+            { level = build blank
             , levelNum = game.levelNum + 1
             , name = blank.name
             , ticksLeft = blank.timeLimit * ticksPerSecond

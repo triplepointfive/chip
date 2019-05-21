@@ -14,7 +14,6 @@ import Prelude
 
 import Data.Array (mapWithIndex, uncons)
 import Data.Maybe (Maybe(..))
-import Data.Tuple (Tuple(..))
 
 -- | A 2D point
 type Point =
@@ -68,8 +67,8 @@ invert = case _ of
 
 -- | Map a set to the same set but indexed so fst is the index and snd is
 -- | element of the set
-addIndex :: forall a. Array a -> Array (Tuple Int a)
-addIndex a = mapWithIndex Tuple a
+addIndex :: forall a. Array a -> Array { i :: Int, v :: a }
+addIndex a = mapWithIndex (\i v -> { i, v } ) a
 
 try :: forall a. (a -> Boolean) -> (a -> a) -> a -> a
 try predicate f v = if predicate v then f v else v

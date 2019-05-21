@@ -11,13 +11,14 @@ import Test.Spec.Assertions (shouldEqual)
 import Test.Spec.Reporter.Console (consoleReporter)
 import Test.Spec.Runner (run)
 
-import Chip.Tile (Tile(..), Color(..), Item(..))
+import Chip.Level.Build (build)
 import Chip.Inventory (has)
+import Chip.Tile (Tile(..), Color(..), Item(..))
 import Level as Level
 import Utils (Direction(..))
 
 level1 :: Level.Level
-level1 = Level.build
+level1 = build
   { grid:
       [ "#@ "
       , "#<#"
@@ -29,7 +30,7 @@ level1 = Level.build
   }
 
 level2 :: Level.Level
-level2 = Level.build
+level2 = build
   { grid:
       [ "#?#"
       , "+@-"
@@ -42,7 +43,7 @@ level2 = Level.build
   }
 
 level3 :: Level.Level
-level3 = Level.build
+level3 = build
   { grid:
       [ "#R#"
       , "r@g"
