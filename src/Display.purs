@@ -95,6 +95,7 @@ tileClasses = case _ of
   Tile (Item Flippers) -> "tile -flippers"
   Tile (SwitchableWall On) -> "tile -switchable-wall -on"
   Tile (SwitchableWall Off) -> "tile -switchable-wall -off"
+  Tile WallButton -> "tile -wall-button"
   Tile Exit -> "tile -exit"
   Tile Dirt -> "tile -dirt"
   Tile Hint -> "tile -hint"

@@ -92,6 +92,7 @@ build { grid, hint, chips } =
 
     '[' -> insertTile (SwitchableWall On)
     ']' -> insertTile (SwitchableWall Off)
+    '.' -> insertTile WallButton
 
     'O' -> addBlock
     '≈' -> insertTile Dirt

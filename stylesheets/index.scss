@@ -84,6 +84,10 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
       }
     }
 
+    &.-wall-button {
+      @include tile(6, 6);
+    }
+
     &.-switchable-wall {
       &.-on {
         @include tile(4, 5);

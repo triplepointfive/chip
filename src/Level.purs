@@ -109,6 +109,7 @@ movePlayer manually direction level = checkForEnemies $ case unit of
       Just (IceCorner _) -> inactive moved
       Just Water        -> stepInWater moved
       Just Fire         -> stepInFire moved
+      Just WallButton -> inactive (toggleWalls moved)
       Just (SwitchableWall On) -> inactive turned
       Just (SwitchableWall Off) -> inactive moved
       Just Hint         -> inactive moved
@@ -259,3 +260,14 @@ slide level = case lookup level.player.pos level.tiles of
           then movePlayer false (toRight direction) level
           else movePlayer false (invert direction) level
   _ -> inactive level
+
+toggleWalls :: Level -> Level
+toggleWalls level = level { tiles = map toggleWall level.tiles}
+
+  where
+
+  toggleWall :: Tile -> Tile
+  toggleWall = case _ of
+    SwitchableWall On -> SwitchableWall Off
+    SwitchableWall Off -> SwitchableWall On
+    t -> t

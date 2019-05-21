@@ -55,6 +55,7 @@ data Tile
   | Ice
   | IceCorner Direction
   | SwitchableWall SwitchState
+  | WallButton
 
 derive instance eqTile :: Eq Tile
 
@@ -87,4 +88,4 @@ instance showTile :: Show Tile where
       Right -> "╗"
     SwitchableWall On -> "["
     SwitchableWall Off -> "]"
-
+    WallButton -> "."
