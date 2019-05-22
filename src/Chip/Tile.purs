@@ -57,6 +57,7 @@ data Tile
   | SwitchableWall SwitchState
   | WallButton
   | TankButton
+  | Bomb
 
 derive instance eqTile :: Eq Tile
 
@@ -91,3 +92,4 @@ instance showTile :: Show Tile where
     SwitchableWall Off -> "]"
     WallButton -> "."
     TankButton -> ","
+    Bomb -> "*"

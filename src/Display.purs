@@ -82,6 +82,7 @@ tileClasses = case _ of
   Swimming Left -> "tile -boy -left -swimming"
   Swimming Up -> "tile -boy -up -swimming"
   Swimming Right -> "tile -boy -right -swimming"
+  Tile Bomb -> "tile -bomb"
   Tile Water -> "tile -water"
   Tile Fire -> "tile -fire"
   Tile Ice -> "tile -ice"

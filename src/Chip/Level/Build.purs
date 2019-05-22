@@ -80,6 +80,8 @@ build { grid, hint, chips, blocks } =
     '↑' -> insertTile (Force Up)
     '→' -> insertTile (Force Right)
 
+    '*' -> insertTile Bomb
+
     '@' -> _ { player { pos = p } }
     '-' -> insertTile Socket
     '<' -> insertTile Exit

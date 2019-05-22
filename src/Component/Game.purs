@@ -148,6 +148,7 @@ dieMessage = case _ of
   Level.Burned -> "Ooops! Don't step in the fire without fire boots!"
   Level.Eaten -> "Ooops! Look out for creatures!"
   Level.Timed -> "Ooops! Don't step in the fire without fire boots!"
+  Level.BlownUp -> "Ooops! Don't touch the bombs!"
 
 renderMessage :: forall p i. Game -> Array (H.HTML p i)
 renderMessage { state, name } = case state of

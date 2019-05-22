@@ -23,7 +23,7 @@ import Data.Tuple (Tuple(..))
 
 import Chip.Enemy (Enemy(..))
 import Chip.Inventory (Inventory, addItem, has, withdrawKey)
-import Chip.Tile (Tile(..), Color(..), Item(..))
+import Chip.Tile (Tile(..), Color, Item(..))
 import Utils (Direction, Point, SwitchState(..), try, adjustPoint, toLeft, toRight, invert)
 
 -- | Height and width of a level grid
@@ -56,6 +56,7 @@ data DieReason
   | Burned
   | Eaten
   | Timed
+  | BlownUp
 
 derive instance eqDieReason :: Eq DieReason
 
@@ -65,6 +66,7 @@ instance showDieReason :: Show DieReason where
     Burned -> "Burned"
     Eaten -> "Eaten"
     Timed -> "Timed"
+    BlownUp -> "BlownUp"
 
 data Action
   = Complete
@@ -107,6 +109,7 @@ movePlayer manually direction level = checkForEnemies $ case unit of
       Just (Force _)    -> inactive moved
       Just Ice          -> inactive moved
       Just (IceCorner _) -> inactive moved
+      Just Bomb -> withAction moved (Die BlownUp)
       Just Water        -> stepInWater moved
       Just Fire         -> stepInFire moved
       Just WallButton -> inactive (toggleWalls moved)
