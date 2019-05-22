@@ -251,6 +251,9 @@ enemyAct level = checkForEnemies $ inactive $ level { enemies = actedEnemies }
         , toRight direction
         , toRight (toRight direction)
         ]
+  act pos (Tank direction)
+    | isFloor (adjustPoint pos direction) = { pos: adjustPoint pos direction, enemy: Tank direction }
+    | otherwise = { pos, enemy: Tank direction }
 
 slide :: Level -> ActionResult
 slide level = case lookup level.player.pos level.tiles of
@@ -263,10 +266,17 @@ slide level = case lookup level.player.pos level.tiles of
   _ -> inactive level
 
 toggleTanks :: Level -> Level
-toggleTanks = identity
+toggleTanks level = level { enemies = map toggleTank level.enemies }
+
+  where
+
+  toggleTank :: Enemy -> Enemy
+  toggleTank = case _ of
+    Tank direction -> Tank (invert direction)
+    e -> e
 
 toggleWalls :: Level -> Level
-toggleWalls level = level { tiles = map toggleWall level.tiles}
+toggleWalls level = level { tiles = map toggleWall level.tiles }
 
   where
 

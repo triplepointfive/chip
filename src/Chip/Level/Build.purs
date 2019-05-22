@@ -70,6 +70,11 @@ build { grid, hint, chips, blocks } =
     '~' -> insertTile Water
     '^' -> insertTile Fire
 
+    '⊤' -> addEnemy (Tank Down)
+    '⊣' -> addEnemy (Tank Left)
+    '⊥' -> addEnemy (Tank Up)
+    '⊢' -> addEnemy (Tank Right)
+
     '↓' -> insertTile (Force Down)
     '←' -> insertTile (Force Left)
     '↑' -> insertTile (Force Up)

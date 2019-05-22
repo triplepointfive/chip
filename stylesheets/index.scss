@@ -229,6 +229,21 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
         @include tile(3, 8);
       }
     }
+
+    &.-tank {
+      &.-down {
+        @include tile(4, 8);
+      }
+      &.-left {
+        @include tile(5, 8);
+      }
+      &.-up {
+        @include tile(6, 8);
+      }
+      &.-right {
+        @include tile(7, 8);
+      }
+    }
   }
 }
 
