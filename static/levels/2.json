@@ -12,7 +12,7 @@
     "         #     #                ",
     "         #  #  ##########       ",
     "       ###  #b  ~~     +#       ",
-    "       #<-  ##b ~~ OO@? #       ",
+    "       #<-  ##b ~~   @? #       ",
     "       ###  #b  ~~     +#       ",
     "         #  #  ##########       ",
     "         #     #                ",
@@ -36,5 +36,6 @@
   "hint": "Push blocks into water to make dirt. Watch out for monsters.",
   "name": "LESSON 2",
   "chips": 4,
-  "timeLimit": 100
+  "timeLimit": 100,
+  "blocks": [{ "x": 19, "y": 12 }, { "x": 20, "y": 12 }]
 }

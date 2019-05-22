@@ -154,12 +154,12 @@ movePlayer manually direction level = checkForEnemies $ case unit of
   pushBlock blockDest
     | Set.member blockDest level.blocks = inactive turned
     | otherwise = case lookup blockDest level.tiles of
-        Just Water -> inactive $ moved
+        Just Water -> movePlayer manually direction $ level
             { tiles = Map.insert blockDest Dirt moved.tiles
             , blocks = Set.delete dest level.blocks
             }
-        Nothing -> inactive (moveBlock dest blockDest moved)
-        Just Hint -> inactive (moveBlock dest blockDest moved)
+        Nothing -> movePlayer manually direction (moveBlock dest blockDest level)
+        Just Hint -> movePlayer manually direction (moveBlock dest blockDest level)
         _ -> inactive turned
 
 stepInWater :: Level -> ActionResult

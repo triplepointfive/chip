@@ -24,11 +24,12 @@ type Blank =
   , name :: String
   , chips :: Int
   , timeLimit :: Int
+  , blocks :: Array Point
   }
 
 -- | Builds a level from its blank
 build :: Blank -> Level
-build { grid, hint, chips } =
+build { grid, hint, chips, blocks } =
   foldl
     (\level { i: y, v: row } ->
       foldr
@@ -48,7 +49,7 @@ build { grid, hint, chips } =
     , inventory: initInventory
     , chipsLeft: chips
     , enemies: Map.empty
-    , blocks: Set.empty
+    , blocks: Set.fromFoldable blocks
     , hint
     }
 
@@ -95,14 +96,10 @@ build { grid, hint, chips } =
     '.' -> insertTile WallButton
     ',' -> insertTile TankButton
 
-    'O' -> addBlock
     '≈' -> insertTile Dirt
     _   -> identity
 
     where
-
-    addBlock :: Level -> Level
-    addBlock l = l { blocks = Set.insert p l.blocks }
 
     addEnemy :: Enemy -> Level -> Level
     addEnemy enemy l = l { enemies = Map.insert p enemy l.enemies }
