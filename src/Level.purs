@@ -22,7 +22,7 @@ import Data.Maybe (Maybe(..), isNothing)
 import Data.Tuple (Tuple(..))
 
 import Chip.Enemy (Enemy(..))
-import Chip.Inventory (Inventory, addItem, has)
+import Chip.Inventory (Inventory, addItem, has, withdrawKey)
 import Chip.Tile (Tile(..), Color(..), Item(..))
 import Utils (Direction, Point, SwitchState(..), try, adjustPoint, toLeft, toRight, invert)
 
@@ -147,7 +147,7 @@ movePlayer manually direction level = checkForEnemies $ case unit of
   openDoor color =
     try
         (has (Key color) <<< _.inventory)
-        (removeCurrentTile <<< withdrawKey color <<< move)
+        (removeCurrentTile <<< onInventory (withdrawKey color) <<< move)
 
   -- TODO: Check if pushed into a monster
   pushBlock :: Point -> ActionResult
@@ -186,13 +186,6 @@ countChip :: Level -> Level
 countChip level
   | level.chipsLeft == 0 = level
   | otherwise            = level { chipsLeft = level.chipsLeft - 1 }
-
-withdrawKey :: Color -> Level -> Level
-withdrawKey color l = case color of
-  Red -> l { inventory { red = l.inventory.red - 1 } }
-  Cyan -> l { inventory { cyan = l.inventory.cyan - 1 } }
-  Yellow -> l { inventory { yellow = l.inventory.yellow - 1 } }
-  Green -> l
 
 removeCurrentTile :: Level -> Level
 removeCurrentTile l = l { tiles = removeTile l.player.pos l.tiles }

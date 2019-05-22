@@ -27,6 +27,7 @@ level1 = build
   , hint: Nothing
   , chips: 1
   , timeLimit: 10
+  , blocks: []
   }
 
 level2 :: Level.Level
@@ -40,6 +41,7 @@ level2 = build
   , hint: Nothing
   , chips: 1
   , timeLimit: 10
+  , blocks: []
   }
 
 level3 :: Level.Level
@@ -53,6 +55,7 @@ level3 = build
   , hint: Nothing
   , chips: 1
   , timeLimit: 10
+  , blocks: []
   }
 
 main :: Effect Unit

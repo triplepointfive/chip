@@ -3,6 +3,7 @@ module Chip.Inventory
   , addItem
   , has
   , initInventory
+  , withdrawKey
   ) where
 
 import Prelude
@@ -59,3 +60,11 @@ has item inv = case item of
       Cyan -> inv.cyan > 0
       Yellow -> inv.yellow > 0
       Green -> inv.green
+
+-- | Removes a key from inventory (green is left untouched)
+withdrawKey :: Color -> Inventory -> Inventory
+withdrawKey color i = case color of
+  Red -> i { red = i.red - 1 }
+  Cyan -> i { cyan = i.cyan - 1 }
+  Yellow -> i { yellow = i.yellow - 1 }
+  Green -> i
