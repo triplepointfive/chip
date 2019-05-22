@@ -1,0 +1,141 @@
+$cell-size: 48px
+$sprite-tile-size: 32px
+$sprite-x: 8
+$sprite-y: 12
+$sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size
+
+@mixin tile($x, $y)
+  &::after
+    background-position: $sprite-ratio * -1 * $x $sprite-ratio * -1 * $y
+
+@mixin dir-tile($x, $y)
+  &.-down
+    @include tile($x, $y)
+  &.-left
+    @include tile($x + 1, $y)
+  &.-up
+    @include tile($x + 2, $y)
+  &.-right
+    @include tile($x + 3, $y)
+
+.level-row
+  > .tile
+    width: $cell-size
+    height: $cell-size
+    position: relative
+    display: inline-block
+
+    &::after
+      background: url(../images/tiles.png)
+      background-size: $sprite-x * $sprite-ratio $sprite-y * $sprite-ratio
+      content: " "
+      position: absolute
+      left: 0
+      width: 100%
+      height: 100%
+
+    &.-boy
+      @include dir-tile(0, 0)
+
+      &.-swimming
+        @include dir-tile(4, 0)
+
+      &.-drown
+        @include tile(1, 3)
+
+      &.-burned
+        @include tile(7, 2)
+
+    &.-wall-button
+      @include tile(6, 6)
+
+    &.-tank-button
+      @include tile(5, 6)
+
+    &.-switchable-wall
+      &.-on
+        @include tile(4, 5)
+      &.-off
+        @include tile(5, 5)
+
+    &.-force
+      @include dir-tile(4, 4)
+
+    &.-key
+      &.-red
+        @include tile(0, 5)
+      &.-cyan
+        @include tile(1, 5)
+      &.-yellow
+        @include tile(2, 5)
+      &.-green
+        @include tile(3, 5)
+
+    &.-door
+      &.-red
+        @include tile(0, 4)
+      &.-cyan
+        @include tile(1, 4)
+      &.-yellow
+        @include tile(2, 4)
+      &.-green
+        @include tile(3, 4)
+
+    &.-floor
+      @include tile(0, 1)
+
+    &.-wall
+      @include tile(2, 1)
+
+    &.-ski-skates
+      @include tile(0, 6)
+
+    &.-suction-boots
+      @include tile(1, 6)
+
+    &.-fire-boots
+      @include tile(2, 6)
+
+    &.-flippers
+      @include tile(3, 6)
+
+    &.-chip
+      @include tile(3, 1)
+
+    &.-socket
+      @include tile(4, 1)
+
+    &.-exit
+      @include tile(5, 1)
+
+    &.-hint
+      @include tile(1, 1)
+
+    &.-water
+      @include tile(0, 3)
+
+    &.-dirt
+      @include tile(1, 2)
+
+    &.-block
+      @include tile(0, 2)
+
+    &.-fire
+      @include tile(7, 1)
+
+    &.-ice
+      @include tile(6, 3)
+      &.-down
+        @include tile(4, 3)
+      &.-left
+        @include tile(5, 3)
+      &.-up
+        @include tile(2, 3)
+      &.-right
+        @include tile(3, 3)
+
+    &.-bee
+      @include dir-tile(0, 8)
+
+    &.-tank
+      @include dir-tile(4, 8)
