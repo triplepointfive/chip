@@ -15,10 +15,10 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 
+import Chip.Action (DieReason(..))
 import Chip.Enemy (Enemy(..))
 import Chip.Tile (Color(..), Tile(..), Item(..))
 import Level (mapSize)
-import Level as Level
 import Game (Game, State(..))
 import Utils (Direction(..), Point, SwitchState(..))
 
@@ -29,8 +29,8 @@ data DisplayTile
   | Boy Direction
   | Creature Enemy
   | Swimming Direction
-  | Drown
-  | Burned
+  | DrownBoy
+  | BurnedBoy
   | Block
 
 -- | Builds a matrix of `DisplayTile` with `radius` * 2 + 1 size.
@@ -105,12 +105,13 @@ tileClasses = case _ of
   Tile (SwitchableWall Off) -> "tile -switchable-wall -off"
   Tile WallButton -> "tile -wall-button"
   Tile TankButton -> "tile -tank-button"
+  Tile CloneMachineButton -> "tile -clone-machine-button"
   Tile Exit -> "tile -exit"
   Tile Dirt -> "tile -dirt"
   Tile Hint -> "tile -hint"
   Tile Socket -> "tile -socket"
-  Drown -> "tile -boy -drown"
-  Burned -> "tile -boy -burned"
+  DrownBoy -> "tile -boy -drown"
+  BurnedBoy -> "tile -boy -burned"
 
 tileToElem :: forall p i. DisplayTile -> HH.HTML p i
 tileToElem tile = HH.span [ HP.class_ (H.ClassName (tileClasses tile)) ] []
@@ -130,8 +131,8 @@ buildTile p game = withTile (lookup p game.level.tiles)
 
   withTile tile
     | p == pos = case game.state of
-      Dead Level.Drown -> Drown
-      Dead Level.Burned -> Burned
+      Dead Drown -> DrownBoy
+      Dead Burned -> BurnedBoy
       _ -> boyTile tile
     | Set.member p game.level.blocks = Block
     | otherwise = maybe (maybe Floor Tile tile) Creature (lookup p game.level.enemies)

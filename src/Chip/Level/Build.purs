@@ -108,8 +108,10 @@ build { grid, hint, chips, blocks } =
 
     '[' -> insertTile (SwitchableWall On)
     ']' -> insertTile (SwitchableWall Off)
+
     '.' -> insertTile WallButton
     ',' -> insertTile TankButton
+    '↺' -> insertTile CloneMachineButton
 
     '≈' -> insertTile Dirt
     _   -> identity

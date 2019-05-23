@@ -4,7 +4,6 @@ import Prelude
 
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
-import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Test.Spec (pending, describe, it)
 import Test.Spec.Assertions (shouldEqual)
@@ -62,7 +61,7 @@ main :: Effect Unit
 main = run [consoleReporter] do
   describe "move" do
     describe "into a wall" do
-      let Tuple level actions = Level.movePlayer true Left level1
+      let { result: level, actions } = Level.movePlayer true Left level1
       pending "stuck sound"
       it "doesn't move" do
         level.player.pos `shouldEqual` { x: 1, y: 0 }
@@ -70,7 +69,7 @@ main = run [consoleReporter] do
         level.player.direction `shouldEqual` Left
 
     describe "out of map" do
-      let Tuple level actions = Level.movePlayer true Up level1
+      let { result: level, actions } = Level.movePlayer true Up level1
       pending "stuck sound"
       it "doesn't move" do
         level.player.pos `shouldEqual` { x: 1, y: 0 }
@@ -78,7 +77,7 @@ main = run [consoleReporter] do
         level.player.direction `shouldEqual` Up
 
     describe "on empty floor" do
-      let Tuple level actions = Level.movePlayer true Right level1
+      let { result: level, actions } = Level.movePlayer true Right level1
       it "without actions" do
         actions `shouldEqual` []
       it "changes position" do
@@ -87,7 +86,7 @@ main = run [consoleReporter] do
         level.player.direction `shouldEqual` Right
 
     describe "on exit" do
-      let Tuple level actions = Level.movePlayer true Down level1
+      let { result: level, actions } = Level.movePlayer true Down level1
       it "produces complete action" do
         actions `shouldEqual` [Level.Complete]
       it "changes position" do
@@ -96,7 +95,7 @@ main = run [consoleReporter] do
         level.player.direction `shouldEqual` Down
 
     describe "on chip" do
-      let Tuple level actions = Level.movePlayer true Left level2
+      let { result: level, actions } = Level.movePlayer true Left level2
       pending "pick sound"
       it "changes position" do
         level.player.pos `shouldEqual` { x: 0, y: 1 }
@@ -108,7 +107,7 @@ main = run [consoleReporter] do
         (Map.lookup { x: 0, y: 1 } level.tiles) `shouldEqual` Nothing
 
     describe "on hint" do
-      let Tuple level actions = Level.movePlayer true Up level2
+      let { result: level, actions } = Level.movePlayer true Up level2
       it "without actions" do
         actions `shouldEqual` []
       it "changes position" do
@@ -121,7 +120,7 @@ main = run [consoleReporter] do
     -- TODO: Right 2 down 2
 
     describe "on common key" do
-      let Tuple level actions = Level.movePlayer true Left level3
+      let { result: level, actions } = Level.movePlayer true Left level3
       it "without actions" do
         actions `shouldEqual` []
       it "changes position" do
@@ -135,14 +134,14 @@ main = run [consoleReporter] do
 
     describe "on common door" do
       describe "without a key" do
-        let Tuple level actions = Level.movePlayer true Up level3
+        let { result: level, actions } = Level.movePlayer true Up level3
         pending "stuck sound"
         it "doesn't move" do
           level.player.pos `shouldEqual` { x: 1, y: 1 }
         it "turns" do
           level.player.direction `shouldEqual` Up
       describe "with a key" do
-        let Tuple level actions = Level.movePlayer true Up (level3 { inventory { red = 1 } })
+        let { result: level, actions } = Level.movePlayer true Up (level3 { inventory { red = 1 } })
         it "without actions" do
           actions `shouldEqual` []
         it "changes position" do
@@ -155,7 +154,7 @@ main = run [consoleReporter] do
           has (Key Red) level.inventory `shouldEqual` false
 
     describe "on green key" do
-      let Tuple level actions = Level.movePlayer true Right level3
+      let { result: level, actions } = Level.movePlayer true Right level3
       it "without actions" do
         actions `shouldEqual` []
       it "changes position" do
@@ -169,14 +168,14 @@ main = run [consoleReporter] do
 
     describe "on green door" do
       describe "without a key" do
-        let Tuple level actions = Level.movePlayer true Down level3
+        let { result: level, actions } = Level.movePlayer true Down level3
         pending "stuck sound"
         it "doesn't move" do
           level.player.pos `shouldEqual` { x: 1, y: 1 }
         it "turns" do
           level.player.direction `shouldEqual` Down
       describe "with a key" do
-        let Tuple level actions = Level.movePlayer true Down (level3 { inventory { green = true } })
+        let { result: level, actions } = Level.movePlayer true Down (level3 { inventory { green = true } })
         it "without actions" do
           actions `shouldEqual` []
         it "changes position" do

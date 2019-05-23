@@ -10,7 +10,6 @@ import Prelude hiding (div)
 import Data.Const (Const)
 import Data.Int (ceil, even, toNumber)
 import Data.Maybe (Maybe(..), isJust)
-import Data.Tuple (Tuple(..))
 import Effect.Aff (Aff)
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
@@ -19,6 +18,8 @@ import Halogen.HTML.Properties as HP
 import Web.UIEvent.KeyboardEvent as KE
 import Web.UIEvent.KeyboardEvent (KeyboardEvent)
 
+import Chip.Action (Action(..), DieReason(..))
+import Chip.Action.AI (actAI)
 import Chip.Level.Build (Blank, build)
 import Chip.Tile (Color(..), Item(..), Tile(..))
 import Display (levelTiles, tilesRowElem, DisplayTile(..))
@@ -101,7 +102,7 @@ component initBlank initLevelNum =
       when (state == Game.Init) (H.modify_ (_ { state = Game.Alive }))
 
       game <- H.get
-      let Tuple level actions = Level.movePlayer true direction game.level
+      let { result: level, actions } = Level.movePlayer true direction game.level
 
       foldlM processAction (game { level = level }) actions >>= H.put
       pure next
@@ -113,23 +114,23 @@ component initBlank initLevelNum =
       Game.Init -> pure next
       Game.Dead _ -> pure next
       _ -> do
-        when (ticksLeft == 1) (H.modify_ (_ { state = Game.Dead Level.Timed }))
+        when (ticksLeft == 1) (H.modify_ (_ { state = Game.Dead Timed }))
         H.modify_ tick
 
         when (even ticksLeft) $ do
           game <- H.get
-          let Tuple level actions = Level.enemyAct game.level
+          let { result: level, actions } = Level.checkForEnemies $ actAI game.level
           foldlM processAction (game { level = level }) actions >>= H.put
 
         game <- H.get
-        let Tuple level actions = Level.slide game.level
+        let { result: level, actions } = Level.slide game.level
         foldlM processAction (game { level = level }) actions >>= H.put
 
         pure next
 
-processAction :: forall m. Bind m => MonadAff m => Game -> Level.Action -> m Game
+processAction :: forall m. Bind m => MonadAff m => Game -> Action -> m Game
 processAction game = case _ of
-  Level.Complete -> do
+  Complete -> do
       result <- H.liftAff $ getJSON ("levels/" <> show (game.levelNum + 1) <> ".json")
       case result of
         Just blank -> pure $ game
@@ -140,15 +141,15 @@ processAction game = case _ of
             , state = Game.Init
             }
         Nothing -> pure game
-  Level.Die reason -> pure (game { state = Game.Dead reason })
+  Die reason -> pure (game { state = Game.Dead reason })
 
-dieMessage :: Level.DieReason -> String
+dieMessage :: DieReason -> String
 dieMessage = case _ of
-  Level.Drown -> "Ooops! Chip can't swim without flippers!"
-  Level.Burned -> "Ooops! Don't step in the fire without fire boots!"
-  Level.Eaten -> "Ooops! Look out for creatures!"
-  Level.Timed -> "Ooops! Don't step in the fire without fire boots!"
-  Level.BlownUp -> "Ooops! Don't touch the bombs!"
+  Drown -> "Ooops! Chip can't swim without flippers!"
+  Burned -> "Ooops! Don't step in the fire without fire boots!"
+  Eaten -> "Ooops! Look out for creatures!"
+  Timed -> "Ooops! Don't step in the fire without fire boots!"
+  BlownUp -> "Ooops! Don't touch the bombs!"
 
 renderMessage :: forall p i. Game -> Array (H.HTML p i)
 renderMessage { state, name } = case state of

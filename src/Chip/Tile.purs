@@ -60,6 +60,7 @@ data Tile
   | TankButton
   | Bomb
   | CloneMachine Enemy
+  | CloneMachineButton
 
 derive instance eqTile :: Eq Tile
 
@@ -96,3 +97,4 @@ instance showTile :: Show Tile where
     TankButton -> ","
     Bomb -> "*"
     CloneMachine enemy -> "<-." <> show enemy
+    CloneMachineButton -> "↺"

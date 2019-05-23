@@ -7,7 +7,8 @@ module Game
 
 import Prelude
 
-import Level (Level, DieReason)
+import Chip.Action (DieReason)
+import Level (Level)
 
 data State
   = Init

@@ -1,11 +1,8 @@
 module Level
-  ( Action(..)
-  , ActionResult(..)
-  , DieReason(..)
-  , Level(..)
+  ( Level(..)
   , Player(..)
   , Tiles(..)
-  , enemyAct
+  , checkForEnemies
   , mapSize
   , movePlayer
   , slide
@@ -14,17 +11,16 @@ module Level
 
 import Prelude
 
-import Data.Array (uncons, filter, (:))
-import Data.Map (Map, lookup, delete)
+import Data.Array ((:))
 import Data.Map as Map
 import Data.Set as Set
-import Data.Maybe (Maybe(..), isNothing)
-import Data.Tuple (Tuple(..))
+import Data.Maybe (Maybe(..))
 
+import Chip.Action (Action(..), ActionResult, DieReason(..), inactive, withAction)
 import Chip.Enemy (Enemy(..))
 import Chip.Inventory (Inventory, addItem, has, withdrawKey)
 import Chip.Tile (Tile(..), Color, Item(..))
-import Utils (Direction, Point, SwitchState(..), try, adjustPoint, toLeft, toRight, invert)
+import Utils (Direction, Point, SwitchState(..), try, adjustPoint, toRight, invert)
 
 -- | Height and width of a level grid
 mapSize :: Int
@@ -32,7 +28,7 @@ mapSize = 32
 
 -- | Mapping for cell coordinates to object on it.
 -- | Does not include floor for simplicity
-type Tiles = Map Point Tile
+type Tiles = Map.Map Point Tile
 
 -- | Main character and its data
 type Player =
@@ -47,51 +43,15 @@ type Level =
   , inventory :: Inventory
   , chipsLeft :: Int
   , hint :: Maybe String
-  , enemies :: Map Point Enemy
+  , enemies :: Map.Map Point Enemy
   , blocks :: Set.Set Point
   }
-
-data DieReason
-  = Drown
-  | Burned
-  | Eaten
-  | Timed
-  | BlownUp
-
-derive instance eqDieReason :: Eq DieReason
-
-instance showDieReason :: Show DieReason where
-  show = case _ of
-    Drown -> "Drown"
-    Burned -> "Burned"
-    Eaten -> "Eaten"
-    Timed -> "Timed"
-    BlownUp -> "BlownUp"
-
-data Action
-  = Complete
-  | Die DieReason
-
-derive instance eqAction :: Eq Action
-
-instance showAction :: Show Action where
-  show = case _ of
-    Complete -> "Complete"
-    Die reason -> "Die " <> show reason
-
-type ActionResult = Tuple Level (Array Action)
-
-inactive :: Level -> ActionResult
-inactive level = Tuple level []
-
-withAction :: Level -> Action -> ActionResult
-withAction level action = Tuple level [action]
 
 outOfLevel :: Point -> Boolean
 outOfLevel { x, y } = x < 0 || y < 0 || x >= mapSize || y >= mapSize
 
 -- | Tries to move player
-movePlayer :: Boolean -> Direction -> Level -> ActionResult
+movePlayer :: Boolean -> Direction -> Level -> ActionResult Level
 movePlayer manually direction level = checkForEnemies $ case unit of
   _ | Set.member dest level.blocks -> pushBlock (adjustPoint dest direction)
   _ | outOfLevel dest -> inactive turned
@@ -99,13 +59,12 @@ movePlayer manually direction level = checkForEnemies $ case unit of
   _ -> move'
   where
 
-  move' = case lookup dest level.tiles of
+  move' = case Map.lookup dest level.tiles of
       Nothing           -> inactive moved
       Just Chip         -> inactive (pickUpChip moved)
       Just (Item item)  -> inactive (pickUp item moved)
       Just (Door color) -> inactive (openDoor color turned)
       Just Wall         -> inactive turned
-      -- TODO: Forbid to move on 'em
       Just (Force _)    -> inactive moved
       Just Ice          -> inactive moved
       Just (IceCorner _) -> inactive moved
@@ -114,6 +73,8 @@ movePlayer manually direction level = checkForEnemies $ case unit of
       Just Fire         -> stepInFire moved
       Just WallButton -> inactive (toggleWalls moved)
       Just TankButton -> inactive (toggleTanks moved)
+      -- TODO: apply
+      Just CloneMachineButton -> inactive turned
       Just (SwitchableWall On) -> inactive turned
       Just (SwitchableWall Off) -> inactive moved
       Just Hint         -> inactive moved
@@ -122,7 +83,7 @@ movePlayer manually direction level = checkForEnemies $ case unit of
       Just Exit         -> withAction moved Complete
       Just (CloneMachine _) -> inactive turned
 
-  currentTile = lookup level.player.pos level.tiles
+  currentTile = Map.lookup level.player.pos level.tiles
 
   onIce = case currentTile of
     Just Ice -> true
@@ -154,10 +115,10 @@ movePlayer manually direction level = checkForEnemies $ case unit of
         (removeCurrentTile <<< onInventory (withdrawKey color) <<< move)
 
   -- TODO: Check if pushed into a monster
-  pushBlock :: Point -> ActionResult
+  pushBlock :: Point -> ActionResult Level
   pushBlock blockDest
     | Set.member blockDest level.blocks = inactive turned
-    | otherwise = case lookup blockDest level.tiles of
+    | otherwise = case Map.lookup blockDest level.tiles of
         Just Water -> movePlayer manually direction $ level
             { tiles = Map.insert blockDest Dirt moved.tiles
             , blocks = Set.delete dest level.blocks
@@ -166,12 +127,12 @@ movePlayer manually direction level = checkForEnemies $ case unit of
         Just Hint -> movePlayer manually direction (moveBlock dest blockDest level)
         _ -> inactive turned
 
-stepInWater :: Level -> ActionResult
+stepInWater :: Level -> ActionResult Level
 stepInWater level
   | level.inventory.flippers = inactive level
   | otherwise = withAction level (Die Drown)
 
-stepInFire :: Level -> ActionResult
+stepInFire :: Level -> ActionResult Level
 stepInFire level
   | level.inventory.fireBoots = inactive level
   | otherwise = withAction level (Die Burned)
@@ -198,89 +159,22 @@ onInventory :: (Inventory -> Inventory) -> Level -> Level
 onInventory f level = level { inventory = f level.inventory }
 
 removeTile :: Point -> Tiles -> Tiles
-removeTile pos = delete pos
+removeTile pos = Map.delete pos
 
 -- | Returns hint text if it should be shown
 visibleHint :: Level -> Maybe String
-visibleHint { tiles, player: { pos }, hint } = case lookup pos tiles of
+visibleHint { tiles, player: { pos }, hint } = case Map.lookup pos tiles of
   Just Hint -> hint
   _ -> Nothing
 
-checkForEnemies :: ActionResult -> ActionResult
-checkForEnemies (Tuple level actions)
-  = case lookup level.player.pos level.enemies of
-    Just _ -> Tuple level (Die Eaten : actions)
-    Nothing -> Tuple level actions
+checkForEnemies :: ActionResult Level -> ActionResult Level
+checkForEnemies { result: level, actions }
+  = case Map.lookup level.player.pos level.enemies of
+    Just _ -> { result: level, actions: Die Eaten : actions }
+    Nothing -> { result: level, actions }
 
-enemyAct :: Level -> ActionResult
-enemyAct level = checkForEnemies $ inactive $ level { enemies = actedEnemies }
-  where
-
-  actedEnemies = foldEnemies { new: Map.empty, old: level.enemies }
-
-  foldEnemies { new, old } = case Map.findMin old of
-    Just { key, value } ->
-        let { pos, enemy } = act key value in
-        foldEnemies
-          { new: Map.insert pos enemy new
-          , old: Map.delete key old
-          }
-    Nothing -> new
-
-  -- TODO: Check for blocks
-  isFloor :: Point -> Boolean
-  isFloor p = isNothing (lookup p level.tiles)
-
-  act :: Point -> Enemy -> { pos :: Point, enemy :: Enemy }
-  act pos (Bee direction)
-    = case uncons (filter (isFloor <<< adjustPoint pos) directions) of
-      Just { head: floorDirection } ->
-          { pos: adjustPoint pos floorDirection
-          , enemy: Bee floorDirection
-          }
-      Nothing -> { pos, enemy: Bee direction }
-
-    where
-
-    directions =
-        [ toLeft direction
-        , direction
-        , toRight direction
-        , toRight (toRight direction)
-        ]
-  act pos (FireBall direction)
-    = case uncons (filter (isFloor <<< adjustPoint pos) directions) of
-      Just { head: floorDirection } ->
-          { pos: adjustPoint pos floorDirection
-          , enemy: FireBall floorDirection
-          }
-      Nothing -> { pos, enemy: FireBall direction }
-
-    where
-
-    directions =
-        [ direction
-        , toRight direction
-        , toLeft direction
-        , toRight (toRight direction)
-        ]
-  act pos (Tank direction)
-    | isFloor (adjustPoint pos direction) = { pos: adjustPoint pos direction, enemy: Tank direction }
-    | otherwise = { pos, enemy: Tank direction }
-  act pos (Ball direction) = case unit of
-    _ | isFloor dest -> { pos: dest, enemy: Ball direction }
-    _ | isFloor invertDest -> { pos: invertDest, enemy: Ball invertDir }
-    _ -> { pos, enemy: Ball (invert direction) }
-
-    where
-
-    invertDir = invert direction
-    invertDest = adjustPoint pos invertDir
-    dest = adjustPoint pos direction
-
-
-slide :: Level -> ActionResult
-slide level = case lookup level.player.pos level.tiles of
+slide :: Level -> ActionResult Level
+slide level = case Map.lookup level.player.pos level.tiles of
   Just (Force direction) | not (has SuctionBoots level.inventory) -> movePlayer false direction level
   Just Ice | not (has SkiSkates level.inventory) -> movePlayer false level.player.direction level
   Just (IceCorner direction) | not (has SkiSkates level.inventory) ->
