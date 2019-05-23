@@ -8,3 +8,4 @@ import Utils (Direction)
 data Enemy
   = Bee Direction
   | Tank Direction
+  | Ball Direction

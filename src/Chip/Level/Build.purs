@@ -87,6 +87,9 @@ build { grid, hint, chips, blocks } =
     '<' -> insertTile Exit
     '?' -> insertTile Hint
 
+    '‖' -> addEnemy (Ball Up)
+    '=' -> addEnemy (Ball Left)
+
     'S' -> insertTile (Item SkiSkates)
     'U' -> insertTile (Item SuctionBoots)
     'I' -> insertTile (Item FireBoots)

@@ -77,6 +77,7 @@ tileClasses = case _ of
   Creature (Tank Left) -> "tile -tank -left"
   Creature (Tank Up) -> "tile -tank -up"
   Creature (Tank Right) -> "tile -tank -right"
+  Creature (Ball _) -> "tile -ball"
   Block -> "tile -block"
   Swimming Down -> "tile -boy -down -swimming"
   Swimming Left -> "tile -boy -left -swimming"

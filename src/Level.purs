@@ -250,6 +250,17 @@ enemyAct level = checkForEnemies $ inactive $ level { enemies = actedEnemies }
   act pos (Tank direction)
     | isFloor (adjustPoint pos direction) = { pos: adjustPoint pos direction, enemy: Tank direction }
     | otherwise = { pos, enemy: Tank direction }
+  act pos (Ball direction) = case unit of
+    _ | isFloor dest -> { pos: dest, enemy: Ball direction }
+    _ | isFloor invertDest -> { pos: invertDest, enemy: Ball invertDir }
+    _ -> { pos, enemy: Ball (invert direction) }
+
+    where
+
+    invertDir = invert direction
+    invertDest = adjustPoint pos invertDir
+    dest = adjustPoint pos direction
+
 
 slide :: Level -> ActionResult
 slide level = case lookup level.player.pos level.tiles of
