@@ -4,12 +4,14 @@ module Chip.Action.AI
 
 import Prelude
 
-import Data.Array (uncons, filter)
+import Data.Array (uncons, filter, foldl)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), isNothing)
+import Data.Maybe (Maybe(..))
+import Data.Tuple (Tuple(..))
 
 import Chip.Action (ActionResult, inactive)
 import Chip.Enemy (Enemy(..))
+import Chip.Tile (Tile(..))
 import Level (Level)
 import Utils (Direction, Point, adjustPoint, toLeft, toRight, invert)
 
@@ -19,18 +21,32 @@ actAI level = inactive $ level { enemies = actedEnemies }
 
   actedEnemies = foldEnemies { new: Map.empty, old: level.enemies }
 
+  cloneEnemies new = foldl withTile new (Map.toUnfoldable level.tiles :: Array (Tuple Point Tile))
+    where
+
+    withTile xs (Tuple pos tile) = case tile of
+      CloneMachine newEnemy -> Map.insert pos newEnemy xs
+      _ -> xs
+
+  -- TODO: Check for water & fire
+  withNewPos pos enemy { new, old } = case Map.lookup pos level.tiles of
+    Just CloneMachineButton -> { new: cloneEnemies (Map.insert pos enemy new), old }
+    _ -> { new: (Map.insert pos enemy new), old }
+
   foldEnemies { new, old } = case Map.findMin old of
-    Just { key, value } ->
-        let { pos, enemy } = act key value in
-        foldEnemies
-          { new: Map.insert pos enemy new
-          , old: Map.delete key old
-          }
+    Just { key: oldPos, value: oldEnemy } ->
+        let { pos, enemy } = act oldPos oldEnemy in
+        if pos == oldPos
+            then foldEnemies { new: Map.insert pos enemy new, old: Map.delete oldPos old }
+            else foldEnemies (withNewPos pos enemy { new, old: Map.delete oldPos old })
     Nothing -> new
 
   -- TODO: Check for blocks
   isFloor :: Point -> Boolean
-  isFloor p = isNothing (Map.lookup p level.tiles)
+  isFloor p = case Map.lookup p level.tiles of
+    Nothing -> true
+    Just CloneMachineButton -> true
+    _ -> false
 
   goTo :: Point -> Direction -> (Direction -> Enemy) -> Array Direction -> { pos :: Point, enemy :: Enemy }
   goTo pos direction enemy dirs =
@@ -44,22 +60,8 @@ actAI level = inactive $ level { enemies = actedEnemies }
   act :: Point -> Enemy -> { pos :: Point, enemy :: Enemy }
   act pos (Bee direction) = goTo pos direction Bee
       [toLeft direction, direction, toRight direction, invert direction]
-  act pos (FireBall direction)
-    = case uncons (filter (isFloor <<< adjustPoint pos) directions) of
-      Just { head: floorDirection } ->
-          { pos: adjustPoint pos floorDirection
-          , enemy: FireBall floorDirection
-          }
-      Nothing -> { pos, enemy: FireBall direction }
-
-    where
-
-    directions =
-        [ direction
-        , toRight direction
-        , toLeft direction
-        , toRight (toRight direction)
-        ]
+  act pos (FireBall direction) = goTo pos direction FireBall
+      [direction, toRight direction, toLeft direction, invert direction]
   act pos (Tank direction)
     | isFloor (adjustPoint pos direction) = { pos: adjustPoint pos direction, enemy: Tank direction }
     | otherwise = { pos, enemy: Tank direction }
