@@ -90,6 +90,11 @@ build { grid, hint, chips, blocks } =
     '‖' -> addEnemy (Ball Up)
     '=' -> addEnemy (Ball Left)
 
+    '⇠' -> insertTile (CloneMachine (FireBall Left))
+    '⇡' -> insertTile (CloneMachine (FireBall Up))
+    '⇢' -> insertTile (CloneMachine (FireBall Right))
+    '⇣' -> insertTile (CloneMachine (FireBall Down))
+
     'S' -> insertTile (Item SkiSkates)
     'U' -> insertTile (Item SuctionBoots)
     'I' -> insertTile (Item FireBoots)

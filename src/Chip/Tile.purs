@@ -6,6 +6,7 @@ module Chip.Tile
 
 import Prelude
 
+import Chip.Enemy (Enemy)
 import Utils (Direction(..), SwitchState(..))
 
 -- | Colors for keys and related doors
@@ -58,6 +59,7 @@ data Tile
   | WallButton
   | TankButton
   | Bomb
+  | CloneMachine Enemy
 
 derive instance eqTile :: Eq Tile
 
@@ -93,3 +95,4 @@ instance showTile :: Show Tile where
     WallButton -> "."
     TankButton -> ","
     Bomb -> "*"
+    CloneMachine enemy -> "<-." <> show enemy

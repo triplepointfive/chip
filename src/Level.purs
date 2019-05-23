@@ -120,6 +120,7 @@ movePlayer manually direction level = checkForEnemies $ case unit of
       Just Dirt         -> inactive (removeCurrentTile moved)
       Just Socket       -> inactive $ moveToSocket dest level
       Just Exit         -> withAction moved Complete
+      Just (CloneMachine _) -> inactive turned
 
   currentTile = lookup level.player.pos level.tiles
 
@@ -245,6 +246,22 @@ enemyAct level = checkForEnemies $ inactive $ level { enemies = actedEnemies }
         [ toLeft direction
         , direction
         , toRight direction
+        , toRight (toRight direction)
+        ]
+  act pos (FireBall direction)
+    = case uncons (filter (isFloor <<< adjustPoint pos) directions) of
+      Just { head: floorDirection } ->
+          { pos: adjustPoint pos floorDirection
+          , enemy: FireBall floorDirection
+          }
+      Nothing -> { pos, enemy: FireBall direction }
+
+    where
+
+    directions =
+        [ direction
+        , toRight direction
+        , toLeft direction
         , toRight (toRight direction)
         ]
   act pos (Tank direction)

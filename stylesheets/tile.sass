@@ -84,6 +84,9 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size
       &.-green
         @include tile(3, 4)
 
+    &.-clone-machine
+      @include tile(3, 7)
+
     &.-floor
       @include tile(0, 1)
 
@@ -142,6 +145,9 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size
 
     &.-ball
       @include tile(0, 9)
+
+    &.-fireball
+      @include tile(4, 11)
 
     &.-tank
       @include dir-tile(4, 8)
