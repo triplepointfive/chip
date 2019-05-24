@@ -10,6 +10,7 @@ import Test.Spec.Assertions (shouldEqual)
 import Test.Spec.Reporter.Console (consoleReporter)
 import Test.Spec.Runner (run)
 
+import Chip.Action (Action(..))
 import Chip.Level.Build (build)
 import Chip.Inventory (has)
 import Chip.Tile (Tile(..), Color(..), Item(..))
@@ -88,7 +89,7 @@ main = run [consoleReporter] do
     describe "on exit" do
       let { result: level, actions } = Level.movePlayer true Down level1
       it "produces complete action" do
-        actions `shouldEqual` [Level.Complete]
+        actions `shouldEqual` [Complete]
       it "changes position" do
         level.player.pos `shouldEqual` { x: 1, y: 1 }
       it "turns" do
