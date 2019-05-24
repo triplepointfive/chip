@@ -1,3 +1,6 @@
 Chip should turn down if inactive
 Tank should turn halfway on button press
 Ball should change image when on button
+Extract chip's tile and put it above background
+Special tiles when enemies are on switchable wall
+Connect buttons with related mechanisms

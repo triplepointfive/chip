@@ -82,6 +82,8 @@ movePlayer manually direction level = checkForEnemies $ case unit of
       Just Socket       -> inactive $ moveToSocket dest level
       Just Exit         -> withAction moved Complete
       Just (CloneMachine _) -> inactive turned
+      Just (Trap _) -> inactive moved
+      Just TrapButton -> inactive moved
 
   currentTile = Map.lookup level.player.pos level.tiles
 

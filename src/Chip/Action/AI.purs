@@ -30,9 +30,11 @@ actAI level = inactive $ level { enemies = actedEnemies }
 
   -- TODO: Check for water & fire
   -- TODO: Check per monster type
+  -- TODO: Remove bomb if blown up
   withNewPos pos enemy { new, old } = case Map.lookup pos level.tiles of
     Just CloneMachineButton -> { new: cloneEnemies (Map.insert pos enemy new), old }
     Just Water -> { new, old }
+    Just Bomb -> { new, old }
     _ -> { new: (Map.insert pos enemy new), old }
 
   foldEnemies { new, old } = case Map.findMin old of
@@ -51,6 +53,8 @@ actAI level = inactive $ level { enemies = actedEnemies }
     Just Fire -> true
     Just Water -> true
     Just (SwitchableWall Off) -> true
+    Just Bomb -> true
+    Just (Trap _) -> true
     _ -> false
 
   goTo :: Point -> Direction -> (Direction -> Enemy) -> Array Direction -> { pos :: Point, enemy :: Enemy }
@@ -67,6 +71,8 @@ actAI level = inactive $ level { enemies = actedEnemies }
       [toLeft direction, direction, toRight direction, invert direction]
   act pos (FireBall direction) = goTo pos direction FireBall
       [direction, toRight direction, toLeft direction, invert direction]
+  act pos (Glider direction) = goTo pos direction Glider
+      [direction, toLeft direction, toRight direction, invert direction]
   act pos (Tank direction)
     | isFloor (adjustPoint pos direction) = { pos: adjustPoint pos direction, enemy: Tank direction }
     | otherwise = { pos, enemy: Tank direction }

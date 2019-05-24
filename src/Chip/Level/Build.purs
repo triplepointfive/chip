@@ -95,6 +95,11 @@ build { grid, hint, chips, blocks } =
     '⇢' -> insertTile (CloneMachine (FireBall Right))
     '⇣' -> insertTile (CloneMachine (FireBall Down))
 
+    '☝' -> addEnemy (Glider Up)
+    '☞' -> addEnemy (Glider Right)
+    '☟' -> addEnemy (Glider Down)
+    '☜' -> addEnemy (Glider Left)
+
     'S' -> insertTile (Item SkiSkates)
     'U' -> insertTile (Item SuctionBoots)
     'I' -> insertTile (Item FireBoots)
@@ -111,7 +116,9 @@ build { grid, hint, chips, blocks } =
 
     '.' -> insertTile WallButton
     ',' -> insertTile TankButton
+    ':' -> insertTile TrapButton
     '↺' -> insertTile CloneMachineButton
+    ';' -> insertTile (Trap On)
 
     '≈' -> insertTile Dirt
     _   -> identity

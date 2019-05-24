@@ -55,6 +55,12 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size
     &.-wall-button
       @include tile(6, 6)
 
+    &.-trap-button
+      @include tile(7, 6)
+
+    &.-trap
+      @include tile(1, 7)
+
     &.-bomb
       @include tile(6, 5)
 
@@ -154,3 +160,6 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size
 
     &.-tank
       @include dir-tile(4, 8)
+
+    &.-glider
+      @include dir-tile(4, 9)
