@@ -15,39 +15,57 @@ import Chip.Tile (Tile(..))
 import Level (Level)
 import Utils (Direction, Point, SwitchState(..), adjustPoint, toLeft, toRight, invert)
 
+type ActResult =
+  { level :: Level
+  , old :: Map.Map Point Enemy
+  }
+
 actAI :: Level -> ActionResult Level
-actAI level = inactive $ level { enemies = actedEnemies }
+actAI initLevel = inactive $ foldEnemies
+  { level: initLevel { enemies = Map.empty }
+  , old: initLevel.enemies
+  }
+
   where
 
-  actedEnemies = foldEnemies { new: Map.empty, old: level.enemies }
+  add :: Point -> Enemy -> ActResult -> ActResult
+  add pos enemy { level, old } =
+    { level: level { enemies = Map.insert pos enemy level.enemies }
+    , old
+    }
 
-  cloneEnemies new = foldl withTile new (Map.toUnfoldable level.tiles :: Array (Tuple Point Tile))
+  cloneEnemies :: ActResult -> ActResult
+  cloneEnemies result =
+    foldl withTile result (Map.toUnfoldable result.level.tiles :: Array (Tuple Point Tile))
+
     where
 
-    withTile xs (Tuple pos tile) = case tile of
-      CloneMachine newEnemy -> Map.insert pos newEnemy xs
-      _ -> xs
+    withTile resultTuple (Tuple pos tile) = case tile of
+      CloneMachine newEnemy -> add pos newEnemy result
+      _ -> result
 
   -- TODO: Check for water & fire
   -- TODO: Check per monster type
   -- TODO: Remove bomb if blown up
-  withNewPos pos enemy { new, old } = case Map.lookup pos level.tiles of
-    Just CloneMachineButton -> { new: cloneEnemies (Map.insert pos enemy new), old }
-    Just Water -> { new, old }
-    Just Bomb -> { new, old }
-    _ -> { new: (Map.insert pos enemy new), old }
+  withNewPos :: Point -> Enemy -> ActResult -> ActResult
+  withNewPos pos enemy result = case Map.lookup pos result.level.tiles of
+    Just CloneMachineButton -> cloneEnemies (add pos enemy result)
+    Just Water -> result
+    Just Bomb -> result
+    _ -> add pos enemy result
 
-  foldEnemies { new, old } = case Map.findMin old of
+  foldEnemies :: ActResult -> Level
+  foldEnemies { level, old } = case Map.findMin old of
     Just { key: oldPos, value: oldEnemy } ->
-        let { pos, enemy } = act oldPos oldEnemy in
+        let { pos, enemy } = act level oldPos oldEnemy in
         if pos == oldPos
-            then foldEnemies { new: Map.insert pos enemy new, old: Map.delete oldPos old }
-            else foldEnemies (withNewPos pos enemy { new, old: Map.delete oldPos old })
-    Nothing -> new
+            then foldEnemies $ add pos enemy { level, old: Map.delete oldPos old }
+            else foldEnemies (withNewPos pos enemy { level, old: Map.delete oldPos old })
+    Nothing -> level
 
   -- TODO: Check for blocks
-  isFloor :: Point -> Boolean
-  isFloor p = case Map.lookup p level.tiles of
+  isFloor :: Level -> Point -> Boolean
+  isFloor level p = case Map.lookup p level.tiles of
     Nothing -> true
     Just CloneMachineButton -> true
     Just Fire -> true
@@ -57,28 +75,28 @@ actAI level = inactive $ level { enemies = actedEnemies }
     Just (Trap _) -> true
     _ -> false
 
-  goTo :: Point -> Direction -> (Direction -> Enemy) -> Array Direction -> { pos :: Point, enemy :: Enemy }
-  goTo pos direction enemy dirs =
-    case uncons (filter (isFloor <<< adjustPoint pos) dirs) of
+  goTo :: Level -> Point -> Direction -> (Direction -> Enemy) -> Array Direction -> { pos :: Point, enemy :: Enemy }
+  goTo level pos direction enemy dirs =
+    case uncons (filter (isFloor level <<< adjustPoint pos) dirs) of
         Just { head: floorDirection } ->
             { pos: adjustPoint pos floorDirection
             , enemy: enemy floorDirection
             }
         Nothing -> { pos, enemy: enemy direction }
 
-  act :: Point -> Enemy -> { pos :: Point, enemy :: Enemy }
-  act pos (Bee direction) = goTo pos direction Bee
+  act :: Level -> Point -> Enemy -> { pos :: Point, enemy :: Enemy }
+  act level pos (Bee direction) = goTo level pos direction Bee
       [toLeft direction, direction, toRight direction, invert direction]
-  act pos (FireBall direction) = goTo pos direction FireBall
+  act level pos (FireBall direction) = goTo level pos direction FireBall
       [direction, toRight direction, toLeft direction, invert direction]
-  act pos (Glider direction) = goTo pos direction Glider
+  act level pos (Glider direction) = goTo level pos direction Glider
       [direction, toLeft direction, toRight direction, invert direction]
-  act pos (Tank direction)
-    | isFloor (adjustPoint pos direction) = { pos: adjustPoint pos direction, enemy: Tank direction }
+  act level pos (Tank direction)
+    | isFloor level (adjustPoint pos direction) = { pos: adjustPoint pos direction, enemy: Tank direction }
     | otherwise = { pos, enemy: Tank direction }
-  act pos (Ball direction) = case unit of
-    _ | isFloor dest -> { pos: dest, enemy: Ball direction }
-    _ | isFloor invertDest -> { pos: invertDest, enemy: Ball invertDir }
+  act level pos (Ball direction) = case unit of
+    _ | isFloor level dest -> { pos: dest, enemy: Ball direction }
+    _ | isFloor level invertDest -> { pos: invertDest, enemy: Ball invertDir }
     _ -> { pos, enemy: Ball (invert direction) }
 
     where
