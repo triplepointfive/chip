@@ -125,18 +125,17 @@ tilesRowElem tiles =
     (map tileToElem tiles)
 
 buildTile :: Point -> Game -> DisplayTile
-buildTile p game = withTile (lookup p game.level.tiles)
-  where
-  { player: { pos, direction } } = game.level
-
-  withTile tile
-    | p == pos = case game.state of
+buildTile p { state, level: { player, enemies, tiles, blocks } } = case tile of
+  _ | p == player.pos -> case state of
       Dead Drown -> DrownBoy
       Dead Burned -> BurnedBoy
-      _ -> boyTile tile
-    | Set.member p game.level.blocks = Block
-    | otherwise = maybe (maybe Floor Tile tile) Creature (lookup p game.level.enemies)
+      _ -> case tile of
+          Just Water -> Swimming player.direction
+          _ -> Boy player.direction
+  _ | Set.member p blocks -> Block
+  Just (CloneMachine e) -> Tile (CloneMachine e)
+  _ -> maybe (maybe Floor Tile tile) Creature (lookup p enemies)
 
-  boyTile tile
-    | tile == Just Water = Swimming direction
-    | otherwise = Boy direction
+  where
+
+  tile = lookup p tiles

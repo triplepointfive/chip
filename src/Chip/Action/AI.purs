@@ -13,7 +13,7 @@ import Chip.Action (ActionResult, inactive)
 import Chip.Enemy (Enemy(..))
 import Chip.Tile (Tile(..))
 import Level (Level)
-import Utils (Direction, Point, adjustPoint, toLeft, toRight, invert)
+import Utils (Direction, Point, SwitchState(..), adjustPoint, toLeft, toRight, invert)
 
 actAI :: Level -> ActionResult Level
 actAI level = inactive $ level { enemies = actedEnemies }
@@ -29,8 +29,10 @@ actAI level = inactive $ level { enemies = actedEnemies }
       _ -> xs
 
   -- TODO: Check for water & fire
+  -- TODO: Check per monster type
   withNewPos pos enemy { new, old } = case Map.lookup pos level.tiles of
     Just CloneMachineButton -> { new: cloneEnemies (Map.insert pos enemy new), old }
+    Just Water -> { new, old }
     _ -> { new: (Map.insert pos enemy new), old }
 
   foldEnemies { new, old } = case Map.findMin old of
@@ -46,6 +48,9 @@ actAI level = inactive $ level { enemies = actedEnemies }
   isFloor p = case Map.lookup p level.tiles of
     Nothing -> true
     Just CloneMachineButton -> true
+    Just Fire -> true
+    Just Water -> true
+    Just (SwitchableWall Off) -> true
     _ -> false
 
   goTo :: Point -> Direction -> (Direction -> Enemy) -> Array Direction -> { pos :: Point, enemy :: Enemy }
