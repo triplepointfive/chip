@@ -92,6 +92,7 @@ movePlayer manually direction level = checkForEnemies $ case unit of
           then inactive turned
           else inactive moved
 
+      Just Teleport -> inactive moved
       Just Thief -> inactive moved { inventory = initInventory }
       Just (Force _)    -> inactive moved
       Just Ice          -> inactive moved

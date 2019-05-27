@@ -86,6 +86,7 @@ data Tile
   | Trap
   | TrapButton
   | Thief
+  | Teleport
 
 derive instance eqTile :: Eq Tile
 
@@ -126,3 +127,4 @@ instance showTile :: Show Tile where
     Trap -> ";"
     TrapButton -> ":"
     Thief -> "t"
+    Teleport -> "o"

@@ -104,6 +104,7 @@ build { grid, hint, chips, blocks, trapConnections } =
     '-' -> insertTile Socket
     '<' -> insertTile Exit
     '?' -> insertTile Hint
+    'o' -> insertTile Teleport
 
     '‖' -> addEnemy p (Ball Up)
     '=' -> addEnemy p (Ball Left)
