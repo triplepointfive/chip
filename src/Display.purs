@@ -17,7 +17,7 @@ import Halogen.HTML.Properties as HP
 
 import Chip.Action (DieReason(..))
 import Chip.Enemy (Enemy(..))
-import Chip.Tile (Color(..), Tile(..), Item(..))
+import Chip.Tile (Color(..), Tile(..), Item(..), WallType(..))
 import Level (mapSize)
 import Game (Game, State(..))
 import Utils (Direction(..), Point, SwitchState(..))
@@ -55,7 +55,13 @@ rangeSlice r { x, y } =
 tileClasses :: DisplayTile -> String
 tileClasses = case _ of
   Floor -> "tile -floor"
-  Tile Wall -> "tile -wall"
+
+  Tile (Wall Solid) -> "tile -wall"
+  Tile (Wall Invisible) -> "tile -floor"
+  Tile (Wall Hidden) -> "tile -floor"
+  Tile (Wall Blue) -> "tile -wall -blue"
+  Tile (Wall Fake) -> "tile -wall -blue"
+
   Tile Chip -> "tile -chip"
   Tile (Door Red) -> "tile -door -red"
   Tile (Door Cyan) -> "tile -door -cyan"

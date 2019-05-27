@@ -2,6 +2,7 @@ module Chip.Tile
   ( Color(..)
   , Item(..)
   , Tile(..)
+  , WallType(..)
   ) where
 
 import Prelude
@@ -40,9 +41,26 @@ instance showItem :: Show Item where
       Yellow -> "y"
       Green -> "g"
 
+data WallType
+  = Solid
+  | Invisible
+  | Hidden
+  | Blue
+  | Fake
+
+derive instance eqWallType :: Eq WallType
+
+instance showWallType :: Show WallType where
+  show = case _ of
+    Solid -> "#"
+    Invisible -> "X"
+    Hidden -> "H"
+    Blue -> "%"
+    Fake -> "'"
+
 -- | A single cell on a level grid
 data Tile
-  = Wall
+  = Wall WallType
   | Door Color
   | Chip
   | Socket
@@ -68,7 +86,7 @@ derive instance eqTile :: Eq Tile
 
 instance showTile :: Show Tile where
   show = case _ of
-    Wall -> "#"
+    Wall t -> show t
     Door color -> case color of
       Red -> "R"
       Cyan -> "C"

@@ -15,7 +15,7 @@ import Data.Tuple (Tuple(..))
 
 import Chip.Enemy (Enemy(..))
 import Chip.Inventory (initInventory)
-import Chip.Tile (Tile(..), Item(..), Color(..))
+import Chip.Tile (Tile(..), Item(..), Color(..), WallType(..))
 import Level (Level, addEnemy)
 import Utils (Direction(..), Point, SwitchState(..), addIndex)
 
@@ -65,7 +65,14 @@ build { grid, hint, chips, blocks, trapConnections } =
   addCell :: Point -> Char -> Level -> Level
   addCell p c = case c of
     ' ' -> identity
-    '#' -> insertTile Wall
+
+    '#' -> insertTile (Wall Solid)
+    'X' -> insertTile (Wall Invisible)
+    'H' -> insertTile (Wall Hidden)
+    '%' -> insertTile (Wall Blue)
+    '\'' -> insertTile (Wall Fake)
+
+
     '+' -> insertTile Chip
     'r' -> insertTile (Item (Key Red))
     'c' -> insertTile (Item (Key Cyan))
