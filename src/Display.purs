@@ -114,7 +114,7 @@ tileClasses = case _ of
   Tile Dirt -> "tile -dirt"
   Tile Hint -> "tile -hint"
   Tile Socket -> "tile -socket"
-  Tile (Trap _) -> "tile -trap"
+  Tile Trap -> "tile -trap"
   Tile TrapButton -> "tile -trap-button"
   DrownBoy -> "tile -boy -drown"
   BurnedBoy -> "tile -boy -burned"

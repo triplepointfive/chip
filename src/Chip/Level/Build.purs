@@ -118,7 +118,7 @@ build { grid, hint, chips, blocks } =
     ',' -> insertTile TankButton
     ':' -> insertTile TrapButton
     '↺' -> insertTile CloneMachineButton
-    ';' -> insertTile (Trap On)
+    ';' -> insertTile Trap
 
     '≈' -> insertTile Dirt
     _   -> identity

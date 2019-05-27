@@ -12,7 +12,7 @@ import Data.Tuple (Tuple(..))
 import Chip.Action (ActionResult, inactive)
 import Chip.Enemy (Enemy(..))
 import Chip.Tile (Tile(..))
-import Level (Level, addEnemy, removeTile)
+import Level (Level, addEnemy, removeTile, isTrapActive)
 import Utils (Direction, Point, SwitchState(..), adjustPoint, toLeft, toRight, invert)
 
 type ActResult =
@@ -59,7 +59,7 @@ actAI initLevel = inactive $ foldEnemies
     Just { key: oldPos, value: oldEnemy } ->
         let { pos, enemy } = act level oldPos oldEnemy in
         if pos == oldPos
-            then foldEnemies $ add pos enemy { level, old: Map.delete oldPos old }
+            then foldEnemies { level: addEnemy pos enemy level, old: Map.delete oldPos old }
             else foldEnemies { level: withNewPos pos enemy level, old: Map.delete oldPos old }
     Nothing -> level
 
@@ -72,7 +72,7 @@ actAI initLevel = inactive $ foldEnemies
     Just Water -> true
     Just (SwitchableWall Off) -> true
     Just Bomb -> true
-    Just (Trap _) -> true
+    Just Trap -> true
     _ -> false
 
   goTo :: Level -> Point -> Direction -> (Direction -> Enemy) -> Array Direction -> { pos :: Point, enemy :: Enemy }
@@ -85,22 +85,25 @@ actAI initLevel = inactive $ foldEnemies
         Nothing -> { pos, enemy: enemy direction }
 
   act :: Level -> Point -> Enemy -> { pos :: Point, enemy :: Enemy }
-  act level pos (Bee direction) = goTo level pos direction Bee
-      [toLeft direction, direction, toRight direction, invert direction]
-  act level pos (FireBall direction) = goTo level pos direction FireBall
-      [direction, toRight direction, toLeft direction, invert direction]
-  act level pos (Glider direction) = goTo level pos direction Glider
-      [direction, toLeft direction, toRight direction, invert direction]
-  act level pos (Tank direction)
-    | isFloor level (adjustPoint pos direction) = { pos: adjustPoint pos direction, enemy: Tank direction }
-    | otherwise = { pos, enemy: Tank direction }
-  act level pos (Ball direction) = case unit of
-    _ | isFloor level dest -> { pos: dest, enemy: Ball direction }
-    _ | isFloor level invertDest -> { pos: invertDest, enemy: Ball invertDir }
-    _ -> { pos, enemy: Ball (invert direction) }
+  act level pos = case _ of
+    enemy | Map.lookup pos level.tiles == Just Trap && isTrapActive pos level -> { pos, enemy }
 
-    where
+    Bee direction -> goTo level pos direction Bee
+        [toLeft direction, direction, toRight direction, invert direction]
 
-    invertDir = invert direction
-    invertDest = adjustPoint pos invertDir
-    dest = adjustPoint pos direction
+    FireBall direction -> goTo level pos direction FireBall
+        [direction, toRight direction, toLeft direction, invert direction]
+
+    Glider direction -> goTo level pos direction Glider
+        [direction, toLeft direction, toRight direction, invert direction]
+
+    Tank direction | isFloor level (adjustPoint pos direction) ->
+        { pos: adjustPoint pos direction, enemy: Tank direction }
+    Tank direction -> { pos, enemy: Tank direction }
+
+    Ball direction | isFloor level (adjustPoint pos direction) ->
+        { pos: adjustPoint pos direction, enemy: Ball direction }
+    Ball direction | isFloor level (adjustPoint pos (invert direction)) ->
+        { pos: adjustPoint pos (invert direction), enemy: Ball (invert direction) }
+    Ball direction ->
+        { pos, enemy: Ball (invert direction) }

@@ -4,6 +4,7 @@ module Level
   , Tiles(..)
   , addEnemy
   , checkForEnemies
+  , isTrapActive
   , mapSize
   , movePlayer
   , removeTile
@@ -15,8 +16,8 @@ import Prelude
 
 import Data.Array ((:))
 import Data.Map as Map
-import Data.Set as Set
 import Data.Maybe (Maybe(..))
+import Data.Set as Set
 
 import Chip.Action (Action(..), ActionResult, DieReason(..), inactive, withAction)
 import Chip.Enemy (Enemy(..))
@@ -55,6 +56,12 @@ type Level =
 outOfLevel :: Point -> Boolean
 outOfLevel { x, y } = x < 0 || y < 0 || x >= mapSize || y >= mapSize
 
+-- TODO: Check for blocks as well
+isTrapActive :: Point -> Level -> Boolean
+isTrapActive point level = not $ Map.member level.player.pos buttonTiles
+  where
+  buttonTiles = Map.filter ((==) TrapButton) level.tiles
+
 -- | Tries to move player
 movePlayer :: Boolean -> Direction -> Level -> ActionResult Level
 movePlayer manually direction level = checkForEnemies $ case unit of
@@ -62,6 +69,7 @@ movePlayer manually direction level = checkForEnemies $ case unit of
   _ | outOfLevel dest -> inactive turned
   _ | manually && onIce && not (has SkiSkates level.inventory) -> inactive level
   _ -> move'
+
   where
 
   move' = case Map.lookup dest level.tiles of
@@ -87,7 +95,7 @@ movePlayer manually direction level = checkForEnemies $ case unit of
       Just Socket       -> inactive $ moveToSocket dest level
       Just Exit         -> withAction moved Complete
       Just (CloneMachine _) -> inactive turned
-      Just (Trap _) -> inactive moved
+      Just Trap -> inactive moved
       Just TrapButton -> inactive moved
 
   currentTile = Map.lookup level.player.pos level.tiles

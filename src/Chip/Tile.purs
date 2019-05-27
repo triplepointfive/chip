@@ -61,7 +61,7 @@ data Tile
   | Bomb
   | CloneMachine Enemy
   | CloneMachineButton
-  | Trap SwitchState
+  | Trap
   | TrapButton
 
 derive instance eqTile :: Eq Tile
@@ -100,5 +100,5 @@ instance showTile :: Show Tile where
     Bomb -> "*"
     CloneMachine enemy -> "<-." <> show enemy
     CloneMachineButton -> "↺"
-    Trap _ -> ";"
+    Trap -> ";"
     TrapButton -> ":"
