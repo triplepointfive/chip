@@ -71,7 +71,7 @@ build { grid, hint, chips, blocks, trapConnections } =
     'H' -> insertTile (Wall Hidden)
     '%' -> insertTile (Wall Blue)
     '\'' -> insertTile (Wall Fake)
-
+    'O' -> insertTile (Wall Recessed)
 
     '+' -> insertTile Chip
     'r' -> insertTile (Item (Key Red))
@@ -85,6 +85,7 @@ build { grid, hint, chips, blocks, trapConnections } =
     'b' -> addEnemy p (Bee Up)
     '~' -> insertTile Water
     '^' -> insertTile Fire
+    't' -> insertTile Thief
 
     '⊤' -> addEnemy p (Tank Down)
     '⊣' -> addEnemy p (Tank Left)

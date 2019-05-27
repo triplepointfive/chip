@@ -64,6 +64,9 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size
     &.-bomb
       @include tile(6, 5)
 
+    &.-thief
+      @include tile(7, 5)
+
     &.-switchable-wall
       &.-on
         @include tile(4, 5)
@@ -101,9 +104,10 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size
 
     &.-wall
       @include tile(2, 1)
-
       &.-blue
         @include tile(6, 1)
+      &.-recessed
+        @include tile(0, 7)
 
     &.-ski-skates
       @include tile(0, 6)

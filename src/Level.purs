@@ -21,7 +21,7 @@ import Data.Set as Set
 
 import Chip.Action (Action(..), ActionResult, DieReason(..), inactive, withAction)
 import Chip.Enemy (Enemy(..))
-import Chip.Inventory (Inventory, addItem, has, withdrawKey)
+import Chip.Inventory (Inventory, addItem, has, withdrawKey, initInventory)
 import Chip.Tile (Tile(..), Color, Item(..), WallType(..))
 import Utils (Direction, Point, SwitchState(..), try, adjustPoint, toRight, invert)
 
@@ -85,7 +85,9 @@ movePlayer manually direction level = checkForEnemies $ case unit of
       Just (Wall Hidden) -> inactive turned { tiles = Map.insert dest (Wall Solid) turned.tiles }
       Just (Wall Blue) -> inactive turned
       Just (Wall Fake) -> inactive (removeCurrentTile moved)
+      Just (Wall Recessed) -> inactive moved { tiles = Map.insert dest (Wall Solid) moved.tiles }
 
+      Just Thief -> inactive moved { inventory = initInventory }
       Just (Force _)    -> inactive moved
       Just Ice          -> inactive moved
       Just (IceCorner _) -> inactive moved

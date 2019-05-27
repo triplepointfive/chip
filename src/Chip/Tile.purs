@@ -47,6 +47,7 @@ data WallType
   | Hidden
   | Blue
   | Fake
+  | Recessed
 
 derive instance eqWallType :: Eq WallType
 
@@ -57,6 +58,7 @@ instance showWallType :: Show WallType where
     Hidden -> "H"
     Blue -> "%"
     Fake -> "'"
+    Recessed -> "O"
 
 -- | A single cell on a level grid
 data Tile
@@ -81,6 +83,7 @@ data Tile
   | CloneMachineButton
   | Trap
   | TrapButton
+  | Thief
 
 derive instance eqTile :: Eq Tile
 
@@ -120,3 +123,4 @@ instance showTile :: Show Tile where
     CloneMachineButton -> "↺"
     Trap -> ";"
     TrapButton -> ":"
+    Thief -> "t"
