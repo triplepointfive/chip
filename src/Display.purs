@@ -62,6 +62,7 @@ tileClasses = case _ of
   Tile (Wall Blue) -> "tile -wall -blue"
   Tile (Wall Fake) -> "tile -wall -blue"
   Tile (Wall Recessed) -> "tile -wall -recessed"
+  Tile (Wall (Flat _)) -> "tile -wall -down"
   Tile Thief -> "tile -thief"
 
   Tile Chip -> "tile -chip"

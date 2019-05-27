@@ -67,6 +67,7 @@ isActiveTrap point level = case Map.lookup point level.trapConnections of
 -- | Tries to move player
 movePlayer :: Boolean -> Direction -> Level -> ActionResult Level
 movePlayer manually direction level = checkForEnemies $ case unit of
+  _ | Map.lookup level.player.pos level.tiles == Just (Wall (Flat direction)) -> inactive turned
   _ | Set.member dest level.blocks -> pushBlock (adjustPoint dest direction)
   _ | outOfLevel dest -> inactive turned
   _ | manually && onIce && not (has SkiSkates level.inventory) -> inactive level
@@ -86,6 +87,10 @@ movePlayer manually direction level = checkForEnemies $ case unit of
       Just (Wall Blue) -> inactive turned
       Just (Wall Fake) -> inactive (removeCurrentTile moved)
       Just (Wall Recessed) -> inactive moved { tiles = Map.insert dest (Wall Solid) moved.tiles }
+      Just (Wall (Flat wallDir)) ->
+        if wallDir == invert direction
+          then inactive turned
+          else inactive moved
 
       Just Thief -> inactive moved { inventory = initInventory }
       Just (Force _)    -> inactive moved

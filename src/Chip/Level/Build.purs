@@ -72,6 +72,7 @@ build { grid, hint, chips, blocks, trapConnections } =
     '%' -> insertTile (Wall Blue)
     '\'' -> insertTile (Wall Fake)
     'O' -> insertTile (Wall Recessed)
+    '_' -> insertTile (Wall (Flat Down))
 
     '+' -> insertTile Chip
     'r' -> insertTile (Item (Key Red))

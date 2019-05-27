@@ -48,6 +48,7 @@ data WallType
   | Blue
   | Fake
   | Recessed
+  | Flat Direction
 
 derive instance eqWallType :: Eq WallType
 
@@ -59,6 +60,7 @@ instance showWallType :: Show WallType where
     Blue -> "%"
     Fake -> "'"
     Recessed -> "O"
+    Flat dir -> "FLAT"
 
 -- | A single cell on a level grid
 data Tile
