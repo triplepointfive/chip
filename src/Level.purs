@@ -4,7 +4,7 @@ module Level
   , Tiles(..)
   , addEnemy
   , checkForEnemies
-  , isTrapActive
+  , isActiveTrap
   , mapSize
   , movePlayer
   , removeTile
@@ -51,16 +51,18 @@ type Level =
   , hint :: Maybe String
   , enemies :: Map.Map Point Enemy
   , blocks :: Set.Set Point
+  , trapConnections :: Map.Map Point Point
   }
 
 outOfLevel :: Point -> Boolean
 outOfLevel { x, y } = x < 0 || y < 0 || x >= mapSize || y >= mapSize
 
 -- TODO: Check for blocks as well
-isTrapActive :: Point -> Level -> Boolean
-isTrapActive point level = not $ Map.member level.player.pos buttonTiles
-  where
-  buttonTiles = Map.filter ((==) TrapButton) level.tiles
+isActiveTrap :: Point -> Level -> Boolean
+isActiveTrap point level = case Map.lookup point level.trapConnections of
+  _ | Map.lookup point level.tiles /= Just Trap -> false
+  Just button | button == level.player.pos -> false
+  _ -> true
 
 -- | Tries to move player
 movePlayer :: Boolean -> Direction -> Level -> ActionResult Level

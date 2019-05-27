@@ -37,5 +37,6 @@
   "name": "LESSON 3",
   "chips": 4,
   "timeLimit": 100,
-  "blocks": []
+  "blocks": [],
+  "trapConnections": []
 }

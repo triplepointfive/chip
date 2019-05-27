@@ -1,5 +1,6 @@
 module Chip.Level.Build
   ( Blank(..)
+  , Connection(..)
   , build
   ) where
 
@@ -10,12 +11,18 @@ import Data.Map as Map
 import Data.Maybe (Maybe)
 import Data.Set as Set
 import Data.String.CodeUnits (toCharArray)
+import Data.Tuple (Tuple(..))
 
 import Chip.Enemy (Enemy(..))
 import Chip.Inventory (initInventory)
 import Chip.Tile (Tile(..), Item(..), Color(..))
 import Level (Level, addEnemy)
 import Utils (Direction(..), Point, SwitchState(..), addIndex)
+
+type Connection =
+  { button :: Point
+  , trap :: Point
+  }
 
 -- | Structure used to build a level
 type Blank =
@@ -25,11 +32,12 @@ type Blank =
   , chips :: Int
   , timeLimit :: Int
   , blocks :: Array Point
+  , trapConnections :: Array Connection
   }
 
 -- | Builds a level from its blank
 build :: Blank -> Level
-build { grid, hint, chips, blocks } =
+build { grid, hint, chips, blocks, trapConnections } =
   foldl
     (\level { i: y, v: row } ->
       foldr
@@ -49,6 +57,7 @@ build { grid, hint, chips, blocks } =
     , inventory: initInventory
     , chipsLeft: chips
     , enemies: Map.empty
+    , trapConnections: buildConnections trapConnections
     , blocks: Set.fromFoldable blocks
     , hint
     }
@@ -127,3 +136,6 @@ build { grid, hint, chips, blocks } =
 
     insertTile :: Tile -> Level -> Level
     insertTile tile l = l { tiles = Map.insert p tile l.tiles}
+
+buildConnections :: Array Connection -> Map.Map Point Point
+buildConnections = Map.fromFoldable <<< map (\ { trap, button } -> Tuple trap button)

@@ -12,7 +12,7 @@ import Data.Tuple (Tuple(..))
 import Chip.Action (ActionResult, inactive)
 import Chip.Enemy (Enemy(..))
 import Chip.Tile (Tile(..))
-import Level (Level, addEnemy, removeTile, isTrapActive)
+import Level (Level, addEnemy, removeTile, isActiveTrap)
 import Utils (Direction, Point, SwitchState(..), adjustPoint, toLeft, toRight, invert)
 
 type ActResult =
@@ -86,7 +86,7 @@ actAI initLevel = inactive $ foldEnemies
 
   act :: Level -> Point -> Enemy -> { pos :: Point, enemy :: Enemy }
   act level pos = case _ of
-    enemy | Map.lookup pos level.tiles == Just Trap && isTrapActive pos level -> { pos, enemy }
+    enemy | isActiveTrap pos level -> { pos, enemy }
 
     Bee direction -> goTo level pos direction Bee
         [toLeft direction, direction, toRight direction, invert direction]
