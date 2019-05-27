@@ -12,7 +12,7 @@ import Data.Tuple (Tuple(..))
 import Chip.Action (ActionResult, inactive)
 import Chip.Enemy (Enemy(..))
 import Chip.Tile (Tile(..))
-import Level (Level)
+import Level (Level, addEnemy, removeTile)
 import Utils (Direction, Point, SwitchState(..), adjustPoint, toLeft, toRight, invert)
 
 type ActResult =
@@ -34,25 +34,25 @@ actAI initLevel = inactive $ foldEnemies
     , old
     }
 
-  cloneEnemies :: ActResult -> ActResult
-  cloneEnemies result =
-    foldl withTile result (Map.toUnfoldable result.level.tiles :: Array (Tuple Point Tile))
+  cloneEnemies :: Level -> Level
+  cloneEnemies level =
+    foldl withTile level (Map.toUnfoldable level.tiles :: Array (Tuple Point Tile))
 
     where
 
-    withTile resultTuple (Tuple pos tile) = case tile of
-      CloneMachine newEnemy -> add pos newEnemy result
-      _ -> result
+    withTile lvl (Tuple pos tile) = case tile of
+      CloneMachine newEnemy -> addEnemy pos newEnemy lvl
+      _ -> lvl
 
   -- TODO: Check for water & fire
   -- TODO: Check per monster type
   -- TODO: Remove bomb if blown up
-  withNewPos :: Point -> Enemy -> ActResult -> ActResult
-  withNewPos pos enemy result = case Map.lookup pos result.level.tiles of
-    Just CloneMachineButton -> cloneEnemies (add pos enemy result)
-    Just Water -> result
-    Just Bomb -> result
-    _ -> add pos enemy result
+  withNewPos :: Point -> Enemy -> Level -> Level
+  withNewPos pos enemy level = case Map.lookup pos level.tiles of
+    Just CloneMachineButton -> cloneEnemies (addEnemy pos enemy level)
+    Just Water -> level
+    Just Bomb -> removeTile pos level
+    _ -> addEnemy pos enemy level
 
   foldEnemies :: ActResult -> Level
   foldEnemies { level, old } = case Map.findMin old of
@@ -60,7 +60,7 @@ actAI initLevel = inactive $ foldEnemies
         let { pos, enemy } = act level oldPos oldEnemy in
         if pos == oldPos
             then foldEnemies $ add pos enemy { level, old: Map.delete oldPos old }
-            else foldEnemies (withNewPos pos enemy { level, old: Map.delete oldPos old })
+            else foldEnemies { level: withNewPos pos enemy level, old: Map.delete oldPos old }
     Nothing -> level
 
   -- TODO: Check for blocks

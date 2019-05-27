@@ -14,7 +14,7 @@ import Data.String.CodeUnits (toCharArray)
 import Chip.Enemy (Enemy(..))
 import Chip.Inventory (initInventory)
 import Chip.Tile (Tile(..), Item(..), Color(..))
-import Level (Level)
+import Level (Level, addEnemy)
 import Utils (Direction(..), Point, SwitchState(..), addIndex)
 
 -- | Structure used to build a level
@@ -66,14 +66,14 @@ build { grid, hint, chips, blocks } =
     'C' -> insertTile (Door Cyan)
     'Y' -> insertTile (Door Yellow)
     'G' -> insertTile (Door Green)
-    'b' -> addEnemy (Bee Up)
+    'b' -> addEnemy p (Bee Up)
     '~' -> insertTile Water
     '^' -> insertTile Fire
 
-    '⊤' -> addEnemy (Tank Down)
-    '⊣' -> addEnemy (Tank Left)
-    '⊥' -> addEnemy (Tank Up)
-    '⊢' -> addEnemy (Tank Right)
+    '⊤' -> addEnemy p (Tank Down)
+    '⊣' -> addEnemy p (Tank Left)
+    '⊥' -> addEnemy p (Tank Up)
+    '⊢' -> addEnemy p (Tank Right)
 
     '↓' -> insertTile (Force Down)
     '←' -> insertTile (Force Left)
@@ -87,18 +87,18 @@ build { grid, hint, chips, blocks } =
     '<' -> insertTile Exit
     '?' -> insertTile Hint
 
-    '‖' -> addEnemy (Ball Up)
-    '=' -> addEnemy (Ball Left)
+    '‖' -> addEnemy p (Ball Up)
+    '=' -> addEnemy p (Ball Left)
 
     '⇠' -> insertTile (CloneMachine (FireBall Left))
     '⇡' -> insertTile (CloneMachine (FireBall Up))
     '⇢' -> insertTile (CloneMachine (FireBall Right))
     '⇣' -> insertTile (CloneMachine (FireBall Down))
 
-    '☝' -> addEnemy (Glider Up)
-    '☞' -> addEnemy (Glider Right)
-    '☟' -> addEnemy (Glider Down)
-    '☜' -> addEnemy (Glider Left)
+    '☝' -> addEnemy p (Glider Up)
+    '☞' -> addEnemy p (Glider Right)
+    '☟' -> addEnemy p (Glider Down)
+    '☜' -> addEnemy p (Glider Left)
 
     'S' -> insertTile (Item SkiSkates)
     'U' -> insertTile (Item SuctionBoots)
@@ -124,9 +124,6 @@ build { grid, hint, chips, blocks } =
     _   -> identity
 
     where
-
-    addEnemy :: Enemy -> Level -> Level
-    addEnemy enemy l = l { enemies = Map.insert p enemy l.enemies }
 
     insertTile :: Tile -> Level -> Level
     insertTile tile l = l { tiles = Map.insert p tile l.tiles}

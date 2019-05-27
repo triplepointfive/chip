@@ -2,9 +2,11 @@ module Level
   ( Level(..)
   , Player(..)
   , Tiles(..)
+  , addEnemy
   , checkForEnemies
   , mapSize
   , movePlayer
+  , removeTile
   , slide
   , visibleHint
   ) where
@@ -21,6 +23,9 @@ import Chip.Enemy (Enemy(..))
 import Chip.Inventory (Inventory, addItem, has, withdrawKey)
 import Chip.Tile (Tile(..), Color, Item(..))
 import Utils (Direction, Point, SwitchState(..), try, adjustPoint, toRight, invert)
+
+addEnemy :: Point -> Enemy -> Level -> Level
+addEnemy p enemy l = l { enemies = Map.insert p enemy l.enemies }
 
 -- | Height and width of a level grid
 mapSize :: Int
@@ -155,13 +160,13 @@ countChip level
   | otherwise            = level { chipsLeft = level.chipsLeft - 1 }
 
 removeCurrentTile :: Level -> Level
-removeCurrentTile l = l { tiles = removeTile l.player.pos l.tiles }
+removeCurrentTile level = removeTile level.player.pos level
 
 onInventory :: (Inventory -> Inventory) -> Level -> Level
 onInventory f level = level { inventory = f level.inventory }
 
-removeTile :: Point -> Tiles -> Tiles
-removeTile pos = Map.delete pos
+removeTile :: Point -> Level -> Level
+removeTile point level = level { tiles = Map.delete point level.tiles }
 
 -- | Returns hint text if it should be shown
 visibleHint :: Level -> Maybe String
