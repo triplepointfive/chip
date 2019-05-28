@@ -92,7 +92,9 @@ movePlayer manually direction level = checkForEnemies $ case unit of
           then inactive turned
           else inactive moved
 
-      Just Teleport -> inactive moved
+      Just Teleport -> case nextTeleport dest direction level of
+        Just teleportDest -> inactive turned { player { pos = teleportDest } }
+        Nothing -> inactive level { player { direction = invert direction } }
       Just Thief -> inactive moved { inventory = initInventory }
       Just (Force _)    -> inactive moved
       Just Ice          -> inactive moved
@@ -234,3 +236,22 @@ toggleWalls level = level { tiles = map toggleWall level.tiles }
     SwitchableWall On -> SwitchableWall Off
     SwitchableWall Off -> SwitchableWall On
     t -> t
+
+-- TODO: Check for more tile types
+isSolid :: Maybe Tile -> Boolean
+isSolid = case _ of
+  Just (Wall _) -> true
+  _ -> false
+
+nextTeleport :: Point -> Direction -> Level -> Maybe Point
+nextTeleport origin direction level = iter { x: origin.x - 1, y: origin.y }
+
+  where
+
+  iter { x: -1, y } = iter { x: mapSize - 1, y: y - 1 }
+  iter { x, y: -1 } = iter { x: mapSize - 1, y: mapSize - 1 }
+  iter dest = case Map.lookup dest level.tiles of
+    _ | dest == origin -> Nothing
+    Just Teleport | not (isSolid (Map.lookup (adjustPoint dest direction) level.tiles))
+      -> Just (adjustPoint dest direction)
+    _ -> iter { x: dest.x - 1, y: dest.y }
