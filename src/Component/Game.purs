@@ -1,5 +1,6 @@
 module Component.Game
   ( component
+  , Action'(..)
   , Query(..)
   , processAction
   , ticksPerSecond
@@ -7,7 +8,6 @@ module Component.Game
 
 import Prelude hiding (div)
 
-import Data.Const (Const)
 import Data.Int (ceil, even, toNumber)
 import Data.Maybe (Maybe(..), isJust)
 import Effect.Aff (Aff)
@@ -32,20 +32,18 @@ import Utils (Direction(..), foldlM)
 ticksPerSecond :: Int
 ticksPerSecond = 8
 
--- | Accepts keyboard keypress events
+type Action' = Void
+
+type Message = Void
 data Query a
   = KeyboardEvent KeyboardEvent a
   | Tick a
-
 type State = Game
 
-type ChildSlot = Void
-type ChildQuery = Const Void
-
-div :: forall p i. String -> Array (H.HTML p i) -> H.HTML p i
+div :: forall p i. String -> Array (HH.HTML p i) -> HH.HTML p i
 div classes = HH.div [ HP.class_ (H.ClassName classes) ]
 
-dl :: forall a p i. Show a => String -> a -> H.HTML p i
+dl :: forall a p i. Show a => String -> a -> HH.HTML p i
 dl term description =
   div "data-list"
     [ div "term" [ HH.text term ]
@@ -53,13 +51,13 @@ dl term description =
     ]
 
 -- | Top game component
-component :: Blank -> Int -> H.Component HH.HTML Query Unit Void Aff
+component :: Blank -> Int -> H.Component HH.HTML Query Unit Message Aff
 component initBlank initLevelNum =
-  H.parentComponent
+  H.mkComponent
     { initialState: const initialState
     , render
-    , eval
-    , receiver: const Nothing
+    , eval: H.mkEval $ H.defaultEval { handleQuery = handleQuery }
+    -- , receiver: const Nothing
     }
   where
 
@@ -72,7 +70,6 @@ component initBlank initLevelNum =
     , state: Game.Init
     }
 
-  render :: State -> H.ParentHTML Query ChildQuery ChildSlot Aff
   render game =
     div "game-container"
       [ div "content"
@@ -82,51 +79,51 @@ component initBlank initLevelNum =
       , renderSidebar game
       ]
 
-  eval :: Query ~> H.ParentDSL State Query ChildQuery ChildSlot Void Aff
-  eval (KeyboardEvent ev next) = do
+handleQuery :: forall a. Query a -> H.HalogenM State Action () Message Aff (Maybe a)
+handleQuery (KeyboardEvent ev next) = do
+  { state } <- H.get
+
+  case state of
+    Game.Dead _ -> pure (Just next)
+    _ -> case KE.key ev of
+        "ArrowDown"  -> raiseMoveEvent Down
+        "ArrowLeft"  -> raiseMoveEvent Left
+        "ArrowUp"    -> raiseMoveEvent Up
+        "ArrowRight" -> raiseMoveEvent Right
+        otherwise    -> pure (Just next)
+
+  where
+
+  raiseMoveEvent direction = do
     { state } <- H.get
+    when (state == Game.Init) (H.modify_ (_ { state = Game.Alive }))
 
-    case state of
-      Game.Dead _ -> pure next
-      _ -> case KE.key ev of
-          "ArrowDown"  -> raiseMoveEvent Down
-          "ArrowLeft"  -> raiseMoveEvent Left
-          "ArrowUp"    -> raiseMoveEvent Up
-          "ArrowRight" -> raiseMoveEvent Right
-          otherwise    -> pure next
+    game <- H.get
+    let { result: level, actions } = Level.movePlayer true direction game.level
 
-    where
+    foldlM processAction (game { level = level }) actions >>= H.put
+    pure (Just next)
 
-    raiseMoveEvent direction = do
-      { state } <- H.get
-      when (state == Game.Init) (H.modify_ (_ { state = Game.Alive }))
+handleQuery (Tick next) = do
+  { state, ticksLeft } <- H.get
 
-      game <- H.get
-      let { result: level, actions } = Level.movePlayer true direction game.level
+  case state of
+    Game.Init -> pure (Just next)
+    Game.Dead _ -> pure (Just next)
+    _ -> do
+      when (ticksLeft == 1) (H.modify_ (_ { state = Game.Dead Timed }))
+      H.modify_ tick
 
-      foldlM processAction (game { level = level }) actions >>= H.put
-      pure next
-
-  eval (Tick next) = do
-    { state, ticksLeft } <- H.get
-
-    case state of
-      Game.Init -> pure next
-      Game.Dead _ -> pure next
-      _ -> do
-        when (ticksLeft == 1) (H.modify_ (_ { state = Game.Dead Timed }))
-        H.modify_ tick
-
-        when (even ticksLeft) $ do
-          game <- H.get
-          let { result: level, actions } = Level.checkForEnemies $ actAI game.level
-          foldlM processAction (game { level = level }) actions >>= H.put
-
+      when (even ticksLeft) $ do
         game <- H.get
-        let { result: level, actions } = Level.slide game.level
+        let { result: level, actions } = Level.checkForEnemies $ actAI game.level
         foldlM processAction (game { level = level }) actions >>= H.put
 
-        pure next
+      game <- H.get
+      let { result: level, actions } = Level.slide game.level
+      foldlM processAction (game { level = level }) actions >>= H.put
+
+      pure (Just next)
 
 processAction :: forall m. Bind m => MonadAff m => Game -> Action -> m Game
 processAction game = case _ of
@@ -151,13 +148,13 @@ dieMessage = case _ of
   Timed -> "Ooops! Don't step in the fire without fire boots!"
   BlownUp -> "Ooops! Don't touch the bombs!"
 
-renderMessage :: forall p i. Game -> Array (H.HTML p i)
+renderMessage :: forall p i. Game -> Array (HH.HTML p i)
 renderMessage { state, name } = case state of
   Game.Init -> [ div "modal -level" [ HH.text name ] ]
   Game.Dead reason -> [ div "modal -dead" [ HH.text (dieMessage reason), HH.br_, HH.text "Press R to restart" ] ]
   _ -> []
 
-renderSidebar :: forall p i. Game -> H.HTML p i
+renderSidebar :: forall p i. Game -> HH.HTML p i
 renderSidebar { level, levelNum, ticksLeft } =
   div "sidebar"
     [ HH.div_ $ (

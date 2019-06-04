@@ -35,7 +35,7 @@ main = HA.runHalogenAff do
       liftEffect $ tickInterval game
 
       document <- H.liftEffect $ DOM.document =<< DOM.window
-      liftEffect $ onKeyUp document (void <<< launchAff <<< game.query <<< H.action <<< Game.KeyboardEvent)
+      liftEffect $ onKeyUp document (void <<< launchAff <<< game.query <<< H.tell <<< Game.KeyboardEvent)
 
       pure unit
     Nothing ->
@@ -45,7 +45,7 @@ tickInterval :: forall o. (H.HalogenIO Game.Query o Aff) -> Effect Unit
 tickInterval game = void $
   setInterval
       (1000 / Game.ticksPerSecond)
-      (void $ launchAff $ game.query (H.action Game.Tick))
+      (void $ launchAff $ game.query (H.tell Game.Tick))
 
 onKeyUp :: HTMLDocument -> (KeyboardEvent -> Effect Unit) -> Effect Unit
 onKeyUp document fn = do

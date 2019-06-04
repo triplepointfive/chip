@@ -8,7 +8,7 @@
     "dist": "^0.1.2",
     "output": "^0.0.0",
     "pulp": "^12.4.2",
-    "purescript": "^0.12.5"
+    "purescript": "^0.13.0"
   },
   "devDependencies": {
     "parcel-plugin-static-files-copy": "^2.0.0",

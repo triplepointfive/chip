@@ -187,3 +187,4 @@ main = run [consoleReporter] do
           (Map.lookup { x: 1, y: 2 } level.tiles) `shouldEqual` Nothing
         it "leaves key in inventory" do
           has (Key Green) level.inventory `shouldEqual` true
+
