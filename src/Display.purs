@@ -32,6 +32,7 @@ data DisplayTile
   | DrownBoy
   | BurnedBoy
   | Block
+  | Chip
 
 -- | Builds a matrix of `DisplayTile` with `radius` * 2 + 1 size.
 -- | This function transforms raw level data to what shall be
@@ -66,7 +67,7 @@ tileClasses = case _ of
   Tile Thief -> "tile -thief"
 
   Tile Teleport -> "tile -teleport"
-  Tile Chip -> "tile -chip"
+  Chip -> "tile -chip"
   Tile (Door Red) -> "tile -door -red"
   Tile (Door Cyan) -> "tile -door -cyan"
   Tile (Door Yellow) -> "tile -door -yellow"
@@ -141,7 +142,7 @@ tilesRowElem tiles =
     (map tileToElem tiles)
 
 buildTile :: Point -> Game -> DisplayTile
-buildTile p { state, level: { player, enemies, tiles, blocks } } = case tile of
+buildTile p { state, level: { player, enemies, tiles, blocks, chips } } = case tile of
   _ | p == player.pos -> case state of
       Dead Drown -> DrownBoy
       Dead Burned -> BurnedBoy
@@ -149,6 +150,7 @@ buildTile p { state, level: { player, enemies, tiles, blocks } } = case tile of
           Just Water -> Swimming player.direction
           _ -> Boy player.direction
   _ | Set.member p blocks -> Block
+  _ | Set.member p chips -> Chip
   Just (CloneMachine e) -> Tile (CloneMachine e)
   _ -> maybe (maybe Floor Tile tile) Creature (lookup p enemies)
 

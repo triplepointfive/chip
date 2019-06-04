@@ -35,8 +35,9 @@
   ],
   "hint": "Blue walls may be fake. Some invisible walls never appear. There can be extra chips.",
   "name": "LESSON 6",
-  "chips": 4,
+  "chipsLeft": 4,
   "timeLimit": 100,
   "blocks": [],
-  "trapConnections": []
+  "trapConnections": [],
+  "extraChips": []
 }

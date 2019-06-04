@@ -9,7 +9,7 @@
     "            ##############      ",
     "            #↓←←←←←←←←←←←#      ",
     "         ####↓##########↑#      ",
-    "         #→+→↓←+←←←←←←←#↑#      ",
+    "         #→→→↓←←←←←←←←←#↑#      ",
     "         #↑##t########↑#↑#      ",
     "         #↑#    #  O ^↑#↑#      ",
     "         #↑# @? #F # ^↑#↑#      ",
@@ -35,8 +35,18 @@
   ],
   "hint": "Teleports can be directional. The thief takes your tools. New walls can appear under you.",
   "name": "LESSON 7",
-  "chips": 3,
+  "chipsLeft": 3,
   "timeLimit": 150,
   "blocks": [],
-  "trapConnections": []
+  "trapConnections": [],
+  "extraChips": [
+    {
+      "x": 11,
+      "y": 9
+    },
+    {
+      "x": 15,
+      "y": 9
+    }
+  ]
 }

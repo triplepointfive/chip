@@ -35,14 +35,30 @@
   ],
   "hint": "The blue button controls the tanks. The green button toggles walls. Sometimes things are hidden under blocks.",
   "name": "LESSON 4",
-  "chips": 9,
+  "chipsLeft": 9,
   "timeLimit": 150,
   "blocks": [
-    { "x": 10, "y": 14 },
-    { "x": 12, "y": 14 },
-    { "x": 11, "y": 15 },
-    { "x": 12, "y": 16 },
-    { "x": 10, "y": 16 }
+    {
+      "x": 10,
+      "y": 14
+    },
+    {
+      "x": 12,
+      "y": 14
+    },
+    {
+      "x": 11,
+      "y": 15
+    },
+    {
+      "x": 12,
+      "y": 16
+    },
+    {
+      "x": 10,
+      "y": 16
+    }
   ],
-  "trapConnections": []
+  "trapConnections": [],
+  "extraChips": []
 }

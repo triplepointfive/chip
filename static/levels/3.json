@@ -35,8 +35,9 @@
   ],
   "hint": "Suction-boots for force floors. Fire boots for fire. Flippers for water. Skates for ice.",
   "name": "LESSON 3",
-  "chips": 4,
+  "chipsLeft": 4,
   "timeLimit": 100,
   "blocks": [],
-  "trapConnections": []
+  "trapConnections": [],
+  "extraChips": []
 }

@@ -52,6 +52,7 @@ type Level =
   , enemies :: Map.Map Point Enemy
   , blocks :: Set.Set Point
   , trapConnections :: Map.Map Point Point
+  , chips :: Set.Set Point
   }
 
 outOfLevel :: Point -> Boolean
@@ -66,7 +67,7 @@ isActiveTrap point level = case Map.lookup point level.trapConnections of
 
 -- | Tries to move player
 movePlayer :: Boolean -> Direction -> Level -> ActionResult Level
-movePlayer manually direction level = checkForEnemies $ case unit of
+movePlayer manually direction level = checkForItems $ checkForEnemies $ case unit of
   _ | Map.lookup level.player.pos level.tiles == Just (Wall (Flat direction)) -> inactive turned
   _ | Set.member dest level.blocks -> pushBlock (adjustPoint dest direction)
   _ | outOfLevel dest -> inactive turned
@@ -77,7 +78,7 @@ movePlayer manually direction level = checkForEnemies $ case unit of
 
   move' = case Map.lookup dest level.tiles of
       Nothing           -> inactive moved
-      Just Chip         -> inactive (pickUpChip moved)
+      -- Just Chip         -> inactive (pickUpChip moved)
       Just (Item item)  -> inactive (pickUp item moved)
       Just (Door color) -> inactive (openDoor color turned)
 
@@ -118,6 +119,12 @@ movePlayer manually direction level = checkForEnemies $ case unit of
 
   currentTile = Map.lookup level.player.pos level.tiles
 
+  checkForItems :: ActionResult Level -> ActionResult Level
+  checkForItems res@{ result: level, actions }
+    | Set.member level.player.pos level.chips
+        = { result: pickUpChip level , actions }
+    | otherwise = res
+
   onIce = case currentTile of
     Just Ice -> true
     Just (IceCorner _) -> true
@@ -136,7 +143,7 @@ movePlayer manually direction level = checkForEnemies $ case unit of
   dest = adjustPoint level.player.pos direction
 
   pickUpChip :: Level -> Level
-  pickUpChip = countChip <<< removeCurrentTile
+  pickUpChip l = countChip (l { chips = Set.delete l.player.pos l.chips })
 
   pickUp :: Item -> Level -> Level
   pickUp item = removeCurrentTile <<< onInventory (addItem item)
