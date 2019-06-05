@@ -1,6 +1,11 @@
 {
   "name": "pure",
-  "ignore": ["**/.*", "node_modules", "bower_components", "output"],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "output"
+  ],
   "dependencies": {
     "purescript-prelude": "^4.1.1",
     "purescript-console": "^4.2.0",
@@ -13,5 +18,12 @@
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0"
+  },
+  "resolutions": {
+    "purescript-typelevel-prelude": ">= 4.0.0 < 6.0.0",
+    "purescript-foreign-object": "^2.0.1",
+    "purescript-web-file": "2",
+    "purescript-web-dom": "2 - 3",
+    "purescript-web-events": "^2.0.0"
   }
 }
