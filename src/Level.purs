@@ -110,6 +110,7 @@ movePlayer manually direction level = checkForEnemies $ case unit of
       Just (SwitchableWall Off) -> inactive moved
       Just Hint         -> inactive moved
       Just Dirt         -> inactive (removeCurrentTile moved)
+      Just Gravel       -> inactive moved
       Just Socket       -> inactive $ moveToSocket dest level
       Just Exit         -> withAction moved Complete
       Just (CloneMachine _) -> inactive turned

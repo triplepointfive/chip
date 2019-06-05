@@ -72,6 +72,7 @@ data Tile
   | Hint
   | Water
   | Dirt
+  | Gravel
   | Fire
   | Item Item
   | Force Direction
@@ -128,3 +129,4 @@ instance showTile :: Show Tile where
     TrapButton -> ":"
     Thief -> "t"
     Teleport -> "o"
+    Gravel -> "░"

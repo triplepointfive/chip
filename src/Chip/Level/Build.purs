@@ -140,6 +140,7 @@ build { grid, hint, chips, blocks, trapConnections } =
     ';' -> insertTile Trap
 
     '≈' -> insertTile Dirt
+    '░' -> insertTile Gravel
     _   -> identity
 
     where

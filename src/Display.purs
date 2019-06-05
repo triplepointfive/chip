@@ -122,6 +122,7 @@ tileClasses = case _ of
   Tile CloneMachineButton -> "tile -clone-machine-button"
   Tile Exit -> "tile -exit"
   Tile Dirt -> "tile -dirt"
+  Tile Gravel -> "tile -gravel"
   Tile Hint -> "tile -hint"
   Tile Socket -> "tile -socket"
   Tile Trap -> "tile -trap"

@@ -28,7 +28,7 @@ import Lib (getJSON)
 main :: Effect Unit
 main = HA.runHalogenAff do
   body <- HA.awaitBody
-  result <- getJSON "levels/7.json"
+  result <- getJSON "levels/8.json"
   case result of
     Just blank -> do
       game <- runUI (Game.component blank 1) unit body
