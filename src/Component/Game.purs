@@ -57,7 +57,6 @@ component initBlank initLevelNum =
     { initialState: const initialState
     , render
     , eval: H.mkEval $ H.defaultEval { handleQuery = handleQuery }
-    -- , receiver: const Nothing
     }
   where
 

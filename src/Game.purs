@@ -9,6 +9,7 @@ import Prelude
 
 import Chip.Action (DieReason)
 import Level (Level)
+import Utils (Direction(..))
 
 data State
   = Init
@@ -27,7 +28,12 @@ type Game =
   }
 
 tick :: Game -> Game
-tick = onLevel (\l -> l { ticksLeft = l.ticksLeft - 1 })
+tick = onLevel (\l -> turnPlayer l { ticksLeft = l.ticksLeft - 1 })
 
 onLevel :: (Level -> Level) -> Game -> Game
 onLevel f game = game { level = f game.level }
+
+turnPlayer :: Level -> Level
+turnPlayer l
+  | l.ticksLeft < l.player.turnedAt - 4 = l { player { direction = Down } }
+  | otherwise = l

@@ -40,6 +40,7 @@ type Tiles = Map.Map Point Tile
 type Player =
   { pos :: Point
   , direction :: Direction
+  , turnedAt :: Int
   }
 
 -- | Represents a floor with all its objects
@@ -126,7 +127,7 @@ movePlayer manually direction level = checkForEnemies $ case unit of
     _ -> false
 
   turned :: Level
-  turned = level { player { direction = direction } }
+  turned = level { player { direction = direction, turnedAt = level.ticksLeft } }
 
   moved :: Level
   moved = turned { player { pos = dest } }
