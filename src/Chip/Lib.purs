@@ -1,4 +1,4 @@
-module Lib
+module Chip.Lib
   ( getJSON
   ) where
 

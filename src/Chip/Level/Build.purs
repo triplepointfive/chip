@@ -17,7 +17,7 @@ import Chip.Enemy (Enemy(..))
 import Chip.Inventory (initInventory)
 import Chip.Tile (Tile(..), Item(..), Color(..), WallType(..))
 import Level (Level, addEnemy)
-import Utils (Direction(..), Point, SwitchState(..), addIndex)
+import Chip.Utils (Direction(..), Point, SwitchState(..), addIndex)
 
 type Connection =
   { button :: Point

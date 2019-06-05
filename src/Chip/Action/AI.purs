@@ -13,7 +13,7 @@ import Chip.Action (ActionResult, inactive)
 import Chip.Enemy (Enemy(..))
 import Chip.Tile (Tile(..))
 import Level (Level, addEnemy, removeTile, isActiveTrap)
-import Utils (Direction(..), Point, SwitchState(..), adjustPoint, toLeft, toRight, invert)
+import Chip.Utils (Direction(..), Point, SwitchState(..), adjustPoint, toLeft, toRight, invert)
 
 type ActResult =
   { level :: Level

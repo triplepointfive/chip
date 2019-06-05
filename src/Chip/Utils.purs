@@ -1,4 +1,4 @@
-module Utils
+module Chip.Utils
   ( Direction(..)
   , Point(..)
   , SwitchState(..)

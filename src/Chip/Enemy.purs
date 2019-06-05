@@ -4,7 +4,7 @@ module Chip.Enemy
 
 import Prelude
 
-import Utils (Direction)
+import Chip.Utils (Direction)
 
 -- | Living creature to avoid
 data Enemy

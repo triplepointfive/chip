@@ -23,7 +23,7 @@ import Chip.Action (Action(..), ActionResult, DieReason(..), inactive, withActio
 import Chip.Enemy (Enemy(..))
 import Chip.Inventory (Inventory, addItem, has, withdrawKey, initInventory)
 import Chip.Tile (Tile(..), Color, Item(..), WallType(..))
-import Utils (Direction, Point, SwitchState(..), try, adjustPoint, toRight, invert)
+import Chip.Utils (Direction, Point, SwitchState(..), try, adjustPoint, toRight, invert)
 
 addEnemy :: Point -> Enemy -> Level -> Level
 addEnemy p enemy l = l { enemies = Map.insert p enemy l.enemies }

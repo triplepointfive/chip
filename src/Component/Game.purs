@@ -12,22 +12,24 @@ import Data.Int (ceil, even, toNumber)
 import Data.Maybe (Maybe(..), isJust)
 import Effect.Aff (Aff)
 import Effect.Aff.Class (class MonadAff)
+import Control.Monad.State (class MonadState)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Web.UIEvent.KeyboardEvent as KE
 import Web.UIEvent.KeyboardEvent (KeyboardEvent)
 
-import Chip.Action (Action(..), DieReason(..))
+import Chip.Action (Action(..), DieReason(..), ActionResult)
 import Chip.Action.AI (actAI)
-import Chip.Level.Build (Blank, build)
+import Chip.Action.Tick (tick)
+import Chip.Level.Build ( Blank, build)
 import Chip.Tile (Color(..), Item(..), Tile(..))
 import Display (levelTiles, tilesRowElem, DisplayTile(..))
-import Game (Game, tick)
+import Game (Game)
 import Game as Game
 import Level as Level
-import Lib (getJSON)
-import Utils (Direction(..), foldlM)
+import Chip.Lib (getJSON)
+import Chip.Utils (Direction(..), foldlM)
 
 ticksPerSecond :: Int
 ticksPerSecond = 8
@@ -109,19 +111,24 @@ handleQuery (Tick next) = do
     Game.Init -> pure (Just next)
     Game.Dead _ -> pure (Just next)
     _ -> do
-      when (ticksLeft == 1) (H.modify_ (_ { state = Game.Dead Timed }))
-      H.modify_ tick
+      runAction tick
 
-      when (even ticksLeft) $ do
-        game <- H.get
-        let { result: level, actions } = Level.checkForEnemies $ actAI game.level
-        foldlM processAction (game { level = level }) actions >>= H.put
+      when (even ticksLeft) (runAction (Level.checkForEnemies <<< actAI))
 
-      game <- H.get
-      let { result: level, actions } = Level.slide game.level
-      foldlM processAction (game { level = level }) actions >>= H.put
+      runAction Level.slide
 
       pure (Just next)
+
+runAction
+  :: forall m. Bind m
+  => MonadAff m
+  => MonadState Game m
+  => (Level.Level -> ActionResult Level.Level)
+  -> m Unit
+runAction f = do
+  game <- H.get
+  let { result: level, actions } = f game.level
+  foldlM processAction (game { level = level }) actions >>= H.put
 
 processAction :: forall m. Bind m => MonadAff m => Game -> Action -> m Game
 processAction game = case _ of
@@ -142,7 +149,7 @@ dieMessage = case _ of
   Drown -> "Ooops! Chip can't swim without flippers!"
   Burned -> "Ooops! Don't step in the fire without fire boots!"
   Eaten -> "Ooops! Look out for creatures!"
-  Timed -> "Ooops! Don't step in the fire without fire boots!"
+  Timed -> "Ooops! Out of time!"
   BlownUp -> "Ooops! Don't touch the bombs!"
 
 renderMessage :: forall p i. Game -> Array (HH.HTML p i)

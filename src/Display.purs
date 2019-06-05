@@ -20,7 +20,7 @@ import Chip.Enemy (Enemy(..))
 import Chip.Tile (Color(..), Tile(..), Item(..), WallType(..))
 import Level (mapSize)
 import Game (Game, State(..))
-import Utils (Direction(..), Point, SwitchState(..))
+import Chip.Utils (Direction(..), Point, SwitchState(..))
 
 -- | What shall be output on screen
 data DisplayTile

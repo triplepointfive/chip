@@ -8,7 +8,7 @@ module Chip.Tile
 import Prelude
 
 import Chip.Enemy (Enemy)
-import Utils (Direction(..), SwitchState(..))
+import Chip.Utils (Direction(..), SwitchState(..))
 
 -- | Colors for keys and related doors
 data Color
