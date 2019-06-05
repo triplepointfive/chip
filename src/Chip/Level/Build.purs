@@ -37,7 +37,7 @@ type Blank =
 
 -- | Builds a level from its blank
 build :: Blank -> Level
-build { grid, hint, chips, blocks, trapConnections } =
+build { grid, hint, chips, blocks, trapConnections, timeLimit } =
   foldl
     (\level { i: y, v: row } ->
       foldr
@@ -60,6 +60,7 @@ build { grid, hint, chips, blocks, trapConnections } =
     , trapConnections: buildConnections trapConnections
     , blocks: Set.fromFoldable blocks
     , hint
+    , ticksLeft: timeLimit * 8
     }
 
   addCell :: Point -> Char -> Level -> Level

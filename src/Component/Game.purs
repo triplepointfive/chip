@@ -65,7 +65,6 @@ component initBlank initLevelNum =
   initialState =
     { level: build initBlank
     , levelNum: initLevelNum
-    , ticksLeft: initBlank.timeLimit * ticksPerSecond
     , name: initBlank.name
     , state: Game.Init
     }
@@ -105,7 +104,7 @@ handleQuery (KeyboardEvent ev next) = do
     pure (Just next)
 
 handleQuery (Tick next) = do
-  { state, ticksLeft } <- H.get
+  { state, level: { ticksLeft } } <- H.get
 
   case state of
     Game.Init -> pure (Just next)
@@ -134,7 +133,6 @@ processAction game = case _ of
             { level = build blank
             , levelNum = game.levelNum + 1
             , name = blank.name
-            , ticksLeft = blank.timeLimit * ticksPerSecond
             , state = Game.Init
             }
         Nothing -> pure game
@@ -155,11 +153,11 @@ renderMessage { state, name } = case state of
   _ -> []
 
 renderSidebar :: forall p i. Game -> HH.HTML p i
-renderSidebar { level, levelNum, ticksLeft } =
+renderSidebar { level, levelNum } =
   div "sidebar"
     [ HH.div_ $ (
         [ dl "LEVEL" levelNum
-        , dl "TIME" (ceil ((toNumber ticksLeft) / (toNumber ticksPerSecond) ))
+        , dl "TIME" (ceil ((toNumber level.ticksLeft) / (toNumber ticksPerSecond) ))
         ]
         <> (if isJust hint then [] else [dl "CHIPS LEFT" level.chipsLeft])
         )

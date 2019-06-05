@@ -22,13 +22,12 @@ derive instance eqState :: Eq State
 type Game =
   { level :: Level
   , levelNum :: Int
-  , ticksLeft :: Int
   , state :: State
   , name :: String
   }
 
 tick :: Game -> Game
-tick game = game { ticksLeft = game.ticksLeft - 1 }
+tick = onLevel (\l -> l { ticksLeft = l.ticksLeft - 1 })
 
 onLevel :: (Level -> Level) -> Game -> Game
 onLevel f game = game { level = f game.level }

@@ -52,6 +52,7 @@ type Level =
   , enemies :: Map.Map Point Enemy
   , blocks :: Set.Set Point
   , trapConnections :: Map.Map Point Point
+  , ticksLeft :: Int
   }
 
 outOfLevel :: Point -> Boolean
