@@ -35,9 +35,8 @@
   ],
   "hint": "Collect chips to get past the chip socket. Use keys to open doors.",
   "name": "LESSON 1",
-  "chipsLeft": 11,
+  "chips": 11,
   "timeLimit": 100,
   "blocks": [],
-  "trapConnections": [],
-  "extraChips": []
+  "trapConnections": []
 }

@@ -66,6 +66,7 @@ instance showWallType :: Show WallType where
 data Tile
   = Wall WallType
   | Door Color
+  | Chip
   | Socket
   | Exit
   | Hint
@@ -97,6 +98,7 @@ instance showTile :: Show Tile where
       Cyan -> "C"
       Yellow -> "Y"
       Green -> "G"
+    Chip -> "+"
     Socket -> "-"
     Exit -> "<"
     Hint -> "?"

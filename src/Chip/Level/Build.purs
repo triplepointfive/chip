@@ -29,16 +29,15 @@ type Blank =
   { grid :: Array String
   , hint :: Maybe String
   , name :: String
-  , chipsLeft :: Int
+  , chips :: Int
   , timeLimit :: Int
   , blocks :: Array Point
   , trapConnections :: Array Connection
-  , extraChips :: Array Point
   }
 
 -- | Builds a level from its blank
 build :: Blank -> Level
-build { grid, hint, chipsLeft, blocks, trapConnections, extraChips } =
+build { grid, hint, chips, blocks, trapConnections } =
   foldl
     (\level { i: y, v: row } ->
       foldr
@@ -56,12 +55,11 @@ build { grid, hint, chipsLeft, blocks, trapConnections, extraChips } =
     { player: { pos: { x: 0, y: 0 }, direction: Down }
     , tiles: Map.empty
     , inventory: initInventory
-    , chipsLeft
+    , chipsLeft: chips
     , enemies: Map.empty
     , trapConnections: buildConnections trapConnections
     , blocks: Set.fromFoldable blocks
     , hint
-    , chips: Set.fromFoldable extraChips
     }
 
   addCell :: Point -> Char -> Level -> Level
@@ -76,7 +74,7 @@ build { grid, hint, chipsLeft, blocks, trapConnections, extraChips } =
     'O' -> insertTile (Wall Recessed)
     '_' -> insertTile (Wall (Flat Down))
 
-    '+' -> addChip
+    '+' -> insertTile Chip
     'r' -> insertTile (Item (Key Red))
     'c' -> insertTile (Item (Key Cyan))
     'y' -> insertTile (Item (Key Yellow))
@@ -147,10 +145,7 @@ build { grid, hint, chipsLeft, blocks, trapConnections, extraChips } =
     where
 
     insertTile :: Tile -> Level -> Level
-    insertTile tile l = l { tiles = Map.insert p tile l.tiles }
-
-    addChip :: Level -> Level
-    addChip l = l { chips = Set.insert p l.chips }
+    insertTile tile l = l { tiles = Map.insert p tile l.tiles}
 
 buildConnections :: Array Connection -> Map.Map Point Point
 buildConnections = Map.fromFoldable <<< map (\ { trap, button } -> Tuple trap button)

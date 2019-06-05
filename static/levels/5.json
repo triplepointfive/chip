@@ -35,30 +35,11 @@
   ],
   "hint": "The red button controls the clone machine. The brown button opens traps.",
   "name": "LESSON 5",
-  "chipsLeft": 0,
+  "chips": 0,
   "timeLimit": 100,
   "blocks": [],
   "trapConnections": [
-    {
-      "button": {
-        "x": 16,
-        "y": 7
-      },
-      "trap": {
-        "x": 18,
-        "y": 7
-      }
-    },
-    {
-      "button": {
-        "x": 16,
-        "y": 10
-      },
-      "trap": {
-        "x": 18,
-        "y": 10
-      }
-    }
-  ],
-  "extraChips": []
+    { "button": { "x": 16, "y": 7 }, "trap": { "x": 18, "y": 7 } },
+    { "button": { "x": 16, "y": 10 }, "trap": { "x": 18, "y": 10 } }
+  ]
 }
