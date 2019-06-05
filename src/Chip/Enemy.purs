@@ -13,6 +13,7 @@ data Enemy
   | Ball Direction
   | FireBall Direction
   | Glider Direction
+  | Teeth Direction
 
 derive instance eqEnemy :: Eq Enemy
 
@@ -23,3 +24,4 @@ instance showEnemy :: Show Enemy where
     Ball direction -> "#Ball " <> show direction
     FireBall direction -> "FireBall " <> show direction
     Glider direction -> "Glider " <> show direction
+    Teeth direction -> "Teeth " <> show direction

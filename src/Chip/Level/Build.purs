@@ -139,6 +139,11 @@ build { grid, hint, chips, blocks, trapConnections } =
     '↺' -> insertTile CloneMachineButton
     ';' -> insertTile Trap
 
+    '⇈' -> addEnemy p (Teeth Up)
+    '⇉' -> addEnemy p (Teeth Right)
+    '⇊' -> addEnemy p (Teeth Down)
+    '⇇' -> addEnemy p (Teeth Left)
+
     '≈' -> insertTile Dirt
     '░' -> insertTile Gravel
     _   -> identity

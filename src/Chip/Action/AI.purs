@@ -4,7 +4,7 @@ module Chip.Action.AI
 
 import Prelude
 
-import Data.Array (uncons, filter, foldl)
+import Data.Array (uncons, filter, foldl, catMaybes)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
@@ -13,7 +13,7 @@ import Chip.Action (ActionResult, inactive)
 import Chip.Enemy (Enemy(..))
 import Chip.Tile (Tile(..))
 import Level (Level, addEnemy, removeTile, isActiveTrap)
-import Utils (Direction, Point, SwitchState(..), adjustPoint, toLeft, toRight, invert)
+import Utils (Direction(..), Point, SwitchState(..), adjustPoint, toLeft, toRight, invert)
 
 type ActResult =
   { level :: Level
@@ -85,7 +85,7 @@ actAI initLevel = inactive $ foldEnemies
         Nothing -> { pos, enemy: enemy direction }
 
   act :: Level -> Point -> Enemy -> { pos :: Point, enemy :: Enemy }
-  act level pos = case _ of
+  act level pos@({ x, y }) = case _ of
     enemy | isActiveTrap pos level -> { pos, enemy }
 
     Bee direction -> goTo level pos direction Bee
@@ -107,3 +107,18 @@ actAI initLevel = inactive $ foldEnemies
         { pos: adjustPoint pos (invert direction), enemy: Ball (invert direction) }
     Ball direction ->
         { pos, enemy: Ball (invert direction) }
+
+    Teeth direction -> goTo level pos direction Teeth $
+        catMaybes [verticalDirection, horizontalDirection]
+
+    where
+
+    verticalDirection
+      | y > level.player.pos.y = Just Up
+      | y < level.player.pos.y = Just Down
+      | otherwise = Nothing
+
+    horizontalDirection
+      | x > level.player.pos.x = Just Left
+      | x < level.player.pos.x = Just Right
+      | otherwise = Nothing
