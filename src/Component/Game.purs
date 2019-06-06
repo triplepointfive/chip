@@ -19,7 +19,7 @@ import Halogen.HTML.Properties as HP
 import Web.UIEvent.KeyboardEvent as KE
 import Web.UIEvent.KeyboardEvent (KeyboardEvent)
 
-import Chip.Action (Action(..), DieReason(..), ActionResult)
+import Chip.Action (Action(..), DieReason(..), ActionResult, Sound(..))
 import Chip.Action.AI (actAI)
 import Chip.Action.Tick (tick)
 import Chip.Level.Build ( Blank, build)
@@ -30,6 +30,7 @@ import Game as Game
 import Level as Level
 import Chip.Lib (getJSON)
 import Chip.Utils (Direction(..), foldlM)
+import Chip.Sound (SoundEffect(..), play)
 
 ticksPerSecond :: Int
 ticksPerSecond = 8
@@ -142,7 +143,20 @@ processAction game = case _ of
             , state = Game.Init
             }
         Nothing -> pure game
-  Die reason -> pure (game { state = Game.Dead reason })
+  Die reason ->
+      _ { state = Game.Dead reason } <$> processAction game (PlaySound Bummer)
+
+  PlaySound sound -> do
+      H.liftEffect $ play (Sound (soundFile sound) 1.0)
+      pure game
+
+soundFile :: Sound -> String
+soundFile sound = "sounds/" <> case sound of
+  PickUpChip -> "CLICK3.WAV"
+  Oof -> "OOF3.WAV"
+  DoorOpen -> "DOOR.WAV"
+  PickUpItem -> "BLIP2.WAV"
+  Bummer -> "BUMMER.WAV"
 
 dieMessage :: DieReason -> String
 dieMessage = case _ of

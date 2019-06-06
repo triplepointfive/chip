@@ -19,11 +19,11 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Set as Set
 
-import Chip.Action (Action(..), ActionResult, DieReason(..), inactive, withAction)
+import Chip.Action (Action(..), ActionResult, DieReason(..), inactive, withAction, Sound(..))
 import Chip.Enemy (Enemy(..))
 import Chip.Inventory (Inventory, addItem, has, withdrawKey, initInventory)
 import Chip.Tile (Tile(..), Color, Item(..), WallType(..))
-import Chip.Utils (Direction, Point, SwitchState(..), try, adjustPoint, toRight, invert)
+import Chip.Utils (Direction, Point, SwitchState(..), adjustPoint, toRight, invert)
 
 addEnemy :: Point -> Enemy -> Level -> Level
 addEnemy p enemy l = l { enemies = Map.insert p enemy l.enemies }
@@ -79,9 +79,12 @@ movePlayer manually direction level = checkForEnemies $ case unit of
 
   move' = case Map.lookup dest level.tiles of
       Nothing           -> inactive moved
-      Just Chip         -> inactive (pickUpChip moved)
-      Just (Item item)  -> inactive (pickUp item moved)
-      Just (Door color) -> inactive (openDoor color turned)
+      Just Chip         -> withAction (pickUpChip moved) (PlaySound PickUpChip)
+      Just (Item item)  -> withAction (pickUp item moved) (PlaySound PickUpItem)
+
+      Just (Door color) | has (Key color) level.inventory
+          -> withAction (openDoor color turned) (PlaySound DoorOpen)
+      Just (Door _) -> withAction turned (PlaySound Oof)
 
       Just (Wall Solid) -> inactive turned
       Just (Wall Invisible) -> inactive turned
@@ -126,6 +129,9 @@ movePlayer manually direction level = checkForEnemies $ case unit of
     Just (IceCorner _) -> true
     _ -> false
 
+  openDoor :: Color -> Level -> Level
+  openDoor color = removeCurrentTile <<< onInventory (withdrawKey color) <<< move
+
   turned :: Level
   turned = level { player { direction = direction, turnedAt = level.ticksLeft } }
 
@@ -143,12 +149,6 @@ movePlayer manually direction level = checkForEnemies $ case unit of
 
   pickUp :: Item -> Level -> Level
   pickUp item = removeCurrentTile <<< onInventory (addItem item)
-
-  openDoor :: Color -> Level -> Level
-  openDoor color =
-    try
-        (has (Key color) <<< _.inventory)
-        (removeCurrentTile <<< onInventory (withdrawKey color) <<< move)
 
   -- TODO: Check if pushed into a monster
   pushBlock :: Point -> ActionResult Level

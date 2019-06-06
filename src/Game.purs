@@ -8,7 +8,6 @@ import Prelude
 
 import Chip.Action (DieReason)
 import Level (Level)
-import Chip.Utils (Direction(..))
 
 data State
   = Init

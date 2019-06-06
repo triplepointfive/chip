@@ -8,7 +8,6 @@ module Chip.Utils
   , invert
   , toLeft
   , toRight
-  , try
   ) where
 
 import Prelude
@@ -77,9 +76,6 @@ invert = case _ of
 -- | element of the set
 addIndex :: forall a. Array a -> Array { i :: Int, v :: a }
 addIndex a = mapWithIndex (\i v -> { i, v } ) a
-
-try :: forall a. (a -> Boolean) -> (a -> a) -> a -> a
-try predicate f v = if predicate v then f v else v
 
 -- | Monadic fold over the elements of a structure,
 -- | associating to the left, i.e. from left to right.
