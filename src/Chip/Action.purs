@@ -3,11 +3,14 @@ module Chip.Action
   , ActionResult(..)
   , DieReason(..)
   , Sound(..)
+  , addAction
   , inactive
   , withAction
   ) where
 
 import Prelude
+
+import Data.Array ((:))
 
 data DieReason
   = Drown
@@ -32,6 +35,10 @@ data Sound
   | PickUpItem
   | Bummer
   | PickUpChip
+  | LevelComplete
+  | Steal
+  | Teleported
+  | Splash
 
 derive instance eqSound :: Eq Sound
 
@@ -42,6 +49,10 @@ instance showSound :: Show Sound where
     PickUpItem -> "PickUpItem"
     Bummer -> "Bummer"
     PickUpChip -> "PickUpChip"
+    LevelComplete -> "LevelComplete"
+    Steal -> "Steal"
+    Teleported -> "Teleported"
+    Splash -> "Splash"
 
 data Action
   = Complete
@@ -63,3 +74,6 @@ inactive result = { result, actions: [] }
 
 withAction :: forall a. a -> Action -> ActionResult a
 withAction result action = { result, actions: [action] }
+
+addAction :: forall a. Action -> ActionResult a -> ActionResult a
+addAction action { result, actions } = { result, actions: action : actions }

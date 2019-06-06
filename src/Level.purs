@@ -19,7 +19,7 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Set as Set
 
-import Chip.Action (Action(..), ActionResult, DieReason(..), inactive, withAction, Sound(..))
+import Chip.Action (Action(..), ActionResult, DieReason(..), inactive, withAction, Sound(..), addAction)
 import Chip.Enemy (Enemy(..))
 import Chip.Inventory (Inventory, addItem, has, withdrawKey, initInventory)
 import Chip.Tile (Tile(..), Color, Item(..), WallType(..))
@@ -102,10 +102,11 @@ movePlayer manually direction level = checkForEnemies $ case unit of
           then inactive turned
           else inactive moved
 
-      Just Teleport -> case nextTeleport dest direction level of
-        Just teleportDest -> inactive turned { player { pos = teleportDest } }
-        Nothing -> inactive level { player { direction = invert direction } }
-      Just Thief -> inactive moved { inventory = initInventory }
+      Just Teleport -> sound Teleported $ case nextTeleport dest direction level of
+        Just teleportDest -> turned { player { pos = teleportDest } }
+        Nothing -> level { player { direction = invert direction } }
+
+      Just Thief -> sound Steal (moved { inventory = initInventory })
       Just (Force _)    -> inactive moved
       Just Ice          -> inactive moved
       Just (IceCorner _) -> inactive moved
@@ -160,7 +161,7 @@ movePlayer manually direction level = checkForEnemies $ case unit of
   pushBlock blockDest
     | Set.member blockDest level.blocks = inactive turned
     | otherwise = case Map.lookup blockDest level.tiles of
-        Just Water -> movePlayer manually direction $ level
+        Just Water -> addAction (PlaySound Splash) $ movePlayer manually direction $ level
             { tiles = Map.insert blockDest Dirt moved.tiles
             , blocks = Set.delete dest level.blocks
             }

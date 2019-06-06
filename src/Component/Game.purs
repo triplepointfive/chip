@@ -134,6 +134,8 @@ runAction f = do
 processAction :: forall m. Bind m => MonadAff m => Game -> Action -> m Game
 processAction game = case _ of
   Complete -> do
+      _ <- processAction game (PlaySound LevelComplete)
+
       result <- H.liftAff $ getJSON ("levels/" <> show (game.levelNum + 1) <> ".json")
       case result of
         Just blank -> pure $ game
@@ -143,6 +145,7 @@ processAction game = case _ of
             , state = Game.Init
             }
         Nothing -> pure game
+
   Die reason ->
       _ { state = Game.Dead reason } <$> processAction game (PlaySound Bummer)
 
@@ -157,6 +160,10 @@ soundFile sound = "sounds/" <> case sound of
   DoorOpen -> "DOOR.WAV"
   PickUpItem -> "BLIP2.WAV"
   Bummer -> "BUMMER.WAV"
+  LevelComplete -> "DITTY1.WAV"
+  Steal -> "STRIKE.WAV"
+  Teleported -> "TELEPORT.WAV"
+  Splash -> "WATER2.WAV"
 
 dieMessage :: DieReason -> String
 dieMessage = case _ of
