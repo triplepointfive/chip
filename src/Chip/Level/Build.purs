@@ -110,6 +110,11 @@ build { grid, hint, chips, blocks, trapConnections, timeLimit } =
     '‖' -> addEnemy p (Ball Up)
     '=' -> addEnemy p (Ball Left)
 
+    '↞' -> addEnemy p (FireBall Left)
+    '↟' -> addEnemy p (FireBall Up)
+    '↠' -> addEnemy p (FireBall Right)
+    '↡' -> addEnemy p (FireBall Down)
+
     '⇠' -> insertTile (CloneMachine (FireBall Left))
     '⇡' -> insertTile (CloneMachine (FireBall Up))
     '⇢' -> insertTile (CloneMachine (FireBall Right))

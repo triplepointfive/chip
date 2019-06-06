@@ -3,3 +3,11 @@ Ball should change image when on button
 Extract chip's tile and put it above background
 Special tiles when enemies are on switchable wall
 Yellow color when chips = 0
+
+Level 9:
+fireball hits blocks
+chip can be trapped
+bees do not overlap
+fireball moves on ice
+blocks blow up bombs
+blocks press buttons (trap)
