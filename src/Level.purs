@@ -66,6 +66,9 @@ isActiveTrap point level = case Map.lookup point level.trapConnections of
   Just button | button == level.player.pos -> false
   _ -> true
 
+sound :: Sound -> Level -> ActionResult Level
+sound effect level = withAction level (PlaySound effect)
+
 -- | Tries to move player
 movePlayer :: Boolean -> Direction -> Level -> ActionResult Level
 movePlayer manually direction level = checkForEnemies $ case unit of
@@ -86,12 +89,14 @@ movePlayer manually direction level = checkForEnemies $ case unit of
           -> withAction (openDoor color turned) (PlaySound DoorOpen)
       Just (Door _) -> withAction turned (PlaySound Oof)
 
-      Just (Wall Solid) -> inactive turned
-      Just (Wall Invisible) -> inactive turned
-      Just (Wall Hidden) -> inactive turned { tiles = Map.insert dest (Wall Solid) turned.tiles }
-      Just (Wall Blue) -> inactive turned
+      Just (Wall Solid) -> sound Oof turned
+      Just (Wall Invisible) -> sound Oof turned
+      Just (Wall Hidden) -> sound Oof turned { tiles = Map.insert dest (Wall Solid) turned.tiles }
+      Just (Wall Blue) -> sound Oof turned { tiles = Map.insert dest (Wall Solid) turned.tiles }
+
       Just (Wall Fake) -> inactive (removeCurrentTile moved)
       Just (Wall Recessed) -> inactive moved { tiles = Map.insert dest (Wall Solid) moved.tiles }
+
       Just (Wall (Flat wallDir)) ->
         if wallDir == invert direction
           then inactive turned
