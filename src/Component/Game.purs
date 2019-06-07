@@ -33,7 +33,7 @@ import Chip.Utils (Direction(..), foldlM)
 import Chip.Sound (SoundEffect(..), play)
 
 ticksPerSecond :: Int
-ticksPerSecond = 8
+ticksPerSecond = 10
 
 type Action' = Void
 
@@ -105,7 +105,7 @@ handleQuery (KeyboardEvent ev next) = do
   where
 
   raiseMoveEvent direction = do
-    { state } <- H.get
+    { state, level: { ticksLeft } } <- H.get
     when (state == Game.Init) (H.modify_ (_ { state = Game.Alive }))
 
     runAction (Level.movePlayer true direction)
@@ -118,9 +118,8 @@ handleQuery (Tick next) = do
     Game.Init -> pure (Just next)
     Game.Dead _ -> pure (Just next)
     _ -> do
-      runAction tick
-
       when (even ticksLeft) (runAction (Level.checkForEnemies <<< actAI))
+      runAction tick
 
       runAction Level.slide
 

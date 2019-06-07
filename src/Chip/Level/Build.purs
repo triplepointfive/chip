@@ -52,7 +52,7 @@ build { grid, hint, chips, blocks, trapConnections, timeLimit } =
 
   initLevel :: Level
   initLevel =
-    { player: { pos: { x: 0, y: 0 }, direction: Down, turnedAt: timeLimit * 8 }
+    { player: { pos: { x: 0, y: 0 }, direction: Down, turnedAt: timeLimit * 10 }
     , tiles: Map.empty
     , inventory: initInventory
     , chipsLeft: chips
@@ -60,7 +60,7 @@ build { grid, hint, chips, blocks, trapConnections, timeLimit } =
     , trapConnections: buildConnections trapConnections
     , blocks: Set.fromFoldable blocks
     , hint
-    , ticksLeft: timeLimit * 8
+    , ticksLeft: timeLimit * 10
     }
 
   addCell :: Point -> Char -> Level -> Level

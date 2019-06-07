@@ -108,6 +108,7 @@ actAI initLevel = inactive $ foldEnemies
     Ball direction ->
         { pos, enemy: Ball (invert direction) }
 
+    Teeth direction | mod level.ticksLeft 4 /= 0 -> { pos, enemy: Teeth direction }
     Teeth direction -> goTo level pos direction Teeth $
         catMaybes [verticalDirection, horizontalDirection]
 
