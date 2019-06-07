@@ -63,12 +63,15 @@ component initBlank initLevelNum =
     }
   where
 
+  builtLevel = build initBlank
+
   initialState :: State
   initialState =
-    { level: build initBlank
+    { level: builtLevel
     , levelNum: initLevelNum
     , name: initBlank.name
     , state: Game.Init
+    , intactLevel: builtLevel
     }
 
   render game =
@@ -82,16 +85,22 @@ component initBlank initLevelNum =
 
 handleQuery :: forall a. Query a -> H.HalogenM State Action () Message Aff (Maybe a)
 handleQuery (KeyboardEvent ev next) = do
-  { state } <- H.get
+  { state, intactLevel } <- H.get
 
-  case state of
-    Game.Dead _ -> pure (Just next)
-    _ -> case KE.key ev of
-        "ArrowDown"  -> raiseMoveEvent Down
-        "ArrowLeft"  -> raiseMoveEvent Left
-        "ArrowUp"    -> raiseMoveEvent Up
-        "ArrowRight" -> raiseMoveEvent Right
-        otherwise    -> pure (Just next)
+  case { state, key: KE.key ev } of
+    { key: "r" } -> do
+        H.modify_ (_ { level = intactLevel, state = Game.Init} )
+        pure (Just next)
+    { state: Game.Dead _ } -> pure (Just next)
+    { key: "s" } -> raiseMoveEvent Down
+    { key: "a" } -> raiseMoveEvent Left
+    { key: "w" } -> raiseMoveEvent Up
+    { key: "d" } -> raiseMoveEvent Right
+    { key: "ArrowDown" } -> raiseMoveEvent Down
+    { key: "ArrowLeft" } -> raiseMoveEvent Left
+    { key: "ArrowUp" } -> raiseMoveEvent Up
+    { key: "ArrowRight" } -> raiseMoveEvent Right
+    _ -> pure (Just next)
 
   where
 
@@ -99,10 +108,7 @@ handleQuery (KeyboardEvent ev next) = do
     { state } <- H.get
     when (state == Game.Init) (H.modify_ (_ { state = Game.Alive }))
 
-    game <- H.get
-    let { result: level, actions } = Level.movePlayer true direction game.level
-
-    foldlM processAction (game { level = level }) actions >>= H.put
+    runAction (Level.movePlayer true direction)
     pure (Just next)
 
 handleQuery (Tick next) = do
@@ -138,11 +144,12 @@ processAction game = case _ of
 
       result <- H.liftAff $ getJSON ("levels/" <> show (game.levelNum + 1) <> ".json")
       case result of
-        Just blank -> pure $ game
-            { level = build blank
+        Just blank -> let builtLevel = build blank in pure $ game
+            { level = builtLevel
             , levelNum = game.levelNum + 1
             , name = blank.name
             , state = Game.Init
+            , intactLevel = builtLevel
             }
         Nothing -> pure game
 

@@ -23,6 +23,7 @@ type Game =
   , levelNum :: Int
   , state :: State
   , name :: String
+  , intactLevel :: Level
   }
 
 onLevel :: (Level -> Level) -> Game -> Game
