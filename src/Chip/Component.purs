@@ -31,7 +31,7 @@ import Chip.Level.Build (Blank, build)
 import Chip.Lib (getJSON)
 import Chip.Sound (SoundEffect(..), play)
 import Chip.Tile (Color(..), Item(..), Tile(..))
-import Chip.Utils (Direction(..), foldlM, whenValue)
+import Chip.Utils (Direction(..), Point, foldlM)
 
 ticksPerSecond :: Int
 ticksPerSecond = 10
@@ -148,6 +148,7 @@ handleQuery (Tick next) = do
 
       pure (Just next)
 
+moveTo :: forall m. Bind m => MonadState Game m => MonadAff m => Game.Moving -> m Unit
 moveTo moving = case moving of
   Game.Released direction -> do
       H.modify_ (_ { moving = Game.Unpressed })
@@ -159,6 +160,7 @@ moveTo moving = case moving of
       runAction (Level.movePlayer true direction)
   Game.Unpressed -> pure unit
 
+moveAction :: Level.Tiles -> Point -> Int -> Int -> Boolean
 moveAction tiles pos movedAt ticksLeft = case Map.lookup pos tiles of
       Just (Force _) -> true
       _ | movedAt - ticksLeft > 1 -> true

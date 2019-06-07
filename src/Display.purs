@@ -8,7 +8,7 @@ import Prelude
 
 import Data.Array (range)
 import Data.Map (lookup)
-import Data.Maybe (maybe, Maybe(..))
+import Data.Maybe (maybe)
 import Data.Set as Set
 import Data.Tuple (Tuple(..))
 import Halogen as H
