@@ -1,4 +1,4 @@
-module Component.Game
+module Chip.Component
   ( component
   , Action'(..)
   , Query(..)
@@ -25,8 +25,8 @@ import Chip.Action.Tick (tick)
 import Chip.Level.Build ( Blank, build)
 import Chip.Tile (Color(..), Item(..), Tile(..))
 import Display (levelTiles, tilesRowElem, DisplayTile(..))
-import Game (Game)
-import Game as Game
+import Chip.Game (Game)
+import Chip.Game as Game
 import Level as Level
 import Chip.Lib (getJSON)
 import Chip.Utils (Direction(..), foldlM)

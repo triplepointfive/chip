@@ -1,4 +1,4 @@
-module Game
+module Chip.Game
   ( Game(..)
   , State(..)
   , onLevel

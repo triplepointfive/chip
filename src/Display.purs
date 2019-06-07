@@ -17,9 +17,9 @@ import Halogen.HTML.Properties as HP
 
 import Chip.Action (DieReason(..))
 import Chip.Enemy (Enemy(..))
-import Chip.Tile (Color(..), Tile(..), Item(..), WallType(..))
+import Chip.Game (Game, State(..))
 import Level (mapSize)
-import Game (Game, State(..))
+import Chip.Tile (Color(..), Tile(..), Item(..), WallType(..))
 import Chip.Utils (Direction(..), Point, SwitchState(..))
 
 -- | What shall be output on screen

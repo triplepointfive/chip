@@ -21,7 +21,7 @@ import Web.UIEvent.KeyboardEvent as KE
 import Web.UIEvent.KeyboardEvent (KeyboardEvent)
 import Web.UIEvent.KeyboardEvent.EventTypes as KET
 
-import Component.Game as Game
+import Chip.Component as Game
 import Chip.Lib (getJSON)
 
 -- | Outputs main game component
