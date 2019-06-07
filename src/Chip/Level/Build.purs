@@ -85,6 +85,7 @@ build { grid, hint, chips, blocks, trapConnections, timeLimit } =
     'Y' -> insertTile (Door Yellow)
     'G' -> insertTile (Door Green)
     'b' -> addEnemy p (Bee Up)
+    'B' -> addEnemy p (Bee Right) -- TODO: Fix
     '~' -> insertTile Water
     '^' -> insertTile Fire
     't' -> insertTile Thief
