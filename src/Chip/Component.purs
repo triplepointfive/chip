@@ -101,7 +101,7 @@ handleQuery (KeyboardUp ev next) = do
       pure (Just next)
 
 handleQuery (KeyboardDown ev next) = do
-  { state, intactLevel } <- H.get
+  { state, intactLevel, levelNum } <- H.get
 
   case { state, key: KE.key ev } of
     { key: "r" } -> do
@@ -116,6 +116,12 @@ handleQuery (KeyboardDown ev next) = do
     { key: "ArrowLeft" } -> raiseMoveEvent Left
     { key: "ArrowUp" } -> raiseMoveEvent Up
     { key: "ArrowRight" } -> raiseMoveEvent Right
+    { key: "n" } -> do
+        H.get >>= loadLevel (levelNum + 1) >>= H.put
+        pure (Just next)
+    { key: "p" } | levelNum > 1 -> do
+        H.get >>= loadLevel (levelNum - 1) >>= H.put
+        pure (Just next)
     _ -> pure (Just next)
 
   where
@@ -177,21 +183,24 @@ runAction f = do
   let { result: level, actions } = f game.level
   foldlM processAction (game { level = level }) actions >>= H.put
 
+loadLevel :: forall m. Bind m => MonadAff m => Int -> Game -> m Game
+loadLevel number game = do
+  result <- H.liftAff $ getJSON ("levels/" <> show number <> ".json")
+  case result of
+    Just blank -> let builtLevel = build blank in pure $ game
+        { level = builtLevel
+        , levelNum = number
+        , name = blank.name
+        , state = Game.Init
+        , intactLevel = builtLevel
+        }
+    Nothing -> pure game
+
 processAction :: forall m. Bind m => MonadAff m => Game -> Action -> m Game
 processAction game = case _ of
   Complete -> do
       _ <- processAction game (PlaySound LevelComplete)
-
-      result <- H.liftAff $ getJSON ("levels/" <> show (game.levelNum + 1) <> ".json")
-      case result of
-        Just blank -> let builtLevel = build blank in pure $ game
-            { level = builtLevel
-            , levelNum = game.levelNum + 1
-            , name = blank.name
-            , state = Game.Init
-            , intactLevel = builtLevel
-            }
-        Nothing -> pure game
+      loadLevel (game.levelNum + 1) game
 
   Die reason ->
       _ { state = Game.Dead reason } <$> processAction game (PlaySound Bummer)

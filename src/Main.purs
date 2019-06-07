@@ -29,7 +29,7 @@ import Chip.Lib (getJSON)
 main :: Effect Unit
 main = HA.runHalogenAff do
   body <- HA.awaitBody
-  result <- getJSON "levels/3.json"
+  result <- getJSON "levels/1.json"
   case result of
     Just blank -> do
       game <- runUI (Game.component blank 1) unit body
