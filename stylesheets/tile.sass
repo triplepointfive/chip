@@ -5,8 +5,17 @@ $sprite-y: 12
 $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size
 
 @mixin tile($x, $y)
+  background-position: $sprite-ratio * -1 * $x $sprite-ratio * -1 * $y
+
+@mixin creature
   &::after
-    background-position: $sprite-ratio * -1 * $x $sprite-ratio * -1 * $y
+    background: url(../images/tiles.png)
+    background-size: $sprite-x * $sprite-ratio $sprite-y * $sprite-ratio
+    content: " "
+    position: absolute
+    left: 0
+    width: 100%
+    height: 100%
 
 @mixin dir-tile($x, $y)
   &.-down
@@ -18,33 +27,41 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size
   &.-right
     @include tile($x + 3, $y)
 
+@mixin creature-dir-tile($x, $y)
+  @include creature
+  &.-down-creature
+    &:after
+      @include tile($x, $y)
+  &.-left-creature
+    &:after
+      @include tile($x + 1, $y)
+  &.-up-creature
+    &:after
+      @include tile($x + 2, $y)
+  &.-right-creature
+    &:after
+      @include tile($x + 3, $y)
+
 .level-row
   > .tile
     width: $cell-size
     height: $cell-size
     position: relative
     display: inline-block
-
-    &::after
-      background: url(../images/tiles.png)
-      background-size: $sprite-x * $sprite-ratio $sprite-y * $sprite-ratio
-      content: " "
-      position: absolute
-      left: 0
-      width: 100%
-      height: 100%
+    background: url(../images/tiles.png)
+    background-size: $sprite-x * $sprite-ratio $sprite-y * $sprite-ratio
 
     &.-boy
-      @include dir-tile(0, 0)
+      @include creature-dir-tile(0, 0)
 
-      &.-swimming
-        @include dir-tile(4, 0)
+    &.-swimming
+      @include creature-dir-tile(4, 0)
 
-      &.-drown
-        @include tile(1, 3)
+    &.-drown
+      @include tile(1, 3)
 
-      &.-burned
-        @include tile(7, 2)
+    &.-burned
+      @include tile(7, 2)
 
     &.-clone-machine-button
       @include tile(4, 6)
@@ -155,14 +172,16 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size
 
     &.-ice
       @include tile(6, 3)
-      &.-down
-        @include tile(4, 3)
-      &.-left
-        @include tile(5, 3)
-      &.-up
-        @include tile(2, 3)
-      &.-right
-        @include tile(3, 3)
+
+      &.-corner
+        &.-down
+          @include tile(4, 3)
+        &.-left
+          @include tile(5, 3)
+        &.-up
+          @include tile(2, 3)
+        &.-right
+          @include tile(3, 3)
 
     &.-bee
       @include dir-tile(0, 8)

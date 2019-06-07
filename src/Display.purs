@@ -26,7 +26,7 @@ import Chip.Utils (Direction(..), Point, SwitchState(..))
 data DisplayTile
   = Floor
   | Tile Tile
-  | Boy Direction
+  | Boy Direction DisplayTile
   | Creature Enemy
   | Swimming Direction
   | DrownBoy
@@ -71,46 +71,24 @@ tileClasses = case _ of
   Tile (Door Cyan) -> "tile -door -cyan"
   Tile (Door Yellow) -> "tile -door -yellow"
   Tile (Door Green) -> "tile -door -green"
-  Tile (Force Down) -> "tile -force -down"
-  Tile (Force Left) -> "tile -force -left"
-  Tile (Force Up) -> "tile -force -up"
-  Tile (Force Right) -> "tile -force -right"
-  Boy Down -> "tile -boy -down"
-  Boy Left -> "tile -boy -left"
-  Boy Up -> "tile -boy -up"
-  Boy Right -> "tile -boy -right"
-  Creature (Bee Down) -> "tile -bee -down"
-  Creature (Bee Left) -> "tile -bee -left"
-  Creature (Bee Up) -> "tile -bee -up"
-  Creature (Bee Right) -> "tile -bee -right"
-  Creature (Teeth Down) -> "tile -teeth -down"
-  Creature (Teeth Left) -> "tile -teeth -left"
-  Creature (Teeth Up) -> "tile -teeth -up"
-  Creature (Teeth Right) -> "tile -teeth -right"
-  Creature (Glider Down) -> "tile -glider -down"
-  Creature (Glider Left) -> "tile -glider -left"
-  Creature (Glider Up) -> "tile -glider -up"
-  Creature (Glider Right) -> "tile -glider -right"
-  Creature (Tank Down) -> "tile -tank -down"
-  Creature (Tank Left) -> "tile -tank -left"
-  Creature (Tank Up) -> "tile -tank -up"
-  Creature (Tank Right) -> "tile -tank -right"
+  Tile (Force direction) -> "tile -force" <> directionSuffix direction
+
+  Boy direction tile -> tileClasses tile <> " -boy" <> directionSuffix direction <> "-creature"
+  Creature (Bee direction) -> "tile -bee" <> directionSuffix direction
+  Creature (Teeth direction) -> "tile -teeth" <> directionSuffix direction
+  Creature (Glider direction) -> "tile -glider" <> directionSuffix direction
+  Creature (Tank direction) -> "tile -tank" <> directionSuffix direction
   Creature (Ball _) -> "tile -ball"
   Creature (FireBall _) -> "tile -fireball"
+
   Tile (CloneMachine _) -> "tile -clone-machine"
   Block -> "tile -block"
-  Swimming Down -> "tile -boy -down -swimming"
-  Swimming Left -> "tile -boy -left -swimming"
-  Swimming Up -> "tile -boy -up -swimming"
-  Swimming Right -> "tile -boy -right -swimming"
+  Swimming direction -> "tile -swimming" <> directionSuffix direction <> "-creature"
   Tile Bomb -> "tile -bomb"
   Tile Water -> "tile -water"
   Tile Fire -> "tile -fire"
   Tile Ice -> "tile -ice"
-  Tile (IceCorner Down) -> "tile -ice -down"
-  Tile (IceCorner Left) -> "tile -ice -left"
-  Tile (IceCorner Up) -> "tile -ice -up"
-  Tile (IceCorner Right) -> "tile -ice -right"
+  Tile (IceCorner direction) -> "tile -ice -corner" <> directionSuffix direction
   Tile (Item (Key Red)) -> "tile -key -red"
   Tile (Item (Key Cyan)) -> "tile -key -cyan"
   Tile (Item (Key Yellow)) -> "tile -key -yellow"
@@ -131,8 +109,8 @@ tileClasses = case _ of
   Tile Socket -> "tile -socket"
   Tile Trap -> "tile -trap"
   Tile TrapButton -> "tile -trap-button"
-  DrownBoy -> "tile -boy -drown"
-  BurnedBoy -> "tile -boy -burned"
+  DrownBoy -> "tile -drown"
+  BurnedBoy -> "tile -burned"
 
 tileToElem :: forall p i. DisplayTile -> HH.HTML p i
 tileToElem tile = HH.span [ HP.class_ (H.ClassName (tileClasses tile)) ] []
@@ -151,12 +129,19 @@ buildTile p { state, level: { player, enemies, tiles, blocks } } = case tile of
       Dead Drown -> DrownBoy
       Dead Burned -> BurnedBoy
       _ -> case tile of
-          Just Water -> Swimming player.direction
-          _ -> Boy player.direction
+          Tile Water -> Swimming player.direction
+          _ -> Boy player.direction tile
   _ | Set.member p blocks -> Block
-  Just (CloneMachine e) -> Tile (CloneMachine e)
-  _ -> maybe (maybe Floor Tile tile) Creature (lookup p enemies)
+  -- Just (CloneMachine e) -> Tile (CloneMachine e)
+  _ -> maybe tile Creature (lookup p enemies)
 
   where
 
-  tile = lookup p tiles
+  tile = maybe Floor Tile (lookup p tiles)
+
+directionSuffix :: Direction -> String
+directionSuffix = case _ of
+  Left -> " -left"
+  Up -> " -up"
+  Right -> " -right"
+  Down -> " -down"
