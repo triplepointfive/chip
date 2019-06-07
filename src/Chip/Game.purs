@@ -6,8 +6,11 @@ module Chip.Game
 
 import Prelude
 
+import Data.Maybe
+
 import Chip.Action (DieReason)
 import Level (Level)
+import Chip.Utils (Direction)
 
 data State
   = Init
@@ -24,6 +27,7 @@ type Game =
   , state :: State
   , name :: String
   , intactLevel :: Level
+  , moving :: Maybe Direction
   }
 
 onLevel :: (Level -> Level) -> Game -> Game

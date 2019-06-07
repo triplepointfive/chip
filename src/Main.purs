@@ -13,6 +13,7 @@ import Effect.Timer (setInterval)
 import Halogen as H
 import Halogen.Aff as HA
 import Halogen.VDom.Driver (runUI)
+import Web.Event.Event (EventType)
 import Web.Event.EventTarget as ET
 import Web.HTML (window) as DOM
 import Web.HTML.Window (document) as DOM
@@ -28,14 +29,16 @@ import Chip.Lib (getJSON)
 main :: Effect Unit
 main = HA.runHalogenAff do
   body <- HA.awaitBody
-  result <- getJSON "levels/1.json"
+  result <- getJSON "levels/9.json"
   case result of
     Just blank -> do
       game <- runUI (Game.component blank 1) unit body
       liftEffect $ tickInterval game
 
       document <- H.liftEffect $ DOM.document =<< DOM.window
-      liftEffect $ onKeyUp document (void <<< launchAff <<< game.query <<< H.tell <<< Game.KeyboardEvent)
+      liftEffect $ do
+          -- on KET.keyup document (game.query <<< H.tell <<< Game.KeyboardUp)
+          on KET.keydown document (game.query <<< H.tell <<< Game.KeyboardDown)
 
       pure unit
     Nothing ->
@@ -47,7 +50,7 @@ tickInterval game = void $
       (1000 / Game.ticksPerSecond)
       (void $ launchAff $ game.query (H.tell Game.Tick))
 
-onKeyUp :: HTMLDocument -> (KeyboardEvent -> Effect Unit) -> Effect Unit
-onKeyUp document fn = do
-  listener <- ET.eventListener (traverse_ fn <<< KE.fromEvent)
-  ET.addEventListener KET.keyup listener false (toEventTarget document)
+on :: forall a. EventType -> HTMLDocument -> (KeyboardEvent -> Aff a) -> Effect Unit
+on eventType document fn = do
+  listener <- ET.eventListener (traverse_ (void <<< launchAff <<< fn) <<< KE.fromEvent)
+  ET.addEventListener eventType listener false (toEventTarget document)

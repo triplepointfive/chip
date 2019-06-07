@@ -10,6 +10,7 @@ import Prelude hiding (div)
 
 import Data.Int (ceil, even, toNumber)
 import Data.Maybe (Maybe(..), isJust)
+import Data.Map as Map
 import Effect.Aff (Aff)
 import Effect.Aff.Class (class MonadAff)
 import Control.Monad.State (class MonadState)
@@ -22,15 +23,15 @@ import Web.UIEvent.KeyboardEvent (KeyboardEvent)
 import Chip.Action (Action(..), DieReason(..), ActionResult, Sound(..))
 import Chip.Action.AI (actAI)
 import Chip.Action.Tick (tick)
-import Chip.Level.Build ( Blank, build)
-import Chip.Tile (Color(..), Item(..), Tile(..))
 import Display (levelTiles, tilesRowElem, DisplayTile(..))
 import Chip.Game (Game)
 import Chip.Game as Game
 import Level as Level
+import Chip.Level.Build ( Blank, build)
 import Chip.Lib (getJSON)
-import Chip.Utils (Direction(..), foldlM)
 import Chip.Sound (SoundEffect(..), play)
+import Chip.Tile (Color(..), Item(..), Tile(..))
+import Chip.Utils (Direction(..), foldlM, whenValue)
 
 ticksPerSecond :: Int
 ticksPerSecond = 10
@@ -39,7 +40,8 @@ type Action' = Void
 
 type Message = Void
 data Query a
-  = KeyboardEvent KeyboardEvent a
+  = KeyboardDown KeyboardEvent a
+  | KeyboardUp KeyboardEvent a
   | Tick a
 type State = Game
 
@@ -72,6 +74,7 @@ component initBlank initLevelNum =
     , name: initBlank.name
     , state: Game.Init
     , intactLevel: builtLevel
+    , moving: Nothing
     }
 
   render game =
@@ -84,12 +87,16 @@ component initBlank initLevelNum =
       ]
 
 handleQuery :: forall a. Query a -> H.HalogenM State Action () Message Aff (Maybe a)
-handleQuery (KeyboardEvent ev next) = do
+handleQuery (KeyboardUp ev next) = do
+  H.modify_ (_ { moving = Nothing })
+  pure (Just next)
+
+handleQuery (KeyboardDown ev next) = do
   { state, intactLevel } <- H.get
 
   case { state, key: KE.key ev } of
     { key: "r" } -> do
-        H.modify_ (_ { level = intactLevel, state = Game.Init} )
+        H.modify_ (_ { level = intactLevel, state = Game.Init } )
         pure (Just next)
     { state: Game.Dead _ } -> pure (Just next)
     { key: "s" } -> raiseMoveEvent Down
@@ -105,25 +112,39 @@ handleQuery (KeyboardEvent ev next) = do
   where
 
   raiseMoveEvent direction = do
-    { state, level: { ticksLeft } } <- H.get
+    { state, level: { ticksLeft, player: { movedAt } } } <- H.get
+
     when (state == Game.Init) (H.modify_ (_ { state = Game.Alive }))
 
-    runAction (Level.movePlayer true direction)
+    H.modify_ (_ { moving = Just direction })
+
     pure (Just next)
 
 handleQuery (Tick next) = do
-  { state, level: { ticksLeft } } <- H.get
+  { moving, state, level: { ticksLeft, tiles, player: { movedAt, pos } } } <- H.get
 
   case state of
     Game.Init -> pure (Just next)
     Game.Dead _ -> pure (Just next)
     _ -> do
-      when (even ticksLeft) (runAction (Level.checkForEnemies <<< actAI))
       runAction tick
 
+      when (even ticksLeft) (runAction (Level.checkForEnemies <<< actAI))
       runAction Level.slide
 
+      whenValue moving $ moveAction tiles pos movedAt ticksLeft
+
       pure (Just next)
+
+moveAction tiles pos movedAt ticksLeft direction
+  = case Map.lookup pos tiles of
+      Just (Force _) -> do
+        H.modify_ (_ { moving = Nothing })
+        runAction (Level.movePlayer true direction)
+      _ | movedAt - ticksLeft > 1 -> do
+        H.modify_ (_ { moving = Nothing })
+        runAction (Level.movePlayer true direction)
+      _ -> pure unit
 
 runAction
   :: forall m. Bind m

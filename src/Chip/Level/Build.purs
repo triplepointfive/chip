@@ -52,7 +52,7 @@ build { grid, hint, chips, blocks, trapConnections, timeLimit } =
 
   initLevel :: Level
   initLevel =
-    { player: { pos: { x: 0, y: 0 }, direction: Down, turnedAt: timeLimit * 10 }
+    { player: { pos: { x: 0, y: 0 }, direction: Down, turnedAt: timeLimit * 10, movedAt: timeLimit * 10 }
     , tiles: Map.empty
     , inventory: initInventory
     , chipsLeft: chips

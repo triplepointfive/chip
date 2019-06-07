@@ -8,6 +8,7 @@ module Chip.Utils
   , invert
   , toLeft
   , toRight
+  , whenValue
   ) where
 
 import Prelude
@@ -89,3 +90,8 @@ foldlM
 foldlM f i xs = case uncons xs of
   Just { head: x, tail } -> f i x >>= \next -> foldlM f next tail
   Nothing -> pure i
+
+whenValue :: forall a b m. Monad m => Maybe a -> (a -> m b) -> m Unit
+whenValue maybe f = case maybe of
+  Just value -> void (f value)
+  Nothing -> pure unit

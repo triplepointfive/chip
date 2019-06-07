@@ -41,6 +41,7 @@ type Player =
   { pos :: Point
   , direction :: Direction
   , turnedAt :: Int
+  , movedAt :: Int
   }
 
 -- | Represents a floor with all its objects
@@ -139,7 +140,11 @@ movePlayer manually direction level = checkForEnemies $ case unit of
   openDoor color = removeCurrentTile <<< onInventory (withdrawKey color) <<< move
 
   turned :: Level
-  turned = level { player { direction = direction, turnedAt = level.ticksLeft } }
+  turned = level { player
+    { direction = direction
+    , turnedAt = level.ticksLeft
+    , movedAt = if manually then level.ticksLeft else level.player.movedAt
+    } }
 
   moved :: Level
   moved = turned { player { pos = dest } }
