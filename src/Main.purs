@@ -37,7 +37,7 @@ main = HA.runHalogenAff do
 
       document <- H.liftEffect $ DOM.document =<< DOM.window
       liftEffect $ do
-          -- on KET.keyup document (game.query <<< H.tell <<< Game.KeyboardUp)
+          on KET.keyup document (game.query <<< H.tell <<< Game.KeyboardUp)
           on KET.keydown document (game.query <<< H.tell <<< Game.KeyboardDown)
 
       pure unit

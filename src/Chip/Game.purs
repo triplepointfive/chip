@@ -1,12 +1,11 @@
 module Chip.Game
   ( Game(..)
   , State(..)
+  , Moving(..)
   , onLevel
   ) where
 
 import Prelude
-
-import Data.Maybe
 
 import Chip.Action (DieReason)
 import Level (Level)
@@ -21,13 +20,19 @@ data State
 
 derive instance eqState :: Eq State
 
+data Moving
+  = Pressed Direction
+  | Released Direction
+  | Processed Direction
+  | Unpressed
+
 type Game =
   { level :: Level
   , levelNum :: Int
   , state :: State
   , name :: String
   , intactLevel :: Level
-  , moving :: Maybe Direction
+  , moving :: Moving
   }
 
 onLevel :: (Level -> Level) -> Game -> Game

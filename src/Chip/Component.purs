@@ -27,7 +27,7 @@ import Display (levelTiles, tilesRowElem, DisplayTile(..))
 import Chip.Game (Game)
 import Chip.Game as Game
 import Level as Level
-import Chip.Level.Build ( Blank, build)
+import Chip.Level.Build (Blank, build)
 import Chip.Lib (getJSON)
 import Chip.Sound (SoundEffect(..), play)
 import Chip.Tile (Color(..), Item(..), Tile(..))
@@ -74,7 +74,7 @@ component initBlank initLevelNum =
     , name: initBlank.name
     , state: Game.Init
     , intactLevel: builtLevel
-    , moving: Nothing
+    , moving: Game.Unpressed
     }
 
   render game =
@@ -88,8 +88,17 @@ component initBlank initLevelNum =
 
 handleQuery :: forall a. Query a -> H.HalogenM State Action () Message Aff (Maybe a)
 handleQuery (KeyboardUp ev next) = do
-  H.modify_ (_ { moving = Nothing })
-  pure (Just next)
+  { moving } <- H.get
+
+  case moving of
+    Game.Pressed dir -> do
+      H.modify_ (_ { moving = Game.Released dir })
+      pure (Just next)
+    Game.Processed dir -> do
+      H.modify_ (_ { moving = Game.Unpressed })
+      pure (Just next)
+    _ ->
+      pure (Just next)
 
 handleQuery (KeyboardDown ev next) = do
   { state, intactLevel } <- H.get
@@ -116,7 +125,7 @@ handleQuery (KeyboardDown ev next) = do
 
     when (state == Game.Init) (H.modify_ (_ { state = Game.Alive }))
 
-    H.modify_ (_ { moving = Just direction })
+    H.modify_ (_ { moving = Game.Pressed direction })
 
     pure (Just next)
 
@@ -130,21 +139,30 @@ handleQuery (Tick next) = do
       runAction tick
 
       when (even ticksLeft) (runAction (Level.checkForEnemies <<< actAI))
-      runAction Level.slide
 
-      whenValue moving $ moveAction tiles pos movedAt ticksLeft
+      when
+        (moveAction tiles pos movedAt ticksLeft)
+        (moveTo moving)
+
+      runAction Level.slide
 
       pure (Just next)
 
-moveAction tiles pos movedAt ticksLeft direction
-  = case Map.lookup pos tiles of
-      Just (Force _) -> do
-        H.modify_ (_ { moving = Nothing })
-        runAction (Level.movePlayer true direction)
-      _ | movedAt - ticksLeft > 1 -> do
-        H.modify_ (_ { moving = Nothing })
-        runAction (Level.movePlayer true direction)
-      _ -> pure unit
+moveTo moving = case moving of
+  Game.Released direction -> do
+      H.modify_ (_ { moving = Game.Unpressed })
+      runAction (Level.movePlayer true direction)
+  Game.Pressed direction -> do
+      H.modify_ (_ { moving = Game.Processed direction })
+      runAction (Level.movePlayer true direction)
+  Game.Processed direction ->
+      runAction (Level.movePlayer true direction)
+  Game.Unpressed -> pure unit
+
+moveAction tiles pos movedAt ticksLeft = case Map.lookup pos tiles of
+      Just (Force _) -> true
+      _ | movedAt - ticksLeft > 1 -> true
+      _ -> false
 
 runAction
   :: forall m. Bind m
