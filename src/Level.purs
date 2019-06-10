@@ -2,6 +2,7 @@ module Level
   ( Level(..)
   , Player(..)
   , Tiles(..)
+  , addBlock
   , addEnemy
   , checkForEnemies
   , isActiveTrap
@@ -27,6 +28,9 @@ import Chip.Utils (Direction, Point, SwitchState(..), adjustPoint, toRight, inve
 
 addEnemy :: Point -> Enemy -> Level -> Level
 addEnemy p enemy l = l { enemies = Map.insert p enemy l.enemies }
+
+addBlock :: Point -> Level -> Level
+addBlock p l = l { blocks = Set.insert p l.blocks }
 
 -- | Height and width of a level grid
 mapSize :: Int

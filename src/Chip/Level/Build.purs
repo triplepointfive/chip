@@ -16,7 +16,7 @@ import Data.Tuple (Tuple(..))
 import Chip.Enemy (Enemy(..))
 import Chip.Inventory (initInventory)
 import Chip.Tile (Tile(..), Item(..), Color(..), WallType(..))
-import Level (Level, addEnemy)
+import Level (Level, addEnemy, addBlock)
 import Chip.Utils (Direction(..), Point, SwitchState(..), addIndex)
 
 type Connection =
@@ -153,6 +153,7 @@ build { grid, hint, chips, blocks, trapConnections, timeLimit } =
 
     '≈' -> insertTile Dirt
     '░' -> insertTile Gravel
+    '0' -> addBlock p
     _   -> identity
 
     where
