@@ -74,6 +74,7 @@ build { grid, hint, chips, blocks, trapConnections, timeLimit } =
     '\'' -> insertTile (Wall Fake)
     'O' -> insertTile (Wall Recessed)
     '_' -> insertTile (Wall (Flat Down))
+    '|' -> insertTile (Wall (Flat Right))
 
     '+' -> insertTile Chip
     'r' -> insertTile (Item (Key Red))
