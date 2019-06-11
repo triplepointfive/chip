@@ -76,62 +76,60 @@ sound effect level = withAction level (PlaySound effect)
 
 -- | Tries to move player
 movePlayer :: Boolean -> Direction -> Level -> ActionResult Level
-movePlayer manually direction level = checkForEnemies $ case unit of
+movePlayer manually direction level = checkForEnemies $ case Map.lookup dest level.tiles of
   _ | Map.lookup level.player.pos level.tiles == Just (Wall (Flat direction)) -> inactive turned
   _ | Set.member dest level.blocks -> pushBlock (adjustPoint dest direction)
   _ | outOfLevel dest -> sound Oof turned
   _ | manually && onIce && not (has SkiSkates level.inventory) -> inactive level
-  _ -> move'
+
+  Nothing           -> inactive moved
+  Just Chip         -> withAction (pickUpChip moved) (PlaySound PickUpChip)
+  Just (Item item)  -> withAction (pickUp item moved) (PlaySound PickUpItem)
+
+  Just (Door color) | has (Key color) level.inventory
+      -> withAction (openDoor color turned) (PlaySound DoorOpen)
+  Just (Door _) -> withAction turned (PlaySound Oof)
+
+  Just (Wall Solid) -> sound Oof turned
+  Just (Wall Invisible) -> sound Oof turned
+  Just (Wall Hidden) -> sound Oof turned { tiles = Map.insert dest (Wall Solid) turned.tiles }
+  Just (Wall Blue) -> sound Oof turned { tiles = Map.insert dest (Wall Solid) turned.tiles }
+
+  Just (Wall Fake) -> inactive (removeCurrentTile moved)
+  Just (Wall Recessed) -> inactive moved { tiles = Map.insert dest (Wall Solid) moved.tiles }
+
+  Just (Wall (Flat wallDir)) ->
+    if wallDir == invert direction
+      then inactive turned
+      else inactive moved
+
+  Just Teleport -> sound Teleported $ case nextTeleport dest direction level of
+    Just teleportDest -> turned { player { pos = teleportDest } }
+    Nothing -> level { player { direction = invert direction } }
+
+  Just Thief -> sound Steal (moved { inventory = initInventory })
+  Just (Force _)    -> inactive moved
+  Just Ice          -> inactive moved
+  Just (IceCorner _) -> inactive moved
+  Just Bomb -> withAction moved (Die BlownUp)
+  Just Water        -> stepInWater moved
+  Just Fire         -> stepInFire moved
+  Just WallButton -> inactive (toggleWalls moved)
+  Just TankButton -> inactive (toggleTanks moved)
+  -- TODO: apply
+  Just CloneMachineButton -> inactive turned
+  Just (SwitchableWall On) -> inactive turned
+  Just (SwitchableWall Off) -> inactive moved
+  Just Hint         -> inactive moved
+  Just Dirt         -> inactive (removeCurrentTile moved)
+  Just Gravel       -> inactive moved
+  Just Socket       -> inactive $ moveToSocket dest level
+  Just Exit         -> withAction moved Complete
+  Just (CloneMachine _) -> inactive turned
+  Just Trap -> inactive moved
+  Just TrapButton -> inactive moved
 
   where
-
-  move' = case Map.lookup dest level.tiles of
-      Nothing           -> inactive moved
-      Just Chip         -> withAction (pickUpChip moved) (PlaySound PickUpChip)
-      Just (Item item)  -> withAction (pickUp item moved) (PlaySound PickUpItem)
-
-      Just (Door color) | has (Key color) level.inventory
-          -> withAction (openDoor color turned) (PlaySound DoorOpen)
-      Just (Door _) -> withAction turned (PlaySound Oof)
-
-      Just (Wall Solid) -> sound Oof turned
-      Just (Wall Invisible) -> sound Oof turned
-      Just (Wall Hidden) -> sound Oof turned { tiles = Map.insert dest (Wall Solid) turned.tiles }
-      Just (Wall Blue) -> sound Oof turned { tiles = Map.insert dest (Wall Solid) turned.tiles }
-
-      Just (Wall Fake) -> inactive (removeCurrentTile moved)
-      Just (Wall Recessed) -> inactive moved { tiles = Map.insert dest (Wall Solid) moved.tiles }
-
-      Just (Wall (Flat wallDir)) ->
-        if wallDir == invert direction
-          then inactive turned
-          else inactive moved
-
-      Just Teleport -> sound Teleported $ case nextTeleport dest direction level of
-        Just teleportDest -> turned { player { pos = teleportDest } }
-        Nothing -> level { player { direction = invert direction } }
-
-      Just Thief -> sound Steal (moved { inventory = initInventory })
-      Just (Force _)    -> inactive moved
-      Just Ice          -> inactive moved
-      Just (IceCorner _) -> inactive moved
-      Just Bomb -> withAction moved (Die BlownUp)
-      Just Water        -> stepInWater moved
-      Just Fire         -> stepInFire moved
-      Just WallButton -> inactive (toggleWalls moved)
-      Just TankButton -> inactive (toggleTanks moved)
-      -- TODO: apply
-      Just CloneMachineButton -> inactive turned
-      Just (SwitchableWall On) -> inactive turned
-      Just (SwitchableWall Off) -> inactive moved
-      Just Hint         -> inactive moved
-      Just Dirt         -> inactive (removeCurrentTile moved)
-      Just Gravel       -> inactive moved
-      Just Socket       -> inactive $ moveToSocket dest level
-      Just Exit         -> withAction moved Complete
-      Just (CloneMachine _) -> inactive turned
-      Just Trap -> inactive moved
-      Just TrapButton -> inactive moved
 
   currentTile = Map.lookup level.player.pos level.tiles
 
@@ -226,8 +224,13 @@ checkForEnemies { result: level, actions }
 
 slide :: Level -> ActionResult Level
 slide level = case Map.lookup level.player.pos level.tiles of
-  Just (Force direction) | not (has SuctionBoots level.inventory) -> movePlayer false direction level
-  Just Ice | not (has SkiSkates level.inventory) -> movePlayer false level.player.direction level
+  Just (Force direction) | not (has SuctionBoots level.inventory) ->
+    movePlayer false direction level
+  Just Ice | not (has SkiSkates level.inventory) ->
+    case movePlayer false level.player.direction level of
+      { result, actions: [PlaySound Oof] } | result.player.pos == level.player.pos
+          -> slide level { player { direction = invert level.player.direction } }
+      res -> res
   Just (IceCorner direction) | not (has SkiSkates level.inventory) ->
       if level.player.direction == direction
           then movePlayer false (toRight direction) level
