@@ -8,7 +8,7 @@ module Chip.Component
 
 import Prelude hiding (div)
 
-import Data.Int (ceil, even, toNumber)
+import Data.Int (ceil, odd, toNumber)
 import Data.Maybe (Maybe(..), isJust)
 import Data.Map as Map
 import Effect.Aff (Aff)
@@ -144,7 +144,7 @@ handleQuery (Tick next) = do
     _ -> do
       runAction tick
 
-      when (even ticksLeft) (runAction (Level.checkForEnemies <<< actAI))
+      when (odd ticksLeft) (runAction (Level.checkForEnemies <<< actAI))
 
       when
         (moveAction tiles pos movedAt ticksLeft)
@@ -180,8 +180,9 @@ runAction
   -> m Unit
 runAction f = do
   game <- H.get
-  let { result: level, actions } = f game.level
-  foldlM processAction (game { level = level }) actions >>= H.put
+  when (Game.notDead game) do
+    let { result: level, actions } = f game.level
+    foldlM processAction (game { level = level }) actions >>= H.put
 
 loadLevel :: forall m. Bind m => MonadAff m => Int -> Game -> m Game
 loadLevel number game = do
