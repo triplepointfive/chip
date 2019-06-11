@@ -5,17 +5,17 @@ import Prelude
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Test.Spec (pending, describe, it)
+import Test.Spec (describe, it)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Spec.Reporter.Console (consoleReporter)
 import Test.Spec.Runner (run)
 
-import Chip.Action (Action(..))
+import Chip.Action (Action(..), Sound(..))
 import Chip.Level.Build (build)
 import Chip.Inventory (has)
 import Chip.Tile (Tile(..), Color(..), Item(..))
 import Level as Level
-import Utils (Direction(..))
+import Chip.Utils (Direction(..))
 
 level1 :: Level.Level
 level1 = build
@@ -28,6 +28,7 @@ level1 = build
   , chips: 1
   , timeLimit: 10
   , blocks: []
+  , trapConnections: Nothing
   }
 
 level2 :: Level.Level
@@ -42,6 +43,7 @@ level2 = build
   , chips: 1
   , timeLimit: 10
   , blocks: []
+  , trapConnections: Nothing
   }
 
 level3 :: Level.Level
@@ -56,6 +58,7 @@ level3 = build
   , chips: 1
   , timeLimit: 10
   , blocks: []
+  , trapConnections: Nothing
   }
 
 main :: Effect Unit
@@ -63,7 +66,8 @@ main = run [consoleReporter] do
   describe "move" do
     describe "into a wall" do
       let { result: level, actions } = Level.movePlayer true Left level1
-      pending "stuck sound"
+      it "stuck sound" do
+        actions `shouldEqual` [PlaySound Oof]
       it "doesn't move" do
         level.player.pos `shouldEqual` { x: 1, y: 0 }
       it "turns" do
@@ -71,7 +75,8 @@ main = run [consoleReporter] do
 
     describe "out of map" do
       let { result: level, actions } = Level.movePlayer true Up level1
-      pending "stuck sound"
+      it "stuck sound" do
+        actions `shouldEqual` [PlaySound Oof]
       it "doesn't move" do
         level.player.pos `shouldEqual` { x: 1, y: 0 }
       it "turns" do
@@ -97,7 +102,8 @@ main = run [consoleReporter] do
 
     describe "on chip" do
       let { result: level, actions } = Level.movePlayer true Left level2
-      pending "pick sound"
+      it "pick sound" do
+        actions `shouldEqual` [PlaySound PickUpChip]
       it "changes position" do
         level.player.pos `shouldEqual` { x: 0, y: 1 }
       it "turns" do
@@ -122,8 +128,8 @@ main = run [consoleReporter] do
 
     describe "on common key" do
       let { result: level, actions } = Level.movePlayer true Left level3
-      it "without actions" do
-        actions `shouldEqual` []
+      it "pickup sound" do
+        actions `shouldEqual` [PlaySound PickUpItem]
       it "changes position" do
         level.player.pos `shouldEqual` { x: 0, y: 1 }
       it "turns" do
@@ -136,15 +142,16 @@ main = run [consoleReporter] do
     describe "on common door" do
       describe "without a key" do
         let { result: level, actions } = Level.movePlayer true Up level3
-        pending "stuck sound"
+        it "stuck sound" do
+          actions `shouldEqual` [PlaySound Oof]
         it "doesn't move" do
           level.player.pos `shouldEqual` { x: 1, y: 1 }
         it "turns" do
           level.player.direction `shouldEqual` Up
       describe "with a key" do
         let { result: level, actions } = Level.movePlayer true Up (level3 { inventory { red = 1 } })
-        it "without actions" do
-          actions `shouldEqual` []
+        it "open sound" do
+          actions `shouldEqual` [PlaySound DoorOpen]
         it "changes position" do
           level.player.pos `shouldEqual` { x: 1, y: 0 }
         it "turns" do
@@ -156,8 +163,8 @@ main = run [consoleReporter] do
 
     describe "on green key" do
       let { result: level, actions } = Level.movePlayer true Right level3
-      it "without actions" do
-        actions `shouldEqual` []
+      it "pickup sound" do
+        actions `shouldEqual` [PlaySound PickUpItem]
       it "changes position" do
         level.player.pos `shouldEqual` { x: 2, y: 1 }
       it "turns" do
@@ -170,15 +177,16 @@ main = run [consoleReporter] do
     describe "on green door" do
       describe "without a key" do
         let { result: level, actions } = Level.movePlayer true Down level3
-        pending "stuck sound"
+        it "stuck sound" do
+          actions `shouldEqual` [PlaySound Oof]
         it "doesn't move" do
           level.player.pos `shouldEqual` { x: 1, y: 1 }
         it "turns" do
           level.player.direction `shouldEqual` Down
       describe "with a key" do
         let { result: level, actions } = Level.movePlayer true Down (level3 { inventory { green = true } })
-        it "without actions" do
-          actions `shouldEqual` []
+        it "open sound" do
+          actions `shouldEqual` [PlaySound DoorOpen]
         it "changes position" do
           level.player.pos `shouldEqual` { x: 1, y: 2 }
         it "turns" do

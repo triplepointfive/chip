@@ -79,7 +79,7 @@ movePlayer :: Boolean -> Direction -> Level -> ActionResult Level
 movePlayer manually direction level = checkForEnemies $ case unit of
   _ | Map.lookup level.player.pos level.tiles == Just (Wall (Flat direction)) -> inactive turned
   _ | Set.member dest level.blocks -> pushBlock (adjustPoint dest direction)
-  _ | outOfLevel dest -> inactive turned
+  _ | outOfLevel dest -> sound Oof turned
   _ | manually && onIce && not (has SkiSkates level.inventory) -> inactive level
   _ -> move'
 

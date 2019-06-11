@@ -36,6 +36,5 @@
   "name": "Trinity",
   "chips": 3,
   "timeLimit": 300,
-  "blocks": [],
-  "trapConnections": []
+  "blocks": []
 }

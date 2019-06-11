@@ -36,6 +36,5 @@
   "name": "Hunt",
   "chips": 652,
   "timeLimit": 400,
-  "blocks": [],
-  "trapConnections": []
+  "blocks": []
 }

@@ -36,6 +36,5 @@
   "name": "Digger",
   "chips": 146,
   "timeLimit": 210,
-  "blocks": [],
-  "trapConnections": []
+  "blocks": []
 }

@@ -8,7 +8,7 @@ import Prelude
 
 import Data.Array (foldl, foldr)
 import Data.Map as Map
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe, maybe)
 import Data.Set as Set
 import Data.String.CodeUnits (toCharArray)
 import Data.Tuple (Tuple(..))
@@ -32,7 +32,7 @@ type Blank =
   , chips :: Int
   , timeLimit :: Int
   , blocks :: Array Point
-  , trapConnections :: Array Connection
+  , trapConnections :: Maybe (Array Connection)
   }
 
 -- | Builds a level from its blank
@@ -57,7 +57,7 @@ build { grid, hint, chips, blocks, trapConnections, timeLimit } =
     , inventory: initInventory
     , chipsLeft: chips
     , enemies: Map.empty
-    , trapConnections: buildConnections trapConnections
+    , trapConnections: maybe Map.empty buildConnections trapConnections
     , blocks: Set.fromFoldable blocks
     , hint
     , ticksLeft: timeLimit * 10

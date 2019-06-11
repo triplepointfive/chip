@@ -36,6 +36,5 @@
   "name": "Tossed Salad",
   "chips": 15,
   "timeLimit": 400,
-  "blocks": [],
-  "trapConnections": []
+  "blocks": []
 }

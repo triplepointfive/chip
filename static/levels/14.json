@@ -36,6 +36,5 @@
   "name": "Teleblock",
   "chips": 4,
   "timeLimit": 250,
-  "blocks": [],
-  "trapConnections": []
+  "blocks": []
 }

@@ -36,6 +36,5 @@
   "name": "Nice Day",
   "chips": 46,
   "timeLimit": 100,
-  "blocks": [],
-  "trapConnections": []
+  "blocks": []
 }

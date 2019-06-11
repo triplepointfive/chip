@@ -37,6 +37,5 @@
   "chips": 0,
   "hint": "What was the name of this level?",
   "timeLimit": 400,
-  "blocks": [],
-  "trapConnections": []
+  "blocks": []
 }

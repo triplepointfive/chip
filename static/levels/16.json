@@ -37,6 +37,5 @@
   "chips": 0,
   "hint": "Press R to restart any level.",
   "timeLimit": 250,
-  "blocks": [],
-  "trapConnections": []
+  "blocks": []
 }
