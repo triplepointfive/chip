@@ -209,6 +209,10 @@ movePlayerTo manually direction dest level =
   pushBlock blockDest = case Map.lookup blockDest level.tiles of
     _ | Set.member blockDest level.blocks -> inactive turned
     _ | Map.member blockDest level.enemies -> inactive turned
+    Just Bomb -> movePlayer manually direction $ level
+        { tiles = Map.delete blockDest level.tiles
+        , blocks = Set.delete dest level.blocks
+        }
     Just Teleport -> case nextTeleport false blockDest direction level of
       Just teleportDest -> addAction (PlaySound Teleported)
         (movePlayerTo manually direction dest (moveBlock dest teleportDest level))
