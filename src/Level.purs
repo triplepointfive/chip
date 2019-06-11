@@ -77,10 +77,14 @@ sound effect level = withAction level (PlaySound effect)
 
 -- | Tries to move player
 movePlayer :: Boolean -> Direction -> Level -> ActionResult Level
-movePlayer manually direction level = checkForEnemies $ case Map.lookup dest level.tiles of
+movePlayer manually direction level =
+  movePlayerTo manually direction (adjustPoint level.player.pos direction) level
+
+movePlayerTo :: Boolean -> Direction -> Point -> Level -> ActionResult Level
+movePlayerTo manually direction dest level = checkForEnemies $ case Map.lookup dest level.tiles of
   _ | Map.lookup level.player.pos level.tiles == Just (Wall (Flat direction)) -> inactive turned
   _ | Set.member dest level.blocks -> pushBlock (adjustPoint dest direction)
-  _ | outOfLevel dest -> sound Oof turned
+  Nothing | outOfLevel dest -> sound Oof turned
   _ | manually && onIce && not (has SkiSkates level.inventory) -> inactive level
 
   Nothing           -> inactive moved
@@ -104,9 +108,9 @@ movePlayer manually direction level = checkForEnemies $ case Map.lookup dest lev
       then inactive turned
       else inactive moved
 
-  Just Teleport -> sound Teleported $ case nextTeleport dest direction level of
-    Just teleportDest -> turned { player { pos = teleportDest } }
-    Nothing -> level { player { direction = invert direction } }
+  Just Teleport -> case nextTeleport dest direction level of
+    Just teleportDest -> addAction (PlaySound Teleported) (movePlayerTo manually direction teleportDest level)
+    Nothing -> sound Teleported level { player { direction = invert direction } }
 
   Just Thief -> sound Steal (moved { inventory = initInventory })
   Just (Force _)    -> inactive moved
@@ -154,9 +158,6 @@ movePlayer manually direction level = checkForEnemies $ case Map.lookup dest lev
 
   move :: Level -> Level
   move = _ { player { pos = dest } }
-
-  dest :: Point
-  dest = adjustPoint level.player.pos direction
 
   pickUpChip :: Level -> Level
   pickUpChip = countChip <<< removeCurrentTile

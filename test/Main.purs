@@ -26,7 +26,7 @@ level1 = build
   , name: "Spec"
   , hint: Nothing
   , chips: 1
-  , timeLimit: 10
+  , timeLimit: Nothing
   , blocks: []
   , trapConnections: Nothing
   }
@@ -41,7 +41,7 @@ level2 = build
   , name: "Spec"
   , hint: Nothing
   , chips: 1
-  , timeLimit: 10
+  , timeLimit: Nothing
   , blocks: []
   , trapConnections: Nothing
   }
@@ -56,7 +56,7 @@ level3 = build
   , name: "Spec"
   , hint: Nothing
   , chips: 1
-  , timeLimit: 10
+  , timeLimit: Nothing
   , blocks: []
   , trapConnections: Nothing
   }
