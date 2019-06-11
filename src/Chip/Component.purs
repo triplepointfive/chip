@@ -81,7 +81,7 @@ component initBlank initLevelNum =
     div "game-container"
       [ div "content"
           ( renderMessage game
-          <> map tilesRowElem (levelTiles 16 game)
+          <> map tilesRowElem (levelTiles 18 game)
           )
       , renderSidebar game
       ]
@@ -108,6 +108,13 @@ handleQuery (KeyboardDown ev next) = do
         H.modify_ (_ { level = intactLevel, state = Game.Init } )
         pure (Just next)
     { state: Game.Dead _ } -> pure (Just next)
+    { key: " ", state: Game.Pause } -> do
+        H.modify_ (_ { state = Game.Alive })
+        pure (Just next)
+    { key: " " } -> do
+        H.modify_ (_ { state = Game.Pause })
+        pure (Just next)
+    { state: Game.Pause } -> pure (Just next)
     { key: "s" } -> raiseMoveEvent Down
     { key: "a" } -> raiseMoveEvent Left
     { key: "w" } -> raiseMoveEvent Up
@@ -141,6 +148,7 @@ handleQuery (Tick next) = do
   case state of
     Game.Init -> pure (Just next)
     Game.Dead _ -> pure (Just next)
+    Game.Pause -> pure (Just next)
     _ -> do
       runAction tick
 
@@ -233,6 +241,7 @@ dieMessage = case _ of
 renderMessage :: forall p i. Game -> Array (HH.HTML p i)
 renderMessage { state, name } = case state of
   Game.Init -> [ div "modal -level" [ HH.text name ] ]
+  Game.Pause -> [ div "modal -pause" [ HH.text "Pause" ] ]
   Game.Dead reason -> [ div "modal -dead" [ HH.text (dieMessage reason), HH.br_, HH.text "Press R to restart" ] ]
   _ -> []
 

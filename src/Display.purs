@@ -44,13 +44,14 @@ levelTiles radius game =
 
 rangeSlice :: Int -> Point ->  Array (Tuple Int (Array Int))
 rangeSlice r { x, y } =
-  map (flip Tuple xRange) (range (from y) (d + from y - 1))
+  map (flip Tuple xRange) (range (from y) (to y))
 
   where
 
-  xRange = range (from x) (d + from x - 1)
+  xRange = range (from x) (to x)
   d = (2 * r) + 1
-  from c = min (max 0 (c - r)) (mapSize - d)
+  to c = min (mapSize - 1) (d + from c - 1)
+  from c = max 0 (min (max 0 (c - r)) (mapSize - d))
 
 tileClasses :: DisplayTile -> String
 tileClasses = case _ of
