@@ -108,7 +108,7 @@ movePlayerTo manually direction dest level = checkForEnemies $ case Map.lookup d
       then inactive turned
       else inactive moved
 
-  Just Teleport -> case nextTeleport dest direction level of
+  Just Teleport -> case nextTeleport true dest direction level of
     Just teleportDest -> addAction (PlaySound Teleported) (movePlayerTo manually direction teleportDest level)
     Nothing -> sound Teleported level { player { direction = invert direction } }
 
@@ -167,16 +167,20 @@ movePlayerTo manually direction dest level = checkForEnemies $ case Map.lookup d
 
   -- TODO: Check if pushed into a monster
   pushBlock :: Point -> ActionResult Level
-  pushBlock blockDest
-    | Set.member blockDest level.blocks = inactive turned
-    | otherwise = case Map.lookup blockDest level.tiles of
-        Just Water -> addAction (PlaySound Splash) $ movePlayer manually direction $ level
-            { tiles = Map.insert blockDest Dirt moved.tiles
-            , blocks = Set.delete dest level.blocks
-            }
-        Nothing -> movePlayer manually direction (moveBlock dest blockDest level)
-        Just Hint -> movePlayer manually direction (moveBlock dest blockDest level)
-        _ -> inactive turned
+  pushBlock blockDest = case Map.lookup blockDest level.tiles of
+    _ | Set.member blockDest level.blocks -> inactive turned
+    _ | Map.member blockDest level.enemies -> inactive turned
+    Just Teleport -> case nextTeleport false blockDest direction level of
+      Just teleportDest -> addAction (PlaySound Teleported)
+        (movePlayerTo manually direction dest (moveBlock dest teleportDest level))
+      Nothing -> sound Oof turned
+    Just Water -> addAction (PlaySound Splash) $ movePlayer manually direction $ level
+        { tiles = Map.insert blockDest Dirt moved.tiles
+        , blocks = Set.delete dest level.blocks
+        }
+    Nothing -> movePlayer manually direction (moveBlock dest blockDest level)
+    Just Hint -> movePlayer manually direction (moveBlock dest blockDest level)
+    _ -> inactive turned
 
 stepInWater :: Level -> ActionResult Level
 stepInWater level
@@ -195,7 +199,7 @@ moveBlock from to level = level
 
 moveToSocket :: Point -> Level -> Level
 moveToSocket pos level
-  | level.chipsLeft == 0 = removeCurrentTile (level { player { pos = pos } })
+  | level.chipsLeft == 0 = removeCurrentTile level { player { pos = pos } }
   | otherwise            = level
 
 countChip :: Level -> Level
@@ -260,21 +264,23 @@ toggleWalls level = level { tiles = map toggleWall level.tiles }
     SwitchableWall Off -> SwitchableWall On
     t -> t
 
--- TODO: Check for more tile types
-isSolid :: Maybe Tile -> Boolean
-isSolid = case _ of
-  Just (Wall _) -> true
-  _ -> false
-
-nextTeleport :: Point -> Direction -> Level -> Maybe Point
-nextTeleport origin direction level = iter { x: origin.x - 1, y: origin.y }
+nextTeleport :: Boolean -> Point -> Direction -> Level -> Maybe Point
+nextTeleport canPush origin direction { tiles, blocks, enemies } =
+  iter { x: origin.x - 1, y: origin.y }
 
   where
 
   iter { x: -1, y } = iter { x: mapSize - 1, y: y - 1 }
   iter { x, y: -1 } = iter { x: mapSize - 1, y: mapSize - 1 }
-  iter dest = case Map.lookup dest level.tiles of
+  iter dest = case Map.lookup dest tiles of
     _ | dest == origin -> Nothing
-    Just Teleport | not (isSolid (Map.lookup (adjustPoint dest direction) level.tiles))
+    Just Teleport | not (isSolid (adjustPoint dest direction))
       -> Just (adjustPoint dest direction)
     _ -> iter { x: dest.x - 1, y: dest.y }
+
+  isSolid :: Point -> Boolean
+  isSolid pos = case Map.lookup pos tiles of
+    Just (Wall _) -> true
+    _ | Set.member pos blocks -> not canPush
+    _ | Map.member pos enemies -> true
+    _ -> false
