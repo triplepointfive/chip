@@ -58,7 +58,8 @@ type Level =
   , enemies :: Map.Map Point Enemy
   , blocks :: Set.Set Point
   , trapConnections :: Map.Map Point Point
-  , ticksLeft :: Int
+  , ticksLeft :: Maybe Int
+  , tick :: Int
   }
 
 outOfLevel :: Point -> Boolean
@@ -144,8 +145,8 @@ movePlayer manually direction level = checkForEnemies $ case Map.lookup dest lev
   turned :: Level
   turned = level { player
     { direction = direction
-    , turnedAt = level.ticksLeft
-    , movedAt = if manually then level.ticksLeft else level.player.movedAt
+    , turnedAt = level.tick
+    , movedAt = if manually then level.tick else level.player.movedAt
     } }
 
   moved :: Level

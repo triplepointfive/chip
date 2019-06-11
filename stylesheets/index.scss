@@ -143,6 +143,10 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
       position: absolute;
       right: 0;
       top: 0;
+
+      &.-low {
+        color: yellow;
+      }
     }
   }
 }

@@ -9,7 +9,7 @@ module Chip.Component
 import Prelude hiding (div)
 
 import Data.Int (ceil, odd, toNumber)
-import Data.Maybe (Maybe(..), isJust)
+import Data.Maybe (Maybe(..), isNothing, maybe)
 import Data.Map as Map
 import Effect.Aff (Aff)
 import Effect.Aff.Class (class MonadAff)
@@ -22,7 +22,7 @@ import Web.UIEvent.KeyboardEvent (KeyboardEvent)
 
 import Chip.Action (Action(..), DieReason(..), ActionResult, Sound(..))
 import Chip.Action.AI (actAI)
-import Chip.Action.Tick (tick)
+import Chip.Action.Tick as Action
 import Display (levelTiles, tilesRowElem, DisplayTile(..))
 import Chip.Game (Game)
 import Chip.Game as Game
@@ -48,11 +48,15 @@ type State = Game
 div :: forall p i. String -> Array (HH.HTML p i) -> HH.HTML p i
 div classes = HH.div [ HP.class_ (H.ClassName classes) ]
 
-dl :: forall a p i. Show a => String -> a -> HH.HTML p i
+dl :: forall a p i. Show a => String -> Maybe a -> HH.HTML p i
 dl term description =
   div "data-list"
     [ div "term" [ HH.text term ]
-    , div "description" [ HH.text "888", div "value" [ HH.text (show description) ] ]
+    , div "description"
+        [ HH.text "888"
+        , div (if isNothing description then "value -low" else "value")
+              [ HH.text (maybe "---" show description) ]
+        ]
     ]
 
 -- | Top game component
@@ -143,19 +147,19 @@ handleQuery (KeyboardDown ev next) = do
     pure (Just next)
 
 handleQuery (Tick next) = do
-  { moving, state, level: { ticksLeft, tiles, player: { movedAt, pos } } } <- H.get
+  { moving, state, level: { tick, tiles, player: { movedAt, pos } } } <- H.get
 
   case state of
     Game.Init -> pure (Just next)
     Game.Dead _ -> pure (Just next)
     Game.Pause -> pure (Just next)
     _ -> do
-      runAction tick
+      runAction Action.tick
 
-      when (odd ticksLeft) (runAction (Level.checkForEnemies <<< actAI))
+      when (odd tick) (runAction (Level.checkForEnemies <<< actAI))
 
       when
-        (moveAction tiles pos movedAt ticksLeft)
+        (moveAction tiles pos movedAt tick)
         (moveTo moving)
 
       runAction Level.slide
@@ -175,9 +179,9 @@ moveTo moving = case moving of
   Game.Unpressed -> pure unit
 
 moveAction :: Level.Tiles -> Point -> Int -> Int -> Boolean
-moveAction tiles pos movedAt ticksLeft = case Map.lookup pos tiles of
+moveAction tiles pos movedAt tick = case Map.lookup pos tiles of
       Just (Force _) -> true
-      _ | movedAt - ticksLeft >= 1 -> true
+      _ | tick - movedAt >= 1 -> true
       _ -> false
 
 runAction
@@ -249,10 +253,10 @@ renderSidebar :: forall p i. Game -> HH.HTML p i
 renderSidebar { level, levelNum } =
   div "sidebar"
     [ HH.div_ $ (
-        [ dl "LEVEL" levelNum
-        , dl "TIME" (ceil ((toNumber level.ticksLeft) / (toNumber ticksPerSecond) ))
+        [ dl "LEVEL" (Just levelNum)
+        , dl "TIME" (toSeconds <$> level.ticksLeft)
+        , dl "CHIPS LEFT" (Just level.chipsLeft)
         ]
-        <> (if isJust hint then [] else [dl "CHIPS LEFT" level.chipsLeft])
         )
     , case hint of
       Just msg -> div "hint" [ HH.text msg ]
@@ -275,3 +279,4 @@ renderSidebar { level, levelNum } =
   where
 
   hint = Level.visibleHint level
+  toSeconds ticksLeft = ceil ((toNumber ticksLeft) / (toNumber ticksPerSecond) )

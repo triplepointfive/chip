@@ -30,7 +30,7 @@ type Blank =
   , hint :: Maybe String
   , name :: String
   , chips :: Int
-  , timeLimit :: Int
+  , timeLimit :: Maybe Int
   , blocks :: Array Point
   , trapConnections :: Maybe (Array Connection)
   }
@@ -52,7 +52,12 @@ build { grid, hint, chips, blocks, trapConnections, timeLimit } =
 
   initLevel :: Level
   initLevel =
-    { player: { pos: { x: 0, y: 0 }, direction: Down, turnedAt: timeLimit * 10, movedAt: timeLimit * 10 }
+    { player:
+        { pos: { x: 0, y: 0 }
+        , direction: Down
+        , turnedAt: 0
+        , movedAt: 0
+        }
     , tiles: Map.empty
     , inventory: initInventory
     , chipsLeft: chips
@@ -60,7 +65,8 @@ build { grid, hint, chips, blocks, trapConnections, timeLimit } =
     , trapConnections: maybe Map.empty buildConnections trapConnections
     , blocks: Set.fromFoldable blocks
     , hint
-    , ticksLeft: timeLimit * 10
+    , ticksLeft: ((*) 10) <$> timeLimit
+    , tick: 0
     }
 
   addCell :: Point -> Char -> Level -> Level
