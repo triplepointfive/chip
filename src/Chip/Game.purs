@@ -2,6 +2,7 @@ module Chip.Game
   ( Game(..)
   , State(..)
   , Moving(..)
+  , notDead
   , onLevel
   ) where
 
@@ -37,3 +38,8 @@ type Game =
 
 onLevel :: (Level -> Level) -> Game -> Game
 onLevel f game = game { level = f game.level }
+
+notDead :: Game -> Boolean
+notDead game = case game.state of
+  Dead _ -> false
+  _ -> true
