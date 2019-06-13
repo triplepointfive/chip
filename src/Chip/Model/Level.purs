@@ -6,6 +6,7 @@ module Chip.Model.Level
   , visibleHint
   , mapSize
   , outOfLevel
+  , isFloor
   ) where
 
 import Prelude
@@ -19,6 +20,7 @@ import Chip.Model.Direction (Direction)
 import Chip.Model.Inventory (Inventory)
 import Chip.Model.Point (Point)
 import Chip.Model.Tile (Tile(..))
+import Chip.Model.SwitchState (SwitchState(..))
 
 -- | Mapping for cell coordinates to object on it.
 -- | Does not include floor for simplicity
@@ -66,3 +68,17 @@ mapSize = 32 -- TODO: Move into a level
 
 outOfLevel :: Point -> Boolean
 outOfLevel { x, y } = x < 0 || y < 0 || x >= mapSize || y >= mapSize
+
+-- TODO: Check for blocks
+isFloor :: Level -> Point -> Boolean
+isFloor { tiles, blocks, enemies } pos = case Map.lookup pos tiles of
+  _ | Set.member pos blocks -> false
+  _ | Map.member pos enemies -> false
+  Nothing -> true
+  Just CloneMachineButton -> true
+  Just Fire -> true
+  Just Water -> true
+  Just (SwitchableWall Off) -> true
+  Just Bomb -> true
+  Just Trap -> true
+  _ -> false
