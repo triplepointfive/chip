@@ -23,11 +23,12 @@ import Web.UIEvent.KeyboardEvent (KeyboardEvent)
 import Chip.Action (Action(..), ActionResult, Sound(..))
 import Chip.Action.AI (actAI)
 import Chip.Action.Tick as Action
+import Chip.Action.Slide (slide)
+import Chip.Action.MovePlayer (movePlayer, checkForEnemies)
 import Display (levelTiles, tilesRowElem, DisplayTile(..))
-import Level as Level
 import Chip.Level.Build (Blank, build)
 import Chip.Lib (getJSON)
-import Chip.Model (Moving(..), Game, notDead, DieReason(..), Point, Level, Tiles, Color(..), Item(..), Tile(..), Direction(..))
+import Chip.Model (Moving(..), Game, notDead, DieReason(..), Point, Level, Tiles, Color(..), Item(..), Tile(..), Direction(..), visibleHint)
 import Chip.Model (State(..)) as Game
 import Chip.Sound (SoundEffect(..), play)
 import Chip.Utils (foldlM)
@@ -155,13 +156,13 @@ handleQuery (Tick next) = do
     _ -> do
       runAction Action.tick
 
-      when (odd tick) (runAction (Level.checkForEnemies <<< actAI))
+      when (odd tick) (runAction (checkForEnemies <<< actAI))
 
       when
         (moveAction tiles pos movedAt tick)
         (moveTo moving)
 
-      runAction Level.slide
+      runAction slide
 
       pure (Just next)
 
@@ -169,12 +170,12 @@ moveTo :: forall m. Bind m => MonadState Game m => MonadAff m => Moving -> m Uni
 moveTo moving = case moving of
   Released direction -> do
       H.modify_ (_ { moving = Unpressed })
-      runAction (Level.movePlayer true direction)
+      runAction (movePlayer true direction)
   Pressed direction -> do
       H.modify_ (_ { moving = Processed direction })
-      runAction (Level.movePlayer true direction)
+      runAction (movePlayer true direction)
   Processed direction ->
-      runAction (Level.movePlayer true direction)
+      runAction (movePlayer true direction)
   Unpressed -> pure unit
 
 moveAction :: Tiles -> Point -> Int -> Int -> Boolean
@@ -277,5 +278,5 @@ renderSidebar { level, levelNum } =
 
   where
 
-  hint = Level.visibleHint level
+  hint = visibleHint level
   toSeconds ticksLeft = ceil ((toNumber ticksLeft) / (toNumber ticksPerSecond) )

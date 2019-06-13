@@ -1,9 +1,6 @@
-module Level
-  ( checkForEnemies
-  , mapSize
-  , movePlayer
-  , slide
-  , visibleHint
+module Chip.Action.MovePlayer
+  ( movePlayer
+  , checkForEnemies
   ) where
 
 import Prelude
@@ -14,8 +11,8 @@ import Data.Maybe (Maybe(..))
 import Data.Set as Set
 
 import Chip.Action (Action(..), ActionResult, inactive, withAction, Sound(..), addAction)
-import Chip.Model (Point, DieReason(..), Direction, SwitchState(..), Level, Tile(..), Color, Item(..), WallType(..), has, initInventory, isActiveTrap)
-import Chip.Mutation (addItem, withdrawKey, toRight, invert, adjustPoint, removeCurrentTile, moveBlock, onInventory, countChip, moveToSocket, toggleTanks, toggleWalls)
+import Chip.Model (Color, DieReason(..), Direction, Item(..), Level, Point, SwitchState(..), Tile(..), WallType(..), has, initInventory, isActiveTrap)
+import Chip.Mutation (addItem, adjustPoint, countChip, invert, moveBlock, moveToSocket, onInventory, removeCurrentTile, toggleTanks, toggleWalls, withdrawKey)
 
 -- | Height and width of a level grid
 mapSize :: Int
@@ -187,34 +184,6 @@ stepInFire level
   | level.inventory.fireBoots = inactive level
   | otherwise = withAction level (Die Burned)
 
-
--- | Returns hint text if it should be shown
-visibleHint :: Level -> Maybe String
-visibleHint { tiles, player: { pos }, hint } = case Map.lookup pos tiles of
-  Just Hint -> hint
-  _ -> Nothing
-
-checkForEnemies :: ActionResult Level -> ActionResult Level
-checkForEnemies { result: level, actions }
-  = case Map.lookup level.player.pos level.enemies of
-    Just _ -> { result: level, actions: Die Eaten : actions }
-    Nothing -> { result: level, actions }
-
-slide :: Level -> ActionResult Level
-slide level = case Map.lookup level.player.pos level.tiles of
-  Just (Force direction) | not (has SuctionBoots level.inventory) ->
-    movePlayer false direction level
-  Just Ice | not (has SkiSkates level.inventory) ->
-    case movePlayer false level.player.direction level of
-      { result, actions: [PlaySound Oof] } | result.player.pos == level.player.pos
-          -> slide level { player { direction = invert level.player.direction } }
-      res -> res
-  Just (IceCorner direction) | not (has SkiSkates level.inventory) ->
-      if level.player.direction == direction
-          then movePlayer false (toRight direction) level
-          else movePlayer false (invert direction) level
-  _ -> inactive level
-
 nextTeleport :: Boolean -> Point -> Direction -> Level -> Maybe Point
 nextTeleport canPush origin direction { tiles, blocks, enemies } =
   iter { x: origin.x - 1, y: origin.y }
@@ -235,3 +204,9 @@ nextTeleport canPush origin direction { tiles, blocks, enemies } =
     _ | Set.member pos blocks -> not canPush
     _ | Map.member pos enemies -> true
     _ -> false
+
+checkForEnemies :: ActionResult Level -> ActionResult Level
+checkForEnemies { result: level, actions }
+  = case Map.lookup level.player.pos level.enemies of
+    Just _ -> { result: level, actions: Die Eaten : actions }
+    Nothing -> { result: level, actions }

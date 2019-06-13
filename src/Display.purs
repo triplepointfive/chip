@@ -15,8 +15,7 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 
-import Chip.Model (Game, State(..), DieReason(..), Point, Enemy(..), Color(..), Tile(..), Item(..), WallType(..), Direction(..), SwitchState(..))
-import Level (mapSize)
+import Chip.Model (Game, State(..), DieReason(..), Point, Enemy(..), Color(..), Tile(..), Item(..), WallType(..), Direction(..), SwitchState(..), mapSize)
 
 -- | What shall be output on screen
 data DisplayTile
