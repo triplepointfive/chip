@@ -1,5 +1,10 @@
 -- Legally stolen from here https://github.com/bodil/purescript-is-magic
-module Chip.Sound where
+module Chip.Lib.Sound
+  ( SoundEffect(..)
+  , URL
+  , Volume
+  , play
+  ) where
 
 import Prelude
 

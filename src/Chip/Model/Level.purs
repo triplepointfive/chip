@@ -5,6 +5,7 @@ module Chip.Model.Level
   , isActiveTrap
   , visibleHint
   , mapSize
+  , outOfLevel
   ) where
 
 import Prelude
@@ -62,3 +63,6 @@ visibleHint { tiles, player: { pos }, hint } = case Map.lookup pos tiles of
 -- | Height and width of a level grid
 mapSize :: Int
 mapSize = 32 -- TODO: Move into a level
+
+outOfLevel :: Point -> Boolean
+outOfLevel { x, y } = x < 0 || y < 0 || x >= mapSize || y >= mapSize

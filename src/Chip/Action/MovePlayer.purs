@@ -11,15 +11,8 @@ import Data.Maybe (Maybe(..))
 import Data.Set as Set
 
 import Chip.Action (Action(..), ActionResult, inactive, withAction, Sound(..), addAction)
-import Chip.Model (Color, DieReason(..), Direction, Item(..), Level, Point, SwitchState(..), Tile(..), WallType(..), has, initInventory, isActiveTrap)
-import Chip.Mutation (addItem, adjustPoint, countChip, invert, moveBlock, moveToSocket, onInventory, removeCurrentTile, toggleTanks, toggleWalls, withdrawKey)
-
--- | Height and width of a level grid
-mapSize :: Int
-mapSize = 32
-
-outOfLevel :: Point -> Boolean
-outOfLevel { x, y } = x < 0 || y < 0 || x >= mapSize || y >= mapSize
+import Chip.Model (Color, DieReason(..), Direction, Item(..), Level, Point, SwitchState(..), Tile(..), WallType(..), has, initInventory, isActiveTrap, outOfLevel, mapSize)
+import Chip.Mutation (adjustPoint, invert, moveBlock, moveToSocket, onInventory, removeCurrentTile, toggleTanks, toggleWalls, withdrawKey, pickUpChip, pickUp)
 
 sound :: Sound -> Level -> ActionResult Level
 sound effect level = withAction level (PlaySound effect)
@@ -145,12 +138,6 @@ movePlayerTo manually direction dest level =
 
   move :: Level -> Level
   move = _ { player { pos = dest } }
-
-  pickUpChip :: Level -> Level
-  pickUpChip = countChip <<< removeCurrentTile
-
-  pickUp :: Item -> Level -> Level
-  pickUp item = removeCurrentTile <<< onInventory (addItem item)
 
   -- TODO: Check if pushed into a monster
   pushBlock :: Point -> ActionResult Level

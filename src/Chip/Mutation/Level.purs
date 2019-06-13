@@ -3,12 +3,13 @@ module Chip.Mutation.Level
   , addBlock
   , moveBlock
   , moveToSocket
-  , countChip
   , removeCurrentTile
   , onInventory
   , removeTile
   , toggleTanks
   , toggleWalls
+  , pickUpChip
+  , pickUp
   ) where
 
 import Prelude
@@ -16,8 +17,9 @@ import Prelude
 import Data.Map as Map
 import Data.Set as Set
 
-import Chip.Model (Level, Inventory, Point, Enemy)
+import Chip.Model (Level, Inventory, Point, Enemy, Item)
 import Chip.Mutation.Enemy (toggleTank)
+import Chip.Mutation.Inventory (addItem)
 import Chip.Mutation.Tile (toggleWall)
 
 moveBlock :: Point -> Point -> Level -> Level
@@ -29,11 +31,6 @@ moveToSocket :: Point -> Level -> Level
 moveToSocket pos level
   | level.chipsLeft == 0 = removeCurrentTile level { player { pos = pos } }
   | otherwise            = level
-
-countChip :: Level -> Level
-countChip level
-  | level.chipsLeft == 0 = level
-  | otherwise            = level { chipsLeft = level.chipsLeft - 1 }
 
 removeCurrentTile :: Level -> Level
 removeCurrentTile level = removeTile level.player.pos level
@@ -55,3 +52,11 @@ toggleTanks level = level { enemies = map toggleTank level.enemies }
 
 toggleWalls :: Level -> Level
 toggleWalls level = level { tiles = map toggleWall level.tiles }
+
+pickUpChip :: Level -> Level
+pickUpChip level
+  | level.chipsLeft == 0 = removeCurrentTile level
+  | otherwise = removeCurrentTile level { chipsLeft = level.chipsLeft - 1 }
+
+pickUp :: Item -> Level -> Level
+pickUp item = removeCurrentTile <<< onInventory (addItem item)

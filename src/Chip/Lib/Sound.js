@@ -1,4 +1,4 @@
-// module Chip.Sound
+// module Chip.Lib.Sound
 
 var active = []
 

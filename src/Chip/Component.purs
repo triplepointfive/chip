@@ -30,7 +30,7 @@ import Chip.Level.Build (Blank, build)
 import Chip.Lib (getJSON)
 import Chip.Model (Moving(..), Game, notDead, DieReason(..), Point, Level, Tiles, Color(..), Item(..), Tile(..), Direction(..), visibleHint)
 import Chip.Model (State(..)) as Game
-import Chip.Sound (SoundEffect(..), play)
+import Chip.Lib.Sound (SoundEffect(..), play)
 import Chip.Utils (foldlM)
 
 ticksPerSecond :: Int

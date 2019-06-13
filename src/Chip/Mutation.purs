@@ -8,6 +8,6 @@ module Chip.Mutation
 
 import Chip.Mutation.Direction (invert, toLeft, toRight)
 import Chip.Mutation.Game (onLevel)
-import Chip.Mutation.Inventory (addItem, withdrawKey)
-import Chip.Mutation.Level (addEnemy, addBlock, moveBlock, moveToSocket, countChip, removeCurrentTile, onInventory, removeTile, toggleTanks, toggleWalls)
+import Chip.Mutation.Inventory (withdrawKey)
+import Chip.Mutation.Level (addEnemy, addBlock, moveBlock, moveToSocket, removeCurrentTile, onInventory, removeTile, toggleTanks, toggleWalls, pickUpChip, pickUp)
 import Chip.Mutation.Point (adjustPoint)
