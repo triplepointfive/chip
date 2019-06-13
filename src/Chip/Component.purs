@@ -20,18 +20,18 @@ import Halogen.HTML.Properties as HP
 import Web.UIEvent.KeyboardEvent as KE
 import Web.UIEvent.KeyboardEvent (KeyboardEvent)
 
-import Chip.Action (Action(..), DieReason(..), ActionResult, Sound(..))
+import Chip.Action (Action(..), ActionResult, Sound(..))
 import Chip.Action.AI (actAI)
 import Chip.Action.Tick as Action
 import Display (levelTiles, tilesRowElem, DisplayTile(..))
-import Chip.Game (Game)
-import Chip.Game as Game
+import Chip.Game (Game, notDead, Moving(..))
 import Level as Level
 import Chip.Level.Build (Blank, build)
 import Chip.Lib (getJSON)
-import Chip.Model (Level, Tiles, Color(..), Item(..), Tile(..), Direction(..))
+import Chip.Model (DieReason(..), Point, Level, Tiles, Color(..), Item(..), Tile(..), Direction(..))
+import Chip.Model (State(..)) as Game
 import Chip.Sound (SoundEffect(..), play)
-import Chip.Utils (Point, foldlM)
+import Chip.Utils (foldlM)
 
 ticksPerSecond :: Int
 ticksPerSecond = 10
@@ -78,7 +78,7 @@ component initBlank initLevelNum =
     , name: initBlank.name
     , state: Game.Init
     , intactLevel: builtLevel
-    , moving: Game.Unpressed
+    , moving: Unpressed
     }
 
   render game =
@@ -95,11 +95,11 @@ handleQuery (KeyboardUp ev next) = do
   { moving } <- H.get
 
   case moving of
-    Game.Pressed dir -> do
-      H.modify_ (_ { moving = Game.Released dir })
+    Pressed dir -> do
+      H.modify_ (_ { moving = Released dir })
       pure (Just next)
-    Game.Processed dir -> do
-      H.modify_ (_ { moving = Game.Unpressed })
+    Processed dir -> do
+      H.modify_ (_ { moving = Unpressed })
       pure (Just next)
     _ ->
       pure (Just next)
@@ -142,7 +142,7 @@ handleQuery (KeyboardDown ev next) = do
 
     when (state == Game.Init) (H.modify_ (_ { state = Game.Alive }))
 
-    H.modify_ (_ { moving = Game.Pressed direction })
+    H.modify_ (_ { moving = Pressed direction })
 
     pure (Just next)
 
@@ -166,17 +166,17 @@ handleQuery (Tick next) = do
 
       pure (Just next)
 
-moveTo :: forall m. Bind m => MonadState Game m => MonadAff m => Game.Moving -> m Unit
+moveTo :: forall m. Bind m => MonadState Game m => MonadAff m => Moving -> m Unit
 moveTo moving = case moving of
-  Game.Released direction -> do
-      H.modify_ (_ { moving = Game.Unpressed })
+  Released direction -> do
+      H.modify_ (_ { moving = Unpressed })
       runAction (Level.movePlayer true direction)
-  Game.Pressed direction -> do
-      H.modify_ (_ { moving = Game.Processed direction })
+  Pressed direction -> do
+      H.modify_ (_ { moving = Processed direction })
       runAction (Level.movePlayer true direction)
-  Game.Processed direction ->
+  Processed direction ->
       runAction (Level.movePlayer true direction)
-  Game.Unpressed -> pure unit
+  Unpressed -> pure unit
 
 moveAction :: Tiles -> Point -> Int -> Int -> Boolean
 moveAction tiles pos movedAt tick = case Map.lookup pos tiles of
@@ -192,7 +192,7 @@ runAction
   -> m Unit
 runAction f = do
   game <- H.get
-  when (Game.notDead game) do
+  when (notDead game) do
     let { result: level, actions } = f game.level
     foldlM processAction (game { level = level }) actions >>= H.put
 

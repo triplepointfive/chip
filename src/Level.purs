@@ -17,10 +17,9 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Set as Set
 
-import Chip.Action (Action(..), ActionResult, DieReason(..), inactive, withAction, Sound(..), addAction)
-import Chip.Model (Direction, SwitchState(..), Enemy(..), Level, Tile(..), Color, Item(..), WallType(..), Inventory, has, initInventory)
-import Chip.Mutation (addItem, withdrawKey)
-import Chip.Utils (Point, adjustPoint, toRight, invert)
+import Chip.Action (Action(..), ActionResult, inactive, withAction, Sound(..), addAction)
+import Chip.Model (Point, DieReason(..), Direction, SwitchState(..), Enemy(..), Level, Tile(..), Color, Item(..), WallType(..), Inventory, has, initInventory)
+import Chip.Mutation (addItem, withdrawKey, toRight, invert, adjustPoint)
 
 addEnemy :: Point -> Enemy -> Level -> Level
 addEnemy p enemy l = l { enemies = Map.insert p enemy l.enemies }

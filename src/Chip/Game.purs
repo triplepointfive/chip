@@ -1,25 +1,13 @@
 module Chip.Game
   ( Game(..)
-  , State(..)
   , Moving(..)
   , notDead
   , onLevel
   ) where
 
-import Prelude
-
-import Chip.Action (DieReason)
 import Chip.Model.Direction (Direction)
 import Chip.Model.Level (Level)
-
-data State
-  = Init
-  | Alive
-  | Dead DieReason
-  | Pause
-  | Complete
-
-derive instance eqState :: Eq State
+import Chip.Model.State (State(..))
 
 data Moving
   = Pressed Direction

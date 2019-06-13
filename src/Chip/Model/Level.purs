@@ -13,8 +13,8 @@ import Data.Set as Set
 import Chip.Model.Enemy (Enemy)
 import Chip.Model.Direction (Direction)
 import Chip.Model.Inventory (Inventory)
+import Chip.Model.Point (Point)
 import Chip.Model.Tile (Tile)
-import Chip.Utils (Point)
 
 -- | Mapping for cell coordinates to object on it.
 -- | Does not include floor for simplicity

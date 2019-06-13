@@ -13,9 +13,9 @@ import Data.Set as Set
 import Data.String.CodeUnits (toCharArray)
 import Data.Tuple (Tuple(..))
 
-import Chip.Model (initInventory, Enemy(..), Level, Tile(..), Item(..), Color(..), WallType(..), Direction(..), SwitchState(..))
+import Chip.Model (Point, initInventory, Enemy(..), Level, Tile(..), Item(..), Color(..), WallType(..), Direction(..), SwitchState(..))
 import Level (addEnemy, addBlock)
-import Chip.Utils (Point, addIndex)
+import Chip.Utils (addIndex)
 
 type Connection =
   { button :: Point

@@ -1,7 +1,6 @@
 module Chip.Action
   ( Action(..)
   , ActionResult(..)
-  , DieReason(..)
   , Sound(..)
   , addAction
   , inactive
@@ -10,24 +9,9 @@ module Chip.Action
 
 import Prelude
 
+import Chip.Model (DieReason)
+
 import Data.Array ((:))
-
-data DieReason
-  = Drown
-  | Burned
-  | Eaten
-  | Timed
-  | BlownUp
-
-derive instance eqDieReason :: Eq DieReason
-
-instance showDieReason :: Show DieReason where
-  show = case _ of
-    Drown -> "Drown"
-    Burned -> "Burned"
-    Eaten -> "Eaten"
-    Timed -> "Timed"
-    BlownUp -> "BlownUp"
 
 data Sound
   = DoorOpen
