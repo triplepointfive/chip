@@ -23,13 +23,13 @@ import Web.UIEvent.KeyboardEvent (KeyboardEvent)
 import Web.UIEvent.KeyboardEvent.EventTypes as KET
 
 import Chip.Component as Game
-import Chip.Lib (getJSON)
+import Chip.Lib.JSON (getJSON)
 
 -- | Outputs main game component
 main :: Effect Unit
 main = HA.runHalogenAff do
   body <- HA.awaitBody
-  result <- getJSON "levels/1.json"
+  result <- getJSON "levels/17.json"
   case result of
     Just blank -> do
       game <- runUI (Game.component blank 1) unit body

@@ -27,7 +27,7 @@ import Chip.Action.Slide (slide)
 import Chip.Action.MovePlayer (movePlayer, checkForEnemies)
 import Display (levelTiles, tilesRowElem, DisplayTile(..))
 import Chip.Level.Build (Blank, build)
-import Chip.Lib (getJSON)
+import Chip.Lib.JSON (getJSON)
 import Chip.Model (Moving(..), Game, notDead, DieReason(..), Point, Level, Tiles, Color(..), Item(..), Tile(..), Direction(..), visibleHint)
 import Chip.Model (State(..)) as Game
 import Chip.Lib.Sound (SoundEffect(..), play)
