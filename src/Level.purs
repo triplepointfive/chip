@@ -1,11 +1,7 @@
 module Level
-  ( addBlock
-  , addEnemy
-  , checkForEnemies
-  , isActiveTrap
+  ( checkForEnemies
   , mapSize
   , movePlayer
-  , removeTile
   , slide
   , visibleHint
   ) where
@@ -18,14 +14,8 @@ import Data.Maybe (Maybe(..))
 import Data.Set as Set
 
 import Chip.Action (Action(..), ActionResult, inactive, withAction, Sound(..), addAction)
-import Chip.Model (Point, DieReason(..), Direction, SwitchState(..), Enemy(..), Level, Tile(..), Color, Item(..), WallType(..), Inventory, has, initInventory)
-import Chip.Mutation (addItem, withdrawKey, toRight, invert, adjustPoint)
-
-addEnemy :: Point -> Enemy -> Level -> Level
-addEnemy p enemy l = l { enemies = Map.insert p enemy l.enemies }
-
-addBlock :: Point -> Level -> Level
-addBlock p l = l { blocks = Set.insert p l.blocks }
+import Chip.Model (Point, DieReason(..), Direction, SwitchState(..), Level, Tile(..), Color, Item(..), WallType(..), has, initInventory, isActiveTrap)
+import Chip.Mutation (addItem, withdrawKey, toRight, invert, adjustPoint, removeCurrentTile, moveBlock, onInventory, countChip, moveToSocket, toggleTanks, toggleWalls)
 
 -- | Height and width of a level grid
 mapSize :: Int
@@ -33,14 +23,6 @@ mapSize = 32
 
 outOfLevel :: Point -> Boolean
 outOfLevel { x, y } = x < 0 || y < 0 || x >= mapSize || y >= mapSize
-
--- TODO: Check for blocks as well
-isActiveTrap :: Point -> Level -> Boolean
-isActiveTrap point level = case Map.lookup point level.trapConnections of
-  _ | Map.lookup point level.tiles /= Just Trap -> false
-  Just button | button == level.player.pos -> false
-  Just button | Set.member button level.blocks -> false
-  _ -> true
 
 sound :: Sound -> Level -> ActionResult Level
 sound effect level = withAction level (PlaySound effect)
@@ -205,29 +187,6 @@ stepInFire level
   | level.inventory.fireBoots = inactive level
   | otherwise = withAction level (Die Burned)
 
-moveBlock :: Point -> Point -> Level -> Level
-moveBlock from to level = level
-  { blocks = Set.insert to (Set.delete from level.blocks)
-  }
-
-moveToSocket :: Point -> Level -> Level
-moveToSocket pos level
-  | level.chipsLeft == 0 = removeCurrentTile level { player { pos = pos } }
-  | otherwise            = level
-
-countChip :: Level -> Level
-countChip level
-  | level.chipsLeft == 0 = level
-  | otherwise            = level { chipsLeft = level.chipsLeft - 1 }
-
-removeCurrentTile :: Level -> Level
-removeCurrentTile level = removeTile level.player.pos level
-
-onInventory :: (Inventory -> Inventory) -> Level -> Level
-onInventory f level = level { inventory = f level.inventory }
-
-removeTile :: Point -> Level -> Level
-removeTile point level = level { tiles = Map.delete point level.tiles }
 
 -- | Returns hint text if it should be shown
 visibleHint :: Level -> Maybe String
@@ -255,27 +214,6 @@ slide level = case Map.lookup level.player.pos level.tiles of
           then movePlayer false (toRight direction) level
           else movePlayer false (invert direction) level
   _ -> inactive level
-
-toggleTanks :: Level -> Level
-toggleTanks level = level { enemies = map toggleTank level.enemies }
-
-  where
-
-  toggleTank :: Enemy -> Enemy
-  toggleTank = case _ of
-    Tank direction -> Tank (invert direction)
-    e -> e
-
-toggleWalls :: Level -> Level
-toggleWalls level = level { tiles = map toggleWall level.tiles }
-
-  where
-
-  toggleWall :: Tile -> Tile
-  toggleWall = case _ of
-    SwitchableWall On -> SwitchableWall Off
-    SwitchableWall Off -> SwitchableWall On
-    t -> t
 
 nextTeleport :: Boolean -> Point -> Direction -> Level -> Maybe Point
 nextTeleport canPush origin direction { tiles, blocks, enemies } =

@@ -10,9 +10,8 @@ import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 
 import Chip.Action (ActionResult, inactive)
-import Chip.Model (Point, Level, Tile(..), Enemy(..), Direction(..), SwitchState(..))
-import Chip.Mutation (adjustPoint, toLeft, toRight, invert)
-import Level (addEnemy, removeTile, isActiveTrap)
+import Chip.Model (Point, Level, Tile(..), Enemy(..), Direction(..), SwitchState(..), isActiveTrap)
+import Chip.Mutation (adjustPoint, toLeft, toRight, invert, addEnemy, removeTile)
 
 type ActResult =
   { level :: Level

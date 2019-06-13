@@ -14,7 +14,7 @@ import Data.String.CodeUnits (toCharArray)
 import Data.Tuple (Tuple(..))
 
 import Chip.Model (Point, initInventory, Enemy(..), Level, Tile(..), Item(..), Color(..), WallType(..), Direction(..), SwitchState(..))
-import Level (addEnemy, addBlock)
+import Chip.Mutation (addEnemy, addBlock)
 import Chip.Utils (addIndex)
 
 type Connection =

@@ -2,19 +2,20 @@ module Chip.Model.Level
   ( Level
   , Player
   , Tiles
+  , isActiveTrap
   ) where
 
 import Prelude
 
 import Data.Map as Map
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Data.Set as Set
 
 import Chip.Model.Enemy (Enemy)
 import Chip.Model.Direction (Direction)
 import Chip.Model.Inventory (Inventory)
 import Chip.Model.Point (Point)
-import Chip.Model.Tile (Tile)
+import Chip.Model.Tile (Tile(..))
 
 -- | Mapping for cell coordinates to object on it.
 -- | Does not include floor for simplicity
@@ -41,3 +42,11 @@ type Level =
   , ticksLeft :: Maybe Int
   , tick :: Int
   }
+
+-- TODO: Check for blocks as well
+isActiveTrap :: Point -> Level -> Boolean
+isActiveTrap point level = case Map.lookup point level.trapConnections of
+  _ | Map.lookup point level.tiles /= Just Trap -> false
+  Just button | button == level.player.pos -> false
+  Just button | Set.member button level.blocks -> false
+  _ -> true

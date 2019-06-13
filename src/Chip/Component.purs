@@ -24,11 +24,10 @@ import Chip.Action (Action(..), ActionResult, Sound(..))
 import Chip.Action.AI (actAI)
 import Chip.Action.Tick as Action
 import Display (levelTiles, tilesRowElem, DisplayTile(..))
-import Chip.Game (Game, notDead, Moving(..))
 import Level as Level
 import Chip.Level.Build (Blank, build)
 import Chip.Lib (getJSON)
-import Chip.Model (DieReason(..), Point, Level, Tiles, Color(..), Item(..), Tile(..), Direction(..))
+import Chip.Model (Moving(..), Game, notDead, DieReason(..), Point, Level, Tiles, Color(..), Item(..), Tile(..), Direction(..))
 import Chip.Model (State(..)) as Game
 import Chip.Sound (SoundEffect(..), play)
 import Chip.Utils (foldlM)

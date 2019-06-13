@@ -1,19 +1,11 @@
-module Chip.Game
-  ( Game(..)
-  , Moving(..)
+module Chip.Model.Game
+  ( Game
   , notDead
-  , onLevel
   ) where
 
-import Chip.Model.Direction (Direction)
 import Chip.Model.Level (Level)
+import Chip.Model.Moving (Moving)
 import Chip.Model.State (State(..))
-
-data Moving
-  = Pressed Direction
-  | Released Direction
-  | Processed Direction
-  | Unpressed
 
 type Game =
   { level :: Level
@@ -23,9 +15,6 @@ type Game =
   , intactLevel :: Level
   , moving :: Moving
   }
-
-onLevel :: (Level -> Level) -> Game -> Game
-onLevel f game = game { level = f game.level }
 
 notDead :: Game -> Boolean
 notDead game = case game.state of
