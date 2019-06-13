@@ -1,7 +1,5 @@
 module Chip.Utils
-  ( Direction(..)
-  , Point(..)
-  , SwitchState(..)
+  ( Point(..)
   , addIndex
   , adjustPoint
   , foldlM
@@ -15,34 +13,13 @@ import Prelude
 import Data.Array (mapWithIndex, uncons)
 import Data.Maybe (Maybe(..))
 
+import Chip.Model.Direction (Direction(..))
+
 -- | A 2D point
 type Point =
   { x :: Int
   , y :: Int
   }
-
--- | Switch state
-data SwitchState
-  = On
-  | Off
-
-derive instance eqSwitchState :: Eq SwitchState
-
--- | 4 side direction
-data Direction
-  = Up
-  | Down
-  | Left
-  | Right
-
-derive instance eqDirection :: Eq Direction
-
-instance showDirection :: Show Direction where
-  show = case _ of
-    Up -> "Up"
-    Down -> "Down"
-    Left -> "Left"
-    Right -> "Right"
 
 adjustPoint :: Point -> Direction -> Point
 adjustPoint { x, y } direction = case direction of

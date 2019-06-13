@@ -29,9 +29,9 @@ import Chip.Game as Game
 import Level as Level
 import Chip.Level.Build (Blank, build)
 import Chip.Lib (getJSON)
+import Chip.Model (Level, Tiles, Color(..), Item(..), Tile(..), Direction(..))
 import Chip.Sound (SoundEffect(..), play)
-import Chip.Tile (Color(..), Item(..), Tile(..))
-import Chip.Utils (Direction(..), Point, foldlM)
+import Chip.Utils (Point, foldlM)
 
 ticksPerSecond :: Int
 ticksPerSecond = 10
@@ -178,7 +178,7 @@ moveTo moving = case moving of
       runAction (Level.movePlayer true direction)
   Game.Unpressed -> pure unit
 
-moveAction :: Level.Tiles -> Point -> Int -> Int -> Boolean
+moveAction :: Tiles -> Point -> Int -> Int -> Boolean
 moveAction tiles pos movedAt tick = case Map.lookup pos tiles of
       Just (Force _) -> true
       _ | tick - movedAt >= 1 -> true
@@ -188,7 +188,7 @@ runAction
   :: forall m. Bind m
   => MonadAff m
   => MonadState Game m
-  => (Level.Level -> ActionResult Level.Level)
+  => (Level -> ActionResult Level)
   -> m Unit
 runAction f = do
   game <- H.get

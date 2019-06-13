@@ -1,8 +1,5 @@
 module Level
-  ( Level(..)
-  , Player(..)
-  , Tiles(..)
-  , addBlock
+  ( addBlock
   , addEnemy
   , checkForEnemies
   , isActiveTrap
@@ -21,10 +18,9 @@ import Data.Maybe (Maybe(..))
 import Data.Set as Set
 
 import Chip.Action (Action(..), ActionResult, DieReason(..), inactive, withAction, Sound(..), addAction)
-import Chip.Enemy (Enemy(..))
-import Chip.Inventory (Inventory, addItem, has, withdrawKey, initInventory)
-import Chip.Tile (Tile(..), Color, Item(..), WallType(..))
-import Chip.Utils (Direction, Point, SwitchState(..), adjustPoint, toRight, invert)
+import Chip.Model (Direction, SwitchState(..), Enemy(..), Level, Tile(..), Color, Item(..), WallType(..), Inventory, has, initInventory)
+import Chip.Mutation (addItem, withdrawKey)
+import Chip.Utils (Point, adjustPoint, toRight, invert)
 
 addEnemy :: Point -> Enemy -> Level -> Level
 addEnemy p enemy l = l { enemies = Map.insert p enemy l.enemies }
@@ -35,32 +31,6 @@ addBlock p l = l { blocks = Set.insert p l.blocks }
 -- | Height and width of a level grid
 mapSize :: Int
 mapSize = 32
-
--- | Mapping for cell coordinates to object on it.
--- | Does not include floor for simplicity
-type Tiles = Map.Map Point Tile
-
--- | Main character and its data
-type Player =
-  { pos :: Point
-  , direction :: Direction
-  , turnedAt :: Int
-  , movedAt :: Int
-  }
-
--- | Represents a floor with all its objects
-type Level =
-  { player :: Player
-  , tiles :: Tiles
-  , inventory :: Inventory
-  , chipsLeft :: Int
-  , hint :: Maybe String
-  , enemies :: Map.Map Point Enemy
-  , blocks :: Set.Set Point
-  , trapConnections :: Map.Map Point Point
-  , ticksLeft :: Maybe Int
-  , tick :: Int
-  }
 
 outOfLevel :: Point -> Boolean
 outOfLevel { x, y } = x < 0 || y < 0 || x >= mapSize || y >= mapSize

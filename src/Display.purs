@@ -16,11 +16,10 @@ import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 
 import Chip.Action (DieReason(..))
-import Chip.Enemy (Enemy(..))
 import Chip.Game (Game, State(..))
+import Chip.Model (Enemy(..), Color(..), Tile(..), Item(..), WallType(..), Direction(..), SwitchState(..))
 import Level (mapSize)
-import Chip.Tile (Color(..), Tile(..), Item(..), WallType(..))
-import Chip.Utils (Direction(..), Point, SwitchState(..))
+import Chip.Utils (Point)
 
 -- | What shall be output on screen
 data DisplayTile

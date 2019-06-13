@@ -9,8 +9,8 @@ module Chip.Game
 import Prelude
 
 import Chip.Action (DieReason)
-import Level (Level)
-import Chip.Utils (Direction)
+import Chip.Model.Direction (Direction)
+import Chip.Model.Level (Level)
 
 data State
   = Init

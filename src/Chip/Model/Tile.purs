@@ -1,66 +1,15 @@
-module Chip.Tile
-  ( Color(..)
-  , Item(..)
-  , Tile(..)
-  , WallType(..)
+module Chip.Model.Tile
+  ( Tile(..)
   ) where
 
 import Prelude
 
-import Chip.Enemy (Enemy)
-import Chip.Utils (Direction(..), SwitchState(..))
-
--- | Colors for keys and related doors
-data Color
-  = Red
-  | Cyan
-  | Yellow
-  | Green
-
-derive instance eqColor :: Eq Color
-
--- | What can be found on floor and picked up
-data Item
-  = SkiSkates
-  | SuctionBoots
-  | FireBoots
-  | Flippers
-  | Key Color
-
-derive instance eqItem :: Eq Item
-
-instance showItem :: Show Item where
-  show = case _ of
-    SkiSkates -> "S"
-    SuctionBoots -> "U"
-    FireBoots -> "I"
-    Flippers -> "F"
-    Key color -> case color of
-      Red -> "r"
-      Cyan -> "c"
-      Yellow -> "y"
-      Green -> "g"
-
-data WallType
-  = Solid
-  | Invisible
-  | Hidden
-  | Blue
-  | Fake
-  | Recessed
-  | Flat Direction
-
-derive instance eqWallType :: Eq WallType
-
-instance showWallType :: Show WallType where
-  show = case _ of
-    Solid -> "#"
-    Invisible -> "X"
-    Hidden -> "H"
-    Blue -> "%"
-    Fake -> "'"
-    Recessed -> "O"
-    Flat dir -> "FLAT"
+import Chip.Model.Color (Color(..))
+import Chip.Model.Direction (Direction(..))
+import Chip.Model.Enemy (Enemy)
+import Chip.Model.Item (Item)
+import Chip.Model.SwitchState (SwitchState(..))
+import Chip.Model.WallType (WallType)
 
 -- | A single cell on a level grid
 data Tile

@@ -1,10 +1,10 @@
-module Chip.Enemy
+module Chip.Model.Enemy
   ( Enemy(..)
   ) where
 
 import Prelude
 
-import Chip.Utils (Direction)
+import Chip.Model.Direction (Direction)
 
 -- | Living creature to avoid
 data Enemy

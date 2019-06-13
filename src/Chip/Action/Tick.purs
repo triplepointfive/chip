@@ -7,8 +7,7 @@ import Prelude
 import Data.Maybe (Maybe(..))
 
 import Chip.Action (Action(..), ActionResult, DieReason(..), inactive, withAction)
-import Level (Level)
-import Chip.Utils (Direction(..))
+import Chip.Model (Level, Direction(..))
 
 tick :: Level -> ActionResult Level
 tick level = case unit of
