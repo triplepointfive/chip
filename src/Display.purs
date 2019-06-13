@@ -15,7 +15,7 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 
-import Chip.Model (Game, State(..), DieReason(..), Point, Enemy(..), Color(..), Tile(..), Item(..), WallType(..), Direction(..), SwitchState(..), mapSize)
+import Chip.Model (Game, State(..), DieReason(..), Point, Enemy(..), Color(..), Tile(..), Item(..), WallType(..), Direction(..), SwitchState(..), mapSize, enemyAt)
 
 -- | What shall be output on screen
 data DisplayTile
@@ -120,7 +120,7 @@ tilesRowElem tiles =
     (map tileToElem tiles)
 
 buildTile :: Point -> Game -> DisplayTile
-buildTile p { state, level: { player, enemies, tiles, blocks } } = case tile of
+buildTile p { state, level: level@{ player, tiles, blocks } } = case tile of
   _ | p == player.pos -> case state of
       Dead Drown -> DrownBoy
       Dead Burned -> BurnedBoy
@@ -129,7 +129,7 @@ buildTile p { state, level: { player, enemies, tiles, blocks } } = case tile of
           _ -> Boy player.direction tile
   _ | Set.member p blocks -> Block
   -- Just (CloneMachine e) -> Tile (CloneMachine e)
-  _ -> maybe tile Creature (lookup p enemies)
+  _ -> maybe tile Creature (enemyAt p level)
 
   where
 

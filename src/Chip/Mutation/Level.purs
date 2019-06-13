@@ -55,6 +55,9 @@ removeTile point level = level { tiles = Map.delete point level.tiles }
 addEnemy :: Point -> Enemy -> Level -> Level
 addEnemy p enemy l = l { enemies = Map.insert p enemy l.enemies }
 
+removeEnemy :: Point -> Level -> Level
+removeEnemy p l = l { enemies = Map.delete p l.enemies }
+
 addBlock :: Point -> Level -> Level
 addBlock p l = l { blocks = Set.insert p l.blocks }
 
@@ -74,7 +77,7 @@ pickUp item = removeCurrentTile <<< onInventory (addItem item)
 
 act :: Level -> Level
 act initLevel = foldEnemies
-  { level: initLevel { enemies = Map.empty }
+  { level: initLevel
   , old: initLevel.enemies
   }
 
@@ -82,37 +85,26 @@ act initLevel = foldEnemies
 
   add :: Point -> Enemy -> ActResult -> ActResult
   add pos enemy { level, old } =
-    { level: level { enemies = Map.insert pos enemy level.enemies }
+    { level: addEnemy pos enemy level
     , old
     }
 
-  cloneEnemies :: Level -> Level
-  cloneEnemies level =
-    foldl withTile level (Map.toUnfoldable level.tiles :: Array (Tuple Point Tile))
-
-    where
-
-    withTile lvl (Tuple pos tile) = case tile of
-      CloneMachine newEnemy -> addEnemy pos newEnemy lvl
-      _ -> lvl
-
   -- TODO: Check for water & fire
   -- TODO: Check per monster type
-  -- TODO: Remove bomb if blown up
-  withNewPos :: Point -> Enemy -> Level -> Level
-  withNewPos pos enemy level = case Map.lookup pos level.tiles of
-    Just CloneMachineButton -> cloneEnemies (addEnemy pos enemy level)
-    Just Water -> level
-    Just Bomb -> removeTile pos level
-    _ -> addEnemy pos enemy level
+  withNewPos :: Point -> Point -> Enemy -> Level -> Level
+  withNewPos pos oldPos enemy level = case Map.lookup pos level.tiles of
+    Just CloneMachineButton -> cloneEnemies (removeEnemy oldPos $ addEnemy pos enemy level)
+    Just Water -> removeEnemy oldPos level
+    Just Bomb -> removeEnemy oldPos $ removeTile pos level
+    _ -> removeEnemy oldPos $ addEnemy pos enemy level
 
   foldEnemies :: ActResult -> Level
   foldEnemies { level, old } = case Map.findMin old of
     Just { key: oldPos, value: oldEnemy } ->
         let { pos, enemy } = act' level oldPos oldEnemy in
         if pos == oldPos
-            then foldEnemies { level: addEnemy pos enemy level, old: Map.delete oldPos old }
-            else foldEnemies { level: withNewPos pos enemy level, old: Map.delete oldPos old }
+            then foldEnemies { level, old: Map.delete oldPos old }
+            else foldEnemies { level: withNewPos pos oldPos enemy level, old: Map.delete oldPos old }
     Nothing -> level
 
   goTo :: Level -> Point -> Direction -> (Direction -> Enemy) -> Array Direction -> { pos :: Point, enemy :: Enemy }
@@ -163,3 +155,13 @@ act initLevel = foldEnemies
       | x > level.player.pos.x = Just Left
       | x < level.player.pos.x = Just Right
       | otherwise = Nothing
+
+cloneEnemies :: Level -> Level
+cloneEnemies level =
+  foldl withTile level (Map.toUnfoldable level.tiles :: Array (Tuple Point Tile))
+
+  where
+
+  withTile lvl (Tuple pos tile) = case tile of
+    CloneMachine newEnemy -> addEnemy pos newEnemy lvl
+    _ -> lvl

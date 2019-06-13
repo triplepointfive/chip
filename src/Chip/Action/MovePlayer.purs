@@ -11,7 +11,7 @@ import Data.Maybe (Maybe(..))
 import Data.Set as Set
 
 import Chip.Action (Action(..), ActionResult, inactive, withAction, Sound(..), addAction)
-import Chip.Model (Color, DieReason(..), Direction, Item(..), Level, Point, SwitchState(..), Tile(..), WallType(..), has, initInventory, isActiveTrap, outOfLevel, mapSize)
+import Chip.Model (Color, DieReason(..), Direction, Item(..), Level, Point, SwitchState(..), Tile(..), WallType(..), has, initInventory, isActiveTrap, outOfLevel, mapSize, hasEnemy)
 import Chip.Mutation (adjustPoint, invert, moveBlock, moveToSocket, onInventory, removeCurrentTile, toggleTanks, toggleWalls, withdrawKey, pickUpChip, pickUp)
 
 sound :: Sound -> Level -> ActionResult Level
@@ -143,7 +143,7 @@ movePlayerTo manually direction dest level =
   pushBlock :: Point -> ActionResult Level
   pushBlock blockDest = case Map.lookup blockDest level.tiles of
     _ | Set.member blockDest level.blocks -> inactive turned
-    _ | Map.member blockDest level.enemies -> inactive turned
+    _ | hasEnemy blockDest level -> inactive turned
     Just Bomb -> movePlayer manually direction $ level
         { tiles = Map.delete blockDest level.tiles
         , blocks = Set.delete dest level.blocks
@@ -172,7 +172,7 @@ stepInFire level
   | otherwise = withAction level (Die Burned)
 
 nextTeleport :: Boolean -> Point -> Direction -> Level -> Maybe Point
-nextTeleport canPush origin direction { tiles, blocks, enemies } =
+nextTeleport canPush origin direction level@{ tiles, blocks, enemies } =
   iter { x: origin.x - 1, y: origin.y }
 
   where
@@ -189,11 +189,11 @@ nextTeleport canPush origin direction { tiles, blocks, enemies } =
   isSolid pos = case Map.lookup pos tiles of
     Just (Wall _) -> true
     _ | Set.member pos blocks -> not canPush
-    _ | Map.member pos enemies -> true
+    _ | hasEnemy pos level -> true
     _ -> false
 
 checkForEnemies :: ActionResult Level -> ActionResult Level
 checkForEnemies { result: level, actions }
-  = case Map.lookup level.player.pos level.enemies of
-    Just _ -> { result: level, actions: Die Eaten : actions }
-    Nothing -> { result: level, actions }
+  | hasEnemy level.player.pos level
+      = { result: level, actions: Die Eaten : actions }
+  | otherwise = { result: level, actions }

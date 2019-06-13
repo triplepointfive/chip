@@ -7,6 +7,8 @@ module Chip.Model.Level
   , mapSize
   , outOfLevel
   , isFloor
+  , hasEnemy
+  , enemyAt
   ) where
 
 import Prelude
@@ -71,9 +73,9 @@ outOfLevel { x, y } = x < 0 || y < 0 || x >= mapSize || y >= mapSize
 
 -- TODO: Check for blocks
 isFloor :: Level -> Point -> Boolean
-isFloor { tiles, blocks, enemies } pos = case Map.lookup pos tiles of
-  _ | Set.member pos blocks -> false
-  _ | Map.member pos enemies -> false
+isFloor level pos = case Map.lookup pos level.tiles of
+  _ | Set.member pos level.blocks -> false
+  _ | hasEnemy pos level -> false
   Nothing -> true
   Just CloneMachineButton -> true
   Just Fire -> true
@@ -81,4 +83,11 @@ isFloor { tiles, blocks, enemies } pos = case Map.lookup pos tiles of
   Just (SwitchableWall Off) -> true
   Just Bomb -> true
   Just Trap -> true
+  Just Ice -> true
   _ -> false
+
+hasEnemy :: Point -> Level -> Boolean
+hasEnemy point { enemies } = Map.member point enemies
+
+enemyAt :: Point -> Level -> Maybe Enemy
+enemyAt point { enemies } = Map.lookup point enemies
