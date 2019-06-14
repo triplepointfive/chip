@@ -1,4 +1,4 @@
-$cell-size: 48px
+$cell-size: 32px
 $sprite-tile-size: 32px
 $sprite-x: 8
 $sprite-y: 12
@@ -43,6 +43,8 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size
       @include tile($x + 3, $y)
 
 .level-row
+  white-space: nowrap
+
   > .tile
     width: $cell-size
     height: $cell-size

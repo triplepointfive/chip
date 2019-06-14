@@ -8,14 +8,15 @@ module Chip.Component
 
 import Prelude hiding (div)
 
-import Data.Int (ceil, odd, toNumber)
-import Data.Maybe (Maybe(..), isNothing, maybe)
+import Data.Int (ceil, odd, toNumber, fromString)
+import Data.Maybe (Maybe(..), isNothing, maybe, fromMaybe)
 import Data.Map as Map
 import Effect.Aff (Aff)
 import Effect.Aff.Class (class MonadAff)
 import Control.Monad.State (class MonadState)
 import Halogen as H
 import Halogen.HTML as HH
+import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Web.UIEvent.KeyboardEvent as KE
 import Web.UIEvent.KeyboardEvent (KeyboardEvent)
@@ -36,7 +37,7 @@ import Chip.Utils (foldlM)
 ticksPerSecond :: Int
 ticksPerSecond = 10
 
-type Action' = Void
+data Action' = SetRadius Int
 
 type Message = Void
 data Query a
@@ -65,7 +66,10 @@ component initBlank initLevelNum =
   H.mkComponent
     { initialState: const initialState
     , render
-    , eval: H.mkEval $ H.defaultEval { handleQuery = handleQuery }
+    , eval: H.mkEval $ H.defaultEval
+        { handleQuery = handleQuery
+        , handleAction = handleAction
+        }
     }
   where
 
@@ -79,18 +83,25 @@ component initBlank initLevelNum =
     , state: Game.Init
     , intactLevel: builtLevel
     , moving: Unpressed
+    , radius: 6
     }
 
   render game =
     div "game-container"
       [ div "content"
           ( renderMessage game
-          <> map tilesRowElem (levelTiles 18 game)
+          <> map tilesRowElem (levelTiles game)
           )
       , renderSidebar game
+      , helpSection
       ]
 
-handleQuery :: forall a. Query a -> H.HalogenM State Action () Message Aff (Maybe a)
+handleAction :: forall o m. Action' -> H.HalogenM State Action' () o m Unit
+handleAction = case _ of
+  SetRadius radius ->
+    H.modify_ (_ { radius = radius })
+
+handleQuery :: forall a. Query a -> H.HalogenM State Action' () Message Aff (Maybe a)
 handleQuery (KeyboardUp ev next) = do
   { moving } <- H.get
 
@@ -280,3 +291,24 @@ renderSidebar { level, levelNum } =
 
   hint = visibleHint level
   toSeconds ticksLeft = ceil ((toNumber ticksLeft) / (toNumber ticksPerSecond) )
+
+helpSection :: forall p. HH.HTML p Action'
+helpSection =
+  HH.div_
+    [ HH.text "Controls:"
+    , HH.div_ [ HH.text "WASD or arrows to move" ]
+    , HH.div_ [ HH.text "Space for pause" ]
+    , HH.div_ [ HH.text "R to restart a level" ]
+    , HH.div_ [ HH.text "N go to next level" ]
+    , HH.div_ [ HH.text "P go to previous level" ]
+    , HH.div_
+        [ HH.text "Select view radius:"
+        , HH.input
+            [ HP.type_ HP.InputRange
+            , HP.min 3.0
+            , HP.max 16.0
+            , HP.value "6"
+            , HE.onValueChange (Just <<< SetRadius <<< fromMaybe 3 <<< fromString)
+            ]
+        ]
+    ]

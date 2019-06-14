@@ -13,7 +13,9 @@ type Game =
   , state :: State
   , name :: String
   , intactLevel :: Level
+  -- TODO: Move these to frontend
   , moving :: Moving
+  , radius :: Int
   }
 
 notDead :: Game -> Boolean

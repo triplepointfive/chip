@@ -31,11 +31,11 @@ data DisplayTile
 -- | Builds a matrix of `DisplayTile` with `radius` * 2 + 1 size.
 -- | This function transforms raw level data to what shall be
 -- | presented in specific cell
-levelTiles :: Int -> Game -> Array (Array DisplayTile)
-levelTiles radius game =
+levelTiles :: Game -> Array (Array DisplayTile)
+levelTiles game =
   map
     (\(Tuple y row) -> map (\x -> buildTile { x: x, y: y } game) row)
-    (rangeSlice radius game.level.player.pos)
+    (rangeSlice game.radius game.level.player.pos)
 
 rangeSlice :: Int -> Point ->  Array (Tuple Int (Array Int))
 rangeSlice r { x, y } =

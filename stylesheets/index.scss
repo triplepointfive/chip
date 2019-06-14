@@ -1,4 +1,4 @@
-$cell-size: 48px;
+$cell-size: 32px;
 $sprite-tile-size: 32px;
 $sprite-x: 8;
 $sprite-y: 12;
@@ -36,6 +36,7 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
 
 .game-container {
   display: flex;
+  flex-wrap: wrap;
 
   > .content {
     @include panel();
@@ -53,7 +54,7 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
       text-align: center;
 
       &.-level {
-        font-size: 2rem;
+        font-size: 1.5rem;
         color: yellow;
         background-color: black;
 
@@ -65,7 +66,7 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
       }
 
       &.-pause {
-        font-size: 2rem;
+        font-size: 1.5rem;
         color: red;
         background-color: black;
 
@@ -94,6 +95,7 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
     vertical-align: top;
     padding: 0.5rem;
     background-color: lightgray;
+    position: relative;
 
     display: flex;
     flex-direction: column;
@@ -102,12 +104,19 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
     > .hint {
       @include inverse-panel();
 
-      font-size: 2rem;
+      font-size: 1.5rem;
       font-style: oblique;
       color: cyan;
       background-color: black;
 
       width: $cell-size * 4 - 10px;
+
+      position: absolute;
+      bottom: 5px;
+      left: 50%;
+      transform: translate(-50%, 0);
+      width: 80%;
+      z-index: 10;
     }
   }
 }
@@ -119,7 +128,7 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
 
   > .term {
     color: red;
-    font-size: 2rem;
+    font-size: 1.5rem;
     text-shadow: 1px 1px 0 black, -1px -1px 0 white;
     word-break: break-word;
   }
@@ -130,7 +139,7 @@ $sprite-ratio: $cell-size / $sprite-tile-size * $sprite-tile-size;
     font-family: "Digital7", sans-serif;
     color: darken(darkgreen, 10%);
     background-color: black;
-    font-size: 2.5rem;
+    font-size: 2rem;
     text-align: right;
     position: relative;
     z-index: 1;
